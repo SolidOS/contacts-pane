@@ -15,7 +15,7 @@ to change its state according to an ontology, comment on it, etc.
 /* global alert, confirm, FileReader */
 
 const UI = require('solid-ui')
-const panes = require('../paneRegistry')
+const panes = require('pane-registry')
 
 var mime = require('mime-types')
 var toolsPane0 = require('./toolsPane')
