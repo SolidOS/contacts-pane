@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Solid Panes: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
