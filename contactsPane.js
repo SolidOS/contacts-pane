@@ -1124,10 +1124,11 @@ module.exports = {
             var mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
             var backgroundColor = null
             for (var uri in types) {
-              backgroundColor = kb.any(kb.sym(uri), kb.sym('http://www.w3.org/ns/ui#backgroundColor'))
+              backgroundColor = kb.anyValue(kb.sym(uri), ns.solid('profileHighlightColor'))
               if (backgroundColor) break
             }
-            backgroundColor = backgroundColor ? backgroundColor.value : '#fff' // default white
+            // allow the parent element to define background by default
+            backgroundColor = backgroundColor || 'transparent'
             mystyle += 'background-color: ' + backgroundColor + '; '
             div.setAttribute('style', mystyle)
           }
