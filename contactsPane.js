@@ -91,21 +91,14 @@ module.exports = {
 
         bookContents += '<#this> <http://www.w3.org/ns/auth/acl#owner> <' + me.uri + '>.\n\n'
 
+        const newAppInstance = kb.sym(newBase + 'index.ttl#this')
+
         var toBeWritten = [
-          // { to: 'index.html', contentType: 'text/html' },
           { to: 'index.ttl', content: bookContents, contentType: 'text/turtle' },
           { to: 'groups.ttl', content: '', contentType: 'text/turtle' },
           { to: 'people.ttl', content: '', contentType: 'text/turtle' },
           { to: '', existing: true, aclOptions: { defaultForNew: true } }
         ]
-
-        var newAppPointer = newBase + 'index.html' // @@ assuming we can't trust server with bare dir
-
-        var offline = UI.authn.offlineTestID()
-        if (offline) {
-          toBeWritten.push({ to: 'local.html', from: 'local.html', contentType: 'text/html' })
-          newAppPointer = newBase + 'local.html' // kludge for testing
-        }
 
         // @@ Ask user abut ACLs?
 
@@ -113,20 +106,20 @@ module.exports = {
         //   @@ Add header to PUT     If-None-Match: *       to prevent overwrite
         //
 
-        var claimSuccess = function (uri, appInstanceNoun) { // @@ delete or grey other stuff
-          console.log('Files created. App ready at ' + uri)
+        var claimSuccess = function (newAppInstance, appInstanceNoun) { // @@ delete or grey other stuff
+          console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
           var p = div.appendChild(dom.createElement('p'))
           p.setAttribute('style', 'font-size: 140%;')
           p.innerHTML =
-            "Your <a href='" + uri + "'><b>new " + appInstanceNoun + '</b></a> is ready. ' +
-            "<br/><br/><a href='" + uri + "'>Go to new " + appInstanceNoun + '</a>'
-          var newContext = Object.assign({ newInstance: kb.sym(uri) }, context)
+            "Your <a href='" + newAppInstance.uri + "'><b>new " + appInstanceNoun + '</b></a> is ready. ' +
+            "<br/><br/><a href='" + newAppInstance.uri + "'>Go to new " + appInstanceNoun + '</a>'
+          var newContext = Object.assign({ newInstance: newAppInstance }, context)
           resolve(newContext)
         }
 
         var doNextTask = function () {
           if (toBeWritten.length === 0) {
-            claimSuccess(newAppPointer, appInstanceNoun)
+            claimSuccess(newAppInstance, appInstanceNoun)
           } else {
             var task = toBeWritten.shift()
             console.log('Creating new file ' + task.to + ' in new instance ')
@@ -154,7 +147,7 @@ module.exports = {
             } else if ('existing' in task) {
               checkOKSetACL(dest, true)
             } else {
-              reject(new Error('copy not expected buiding new app'))
+              reject(new Error('copy not expected buiding new app!!'))
               // var from = task.from || task.to // default source to be same as dest
               // UI.widgets.webCopy(base + from, dest, task.contentType, checkOKSetACL)
             }
@@ -1009,8 +1002,8 @@ module.exports = {
           await kb.updater.update([], insertables)
         } catch (err) {
           let msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
-          console.log(' Write back image link FAIL ' + pic + ', Error: ' + err)
-          alert(err)
+          console.log(msg)
+          alert(msg)
         }
       }
 
@@ -1111,21 +1104,7 @@ module.exports = {
       }
       // //////// End of drag and drop
 
-      // Camera
-
-      // var imageDoc
-      function getImageDoc() {
-        let imageDoc = kb.sym(subject.dir().uri + 'Image_' + Date.now() + '.png');
-        return imageDoc;
-      }
-      async function tookPicture(imageDoc) {
-        if (imageDoc) {
-          await linkToPicture (subject, imageDoc)
-          syncMugshots()
-        }
-      }
-
-      //////////////////////////////
+      /// ///////////////////////////
 
       // Background metadata for this pane we bundle with the JS
       var individualForm = kb.sym('https://solid.github.io/solid-panes/contact/individualForm.ttl#form1')
@@ -1188,10 +1167,23 @@ module.exports = {
             }
           }
 
+          // Good URI for a Camera picture
+          function getImageDoc () {
+            let imageDoc = kb.sym(subject.dir().uri + 'Image_' + Date.now() + '.png')
+            return imageDoc
+          }
+          // Store picture
+          async function tookPicture (imageDoc) {
+            if (imageDoc) {
+              await linkToPicture(subject, imageDoc)
+              syncMugshots()
+            }
+          }
+
           syncMugshots()
           mugshotDiv.refresh = syncMugshots
 
-          div.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture));
+          div.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190709-B
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
 
