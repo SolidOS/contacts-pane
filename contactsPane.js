@@ -330,6 +330,7 @@ module.exports = {
         var gix = kb.any(book, ns.vcard('groupIndex'))
 
         var x = book.uri.split('#')[0]
+        // @@ Should also remove any non-alphanumeric and any double undersscore
         var gname = name.replace(' ', '_')
         var doc = kb.sym(x.slice(0, x.lastIndexOf('/') + 1) + 'Group/' + gname + '.ttl')
         var group = kb.sym(doc.uri + '#this')
@@ -1002,6 +1003,17 @@ module.exports = {
         })
       }
 
+      async function linkToPicture (subject, pic) {
+        const insertables = [ $rdf.st(subject, ns.vcard('hasPhoto'), pic, subject.doc()) ]
+        try {
+          await kb.updater.update([], insertables)
+        } catch (err) {
+          let msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
+          console.log(' Write back image link FAIL ' + pic + ', Error: ' + err)
+          alert(err)
+        }
+      }
+
       var uploadFileToContact = function (filename, contentType, data) {
         // var fileExtension = filename.split('.').pop() // .toLowerCase()
         var extension = mime.extension(contentType)
@@ -1078,7 +1090,7 @@ module.exports = {
       var droppedFileHandler = function (files) {
         for (var i = 0; i < files.length; i++) {
           let f = files[i]
-          console.log(' meeting: Filename: ' + f.name + ', type: ' + (f.type || 'n/a') +
+          console.log(' contacts: Filename: ' + f.name + ', type: ' + (f.type || 'n/a') +
             ' size: ' + f.size + ' bytes, last modified: ' +
             (f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a')
           ) // See e.g. https://www.html5rocks.com/en/tutorials/file/dndfiles/
@@ -1098,6 +1110,22 @@ module.exports = {
         }
       }
       // //////// End of drag and drop
+
+      // Camera
+
+      // var imageDoc
+      function getImageDoc() {
+        let imageDoc = kb.sym(subject.dir().uri + 'Image_' + Date.now() + '.png');
+        return imageDoc;
+      }
+      async function tookPicture(imageDoc) {
+        if (imageDoc) {
+          await linkToPicture (subject, imageDoc)
+          syncMugshots()
+        }
+      }
+
+      //////////////////////////////
 
       // Background metadata for this pane we bundle with the JS
       var individualForm = kb.sym('https://solid.github.io/solid-panes/contact/individualForm.ttl#form1')
@@ -1162,6 +1190,8 @@ module.exports = {
 
           syncMugshots()
           mugshotDiv.refresh = syncMugshots
+
+          div.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture));
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
 
