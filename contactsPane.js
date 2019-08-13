@@ -894,15 +894,16 @@ module.exports = {
 
         UI.widgets.askName(dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Individual'), 'person').then(function (name) {
           if (!name) return // cancelled by user
+          cardMain.innerHTML = 'indexing...'
           createNewContact(book, name, selectedGroups, function (success, body) {
             if (!success) {
-              console.log("Error: can't save new contact:" + body)
+              console.log("Error: can't save new contact: " + body)
             } else {
               let person = body
-              cardMain.innerHTML = 'indexing...'
               selectedPeople = {}
               selectedPeople[person.uri] = true
               refreshNames() // Add name to list of group
+              cardMain.innerHTML = '' // Clear 'indexing'
               cardMain.appendChild(cardPane(dom, person, 'contact'))
             }
           })
@@ -986,20 +987,19 @@ module.exports = {
             }
             console.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
             kb.add(card, ns.wf('attachment'), thing, card.doc())
-            /*
-            var b = kb.bnode()
-            kb.add(card, UI.ns.vcard('url'), b, card.doc())
-            kb.add(b, UI.ns.vcard('value'), kb.sym(u), card.doc())
-            */
             // @@ refresh UI
           }
         })
       }
 
-      async function linkToPicture (subject, pic) {
-        const insertables = [ $rdf.st(subject, ns.vcard('hasPhoto'), pic, subject.doc()) ]
+      async function linkToPicture (subject, pic, remove) {
+        const link = [ $rdf.st(subject, ns.vcard('hasPhoto'), pic, subject.doc()) ]
         try {
-          await kb.updater.update([], insertables)
+          if (remove) {
+            await kb.updater.update(link, [])
+          } else {
+            await kb.updater.update([], link)
+          }
         } catch (err) {
           let msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
           console.log(msg)
@@ -1148,7 +1148,10 @@ module.exports = {
             let img = dom.createElement('img')
             img.setAttribute('style', 'max-height: 10em; border-radius: 1em; margin: 0.7em;')
             UI.widgets.makeDropTarget(img, handleURIsDroppedOnMugshot, droppedFileHandler)
-            if (image) img.setAttribute('src', image.uri)
+            if (image) {
+              img.setAttribute('src', image.uri)
+              UI.widgets.makeDraggable(img, image)
+            }
             return img
           }
 
@@ -1180,10 +1183,42 @@ module.exports = {
             }
           }
 
+          function trashCan () {
+            const button = UI.widgets.button(dom, UI.icons.iconBase + 'noun_925021.svg', 'Drag here to delete')
+            async function droppedURIHandler (uri) {
+              let images = kb.each(subject, ns.vcard('hasPhoto')).map(x => x.uri)
+              if (!images.includes(uri)) {
+                alert('Only drop images in this contact onto this trash can.')
+                return
+              }
+              if (confirm(`Permanently DELETE image ${uri} completely?`)) {
+                console.log('Unlinking image file ' + uri)
+
+                await linkToPicture(subject, kb.sym(uri), true)
+                try {
+                  console.log('Deleting image file ' + uri)
+                  await kb.fetcher.webOperation('DELETE', uri)
+                } catch (err) {
+                  alert('Unable to delete picture! ' + err)
+                }
+              }
+            }
+            UI.widgets.makeDropTarget(button, droppedURIHandler, null)
+            return button
+          }
+
           syncMugshots()
           mugshotDiv.refresh = syncMugshots
 
-          div.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190709-B
+          const imageToolTable = div.appendChild(dom.createElement('table'))
+          const row = imageToolTable.appendChild(dom.createElement('tr'))
+          const left = row.appendChild(dom.createElement('td'))
+          const middle = row.appendChild(dom.createElement('td'))
+          const right = row.appendChild(dom.createElement('td'))
+
+          left.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190812
+          middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
+          right.appendChild(trashCan())
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
 
