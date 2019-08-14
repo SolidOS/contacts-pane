@@ -1218,18 +1218,14 @@ module.exports = {
           const right = row.appendChild(dom.createElement('td'))
 
           left.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190812
-          middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
+          try {
+            middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
+          } catch (e) {
+            console.log('ignore fileUploadButtonDiv error for now', e)
+          }
           right.appendChild(trashCan())
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
-
-          //   Comment/discussion area
-          /*
-          var messageStore = kb.any(tracker, ns.wf('messageStore'))
-          if (!messageStore) messageStore = kb.any(tracker, ns.wf('doc'))
-          div.appendChild(UI.messageArea(dom, kb, subject, messageStore))
-          donePredicate(ns.wf('message'))
-          */
 
           div.appendChild(dom.createElement('tr'))
             .setAttribute('style', 'height: 1em') // spacer
