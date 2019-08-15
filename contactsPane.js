@@ -1143,6 +1143,8 @@ module.exports = {
 
           UI.authn.checkUser()  // kick off async operation
 
+          var editable = kb.updater.editable(subject.doc().uri, kb) // @@ ToDo -- also check wac-allow
+
           mugshotDiv = div.appendChild(dom.createElement('div'))
 
           function elementForImage (image) {
@@ -1186,44 +1188,52 @@ module.exports = {
 
           function trashCan () {
             const button = UI.widgets.button(dom, UI.icons.iconBase + 'noun_925021.svg', 'Drag here to delete')
-            async function droppedURIHandler (uri) {
+            async function droppedURIHandler (uris) {
               let images = kb.each(subject, ns.vcard('hasPhoto')).map(x => x.uri)
-              if (!images.includes(uri)) {
-                alert('Only drop images in this contact onto this trash can.')
-                return
-              }
-              if (confirm(`Permanently DELETE image ${uri} completely?`)) {
-                console.log('Unlinking image file ' + uri)
-
-                await linkToPicture(subject, kb.sym(uri), true)
-                try {
-                  console.log('Deleting image file ' + uri)
-                  await kb.fetcher.webOperation('DELETE', uri)
-                } catch (err) {
-                  alert('Unable to delete picture! ' + err)
+              for (var uri of uris) {
+                if (!images.includes(uri)) {
+                  alert('Only drop images in this contact onto this trash can.')
+                  return
+                }
+                if (confirm(`Permanently DELETE image ${uri} completely?`)) {
+                  console.log('Unlinking image file ' + uri)
+                  await linkToPicture(subject, kb.sym(uri), true)
+                  try {
+                    console.log('Deleting image file ' + uri)
+                    await kb.fetcher.webOperation('DELETE', uri)
+                  } catch (err) {
+                    alert('Unable to delete picture! ' + err)
+                  }
                 }
               }
+              syncMugshots()
             }
             UI.widgets.makeDropTarget(button, droppedURIHandler, null)
             return button
           }
 
+          function renderImageTools () {
+            const imageToolTable = dom.createElement('table')
+            const row = imageToolTable.appendChild(dom.createElement('tr'))
+            const left = row.appendChild(dom.createElement('td'))
+            const middle = row.appendChild(dom.createElement('td'))
+            const right = row.appendChild(dom.createElement('td'))
+
+            left.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190812
+            try {
+              middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
+            } catch (e) {
+              console.log('ignore fileUploadButtonDiv error for now', e)
+            }
+            right.appendChild(trashCan())
+            return imageToolTable
+          }
+
           syncMugshots()
           mugshotDiv.refresh = syncMugshots
-
-          const imageToolTable = div.appendChild(dom.createElement('table'))
-          const row = imageToolTable.appendChild(dom.createElement('tr'))
-          const left = row.appendChild(dom.createElement('td'))
-          const middle = row.appendChild(dom.createElement('td'))
-          const right = row.appendChild(dom.createElement('td'))
-
-          left.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190812
-          try {
-            middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
-          } catch (e) {
-            console.log('ignore fileUploadButtonDiv error for now', e)
+          if (editable) {
+            div.appendChild(renderImageTools())
           }
-          right.appendChild(trashCan())
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
 
