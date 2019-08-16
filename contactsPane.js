@@ -1058,7 +1058,8 @@ module.exports = {
           console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
           if (u.startsWith('http') && u.indexOf('#') < 0) { // Plain document
             // Take a copy of a photo on the web:
-            kb.fetcher.webOperation('GET', thing.uri).then(result => {
+            let options = {withCredentials: false, credentials: 'omit'}
+            kb.fetcher.webOperation('GET', thing.uri, options).then(result => {
               let contentType = result.headers.get('Content-Type')
               // let data = result.responseText
               let pathEnd = thing.uri.split('/').slice(-1)[0] // last segment as putative filename
@@ -1070,6 +1071,8 @@ module.exports = {
                 }
                 uploadFileToContact(pathEnd, contentType, data)
               })
+            }, err => {
+              complain(`WebOp (fetch) error trying to read picture ${thing} on web: ${err}`)
             })
             return
           } else {
