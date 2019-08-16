@@ -894,15 +894,16 @@ module.exports = {
 
         UI.widgets.askName(dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Individual'), 'person').then(function (name) {
           if (!name) return // cancelled by user
+          cardMain.innerHTML = 'indexing...'
           createNewContact(book, name, selectedGroups, function (success, body) {
             if (!success) {
-              console.log("Error: can't save new contact:" + body)
+              console.log("Error: can't save new contact: " + body)
             } else {
               let person = body
-              cardMain.innerHTML = 'indexing...'
               selectedPeople = {}
               selectedPeople[person.uri] = true
               refreshNames() // Add name to list of group
+              cardMain.innerHTML = '' // Clear 'indexing'
               cardMain.appendChild(cardPane(dom, person, 'contact'))
             }
           })
@@ -986,20 +987,19 @@ module.exports = {
             }
             console.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
             kb.add(card, ns.wf('attachment'), thing, card.doc())
-            /*
-            var b = kb.bnode()
-            kb.add(card, UI.ns.vcard('url'), b, card.doc())
-            kb.add(b, UI.ns.vcard('value'), kb.sym(u), card.doc())
-            */
             // @@ refresh UI
           }
         })
       }
 
-      async function linkToPicture (subject, pic) {
-        const insertables = [ $rdf.st(subject, ns.vcard('hasPhoto'), pic, subject.doc()) ]
+      async function linkToPicture (subject, pic, remove) {
+        const link = [ $rdf.st(subject, ns.vcard('hasPhoto'), pic, subject.doc()) ]
         try {
-          await kb.updater.update([], insertables)
+          if (remove) {
+            await kb.updater.update(link, [])
+          } else {
+            await kb.updater.update([], link)
+          }
         } catch (err) {
           let msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
           console.log(msg)
@@ -1058,7 +1058,8 @@ module.exports = {
           console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
           if (u.startsWith('http') && u.indexOf('#') < 0) { // Plain document
             // Take a copy of a photo on the web:
-            kb.fetcher.webOperation('GET', thing.uri).then(result => {
+            let options = {withCredentials: false, credentials: 'omit'}
+            kb.fetcher.webOperation('GET', thing.uri, options).then(result => {
               let contentType = result.headers.get('Content-Type')
               // let data = result.responseText
               let pathEnd = thing.uri.split('/').slice(-1)[0] // last segment as putative filename
@@ -1070,6 +1071,8 @@ module.exports = {
                 }
                 uploadFileToContact(pathEnd, contentType, data)
               })
+            }, err => {
+              complain(`WebOp (fetch) error trying to read picture ${thing} on web: ${err}`)
             })
             return
           } else {
@@ -1143,13 +1146,18 @@ module.exports = {
 
           UI.authn.checkUser()  // kick off async operation
 
+          var editable = kb.updater.editable(subject.doc().uri, kb) // @@ ToDo -- also check wac-allow
+
           mugshotDiv = div.appendChild(dom.createElement('div'))
 
           function elementForImage (image) {
             let img = dom.createElement('img')
             img.setAttribute('style', 'max-height: 10em; border-radius: 1em; margin: 0.7em;')
             UI.widgets.makeDropTarget(img, handleURIsDroppedOnMugshot, droppedFileHandler)
-            if (image) img.setAttribute('src', image.uri)
+            if (image) {
+              img.setAttribute('src', image.uri)
+              UI.widgets.makeDraggable(img, image)
+            }
             return img
           }
 
@@ -1181,20 +1189,56 @@ module.exports = {
             }
           }
 
+          function trashCan () {
+            const button = UI.widgets.button(dom, UI.icons.iconBase + 'noun_925021.svg', 'Drag here to delete')
+            async function droppedURIHandler (uris) {
+              let images = kb.each(subject, ns.vcard('hasPhoto')).map(x => x.uri)
+              for (var uri of uris) {
+                if (!images.includes(uri)) {
+                  alert('Only drop images in this contact onto this trash can.')
+                  return
+                }
+                if (confirm(`Permanently DELETE image ${uri} completely?`)) {
+                  console.log('Unlinking image file ' + uri)
+                  await linkToPicture(subject, kb.sym(uri), true)
+                  try {
+                    console.log('Deleting image file ' + uri)
+                    await kb.fetcher.webOperation('DELETE', uri)
+                  } catch (err) {
+                    alert('Unable to delete picture! ' + err)
+                  }
+                }
+              }
+              syncMugshots()
+            }
+            UI.widgets.makeDropTarget(button, droppedURIHandler, null)
+            return button
+          }
+
+          function renderImageTools () {
+            const imageToolTable = dom.createElement('table')
+            const row = imageToolTable.appendChild(dom.createElement('tr'))
+            const left = row.appendChild(dom.createElement('td'))
+            const middle = row.appendChild(dom.createElement('td'))
+            const right = row.appendChild(dom.createElement('td'))
+
+            left.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190812
+            try {
+              middle.appendChild(UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler))
+            } catch (e) {
+              console.log('ignore fileUploadButtonDiv error for now', e)
+            }
+            right.appendChild(trashCan())
+            return imageToolTable
+          }
+
           syncMugshots()
           mugshotDiv.refresh = syncMugshots
-
-          div.appendChild(UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)) // 20190709-B
+          if (editable) {
+            div.appendChild(renderImageTools())
+          }
 
           UI.widgets.appendForm(dom, div, {}, subject, individualForm, cardDoc, complainIfBad)
-
-          //   Comment/discussion area
-          /*
-          var messageStore = kb.any(tracker, ns.wf('messageStore'))
-          if (!messageStore) messageStore = kb.any(tracker, ns.wf('doc'))
-          div.appendChild(UI.messageArea(dom, kb, subject, messageStore))
-          donePredicate(ns.wf('message'))
-          */
 
           div.appendChild(dom.createElement('tr'))
             .setAttribute('style', 'height: 1em') // spacer
