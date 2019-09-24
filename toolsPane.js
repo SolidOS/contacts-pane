@@ -552,7 +552,7 @@ function toolsPane (selectAllGroups, selectedGroups, groupsMainTable, book, dom,
 
   var checkGroupless = MainRow.appendChild(dom.createElement('button'))
   checkGroupless.style.cssText = buttonStyle
-  checkGroupless.textContent = 'Find inidividuals with no group'
+  checkGroupless.textContent = 'Find individuals with no group'
   checkGroupless.addEventListener('click', function (event) {
     log('Loading groups...')
     selectAllGroups(selectedGroups, groupsMainTable, function (ok, message) {
