@@ -4,7 +4,7 @@
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
-    "test": "lint-staged"
+    "test": "prettier-standard --lint '*'"
   },
   "repository": {
     "type": "git",
