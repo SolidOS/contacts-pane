@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
+    "pane-registry": "^1.0.4",
     "solid-ui": ">=0.13.0"
   },
   "devDependencies": {
