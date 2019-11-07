@@ -83,13 +83,13 @@ function toolsPane (selectAllGroups, selectedGroups, groupsMainTable, book, dom,
   statButton.addEventListener('click', stats)
 
   var checkAccessButton = MainRow.appendChild(dom.createElement('button'))
-  checkAccessButton.textContent = 'Check inidividual card access of selected groups'
+  checkAccessButton.textContent = 'Check individual card access of selected groups'
   checkAccessButton.style.cssText = buttonStyle
   checkAccessButton.addEventListener('click', function (event) {
     function doCard (card) {
       UI.widgets.fixIndividualCardACL(card, log, function (ok, message) {
         if (ok) {
-          log('Sucess for ' + UI.utils.label(card))
+          log('Success for ' + UI.utils.label(card))
         } else {
           log('Failure for ' + UI.utils.label(card) + ': ' + message)
         }
@@ -184,7 +184,7 @@ function toolsPane (selectAllGroups, selectedGroups, groupsMainTable, book, dom,
                   deleteNextFile()
                 })
                 .catch(function (e) {
-                  var err = '*** ERROR deleteing ' + resource + ': ' + e
+                  var err = '*** ERROR deleting ' + resource + ': ' + e
                   log(err)
                   if (confirm('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card DELETE errors?')) {
                     removeFromMainIndex()
@@ -197,7 +197,7 @@ function toolsPane (selectAllGroups, selectedGroups, groupsMainTable, book, dom,
           }) // Promise
         } // erase one
 */
-        //   Check actual recorrds to see which are exact matches - slow
+        //   Check actual records to see which are exact matches - slow
         stats.nameDupLog = kb.sym(book.dir().uri + 'dedup-nameDupLog.ttl')
         stats.exactDupLog = kb.sym(book.dir().uri + 'dedup-exactDupLog.ttl')
 /*
@@ -364,7 +364,7 @@ function toolsPane (selectAllGroups, selectedGroups, groupsMainTable, book, dom,
             }
             checkOneNameless(x)
               .then(function (exact) {
-                log('    Namelessc check returns ' + exact)
+                log('    Nameless check returns ' + exact)
                 checkAllNameless() // loop
               })
           })
