@@ -15,7 +15,6 @@ to change its state according to an ontology, comment on it, etc.
 /* global alert, confirm, FileReader */
 
 const UI = require('solid-ui')
-const panes = require('pane-registry')
 
 var mime = require('mime-types')
 var toolsPane0 = require('./toolsPane')
@@ -23,7 +22,6 @@ var toolsPane = toolsPane0.toolsPane
 
 const $rdf = UI.rdf
 const ns = UI.ns
-const kb = UI.store
 
 module.exports = {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
@@ -31,8 +29,8 @@ module.exports = {
   name: 'contact',
 
   // Does the subject deserve an contact pane?
-  label: function (subject) {
-    var t = kb.findTypeURIs(subject)
+  label: function (subject, context) {
+    var t = context.session.store.findTypeURIs(subject)
     if (t[ns.vcard('Individual').uri]) return 'Contact'
     if (t[ns.vcard('Organization').uri]) return 'contact'
     if (t[ns.foaf('Person').uri]) return 'Person'
@@ -44,7 +42,7 @@ module.exports = {
 
   mintClass: UI.ns.vcard('AddressBook'),
 
-  mintNew: function mintNew (context) {
+  mintNew: function mintNew (dataBrowserContext, context) {
     return new Promise(function (resolve, reject) {
       UI.authn.logInLoadProfile(context).then(
         context => {
@@ -54,7 +52,7 @@ module.exports = {
 
           var dom = context.dom
           var div = context.div
-          var kb = UI.store
+          var kb = dataBrowserContext.session.store
           var ns = UI.ns
           var newBase = context.newBase || context.newInstance.dir().uri
           var instanceClass = context.instanceClass || ns.vcard('AddressBook')
@@ -203,8 +201,9 @@ module.exports = {
   },
 
   //  Render the pane
-  render: function (subject, dom, paneOptions) {
-    paneOptions = paneOptions || {}
+  render: function (subject, dataBrowserContext, paneOptions = {}) {
+    const dom = dataBrowserContext.dom
+    const kb = dataBrowserContext.session.store
     var div = dom.createElement('div')
     var cardDoc = subject.doc()
 
@@ -239,7 +238,7 @@ module.exports = {
       )
     } // newAddressBookButton
 
-    var updater = UI.store.updater
+    var updater = kb.updater
     UI.aclControl.preventBrowserDropEvents(dom)
 
     var t = kb.findTypeURIs(subject)
@@ -352,10 +351,7 @@ module.exports = {
             } else {
               // done!
               console.log('Done patching. Now reading back in.\n')
-              UI.store.fetcher.nowOrWhenFetched(doc, undefined, function (
-                ok,
-                body
-              ) {
+              kb.fetcher.nowOrWhenFetched(doc, undefined, function (ok, body) {
                 if (ok) {
                   console.log('Read back in OK.\n')
                   callbackFunction(true, person)
@@ -368,7 +364,7 @@ module.exports = {
           }
         }
 
-        UI.store.fetcher.nowOrWhenFetched(nameEmailIndex, undefined, function (
+        kb.fetcher.nowOrWhenFetched(nameEmailIndex, undefined, function (
           ok,
           message
         ) {
@@ -417,7 +413,7 @@ module.exports = {
         var group = kb.sym(doc.uri + '#this')
         console.log(' New group will be: ' + group + '\n')
 
-        UI.store.fetcher.nowOrWhenFetched(gix, function (ok, message) {
+        kb.fetcher.nowOrWhenFetched(gix, function (ok, message) {
           if (ok) {
             console.log(' Group index must be loaded\n')
 
@@ -485,7 +481,7 @@ module.exports = {
         selectedPeople[person.uri] = true
         refreshFilteredPeople() // Color to remember which one you picked
         var local = book ? localNode(person) : person
-        UI.store.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
+        kb.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
           ok,
           message
         ) {
@@ -618,8 +614,8 @@ module.exports = {
       }
 
       var cardPane = function (dom, subject, paneName) {
-        var p = panes.byName(paneName)
-        var d = p.render(subject, dom)
+        var p = dataBrowserContext.session.paneRegistry.byName(paneName)
+        var d = p.render(subject, dataBrowserContext)
         d.setAttribute(
           'style',
           'border: 0.1em solid #444; border-radius: 0.5em'
@@ -942,7 +938,7 @@ module.exports = {
                         var visible = false
                         var aclControl = UI.aclControl.ACLControlBox5(
                           group,
-                          dom,
+                          dataBrowserContext,
                           'group',
                           kb,
                           function (ok, body) {
@@ -1084,10 +1080,7 @@ module.exports = {
             refreshGroupsSelected()
           }
         }) // on button click
-        UI.store.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (
-          ok,
-          body
-        ) {
+        kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
           if (!ok) return console.log('Cannot load group index: ' + body)
           syncGroupTable()
           refreshNames()
@@ -1185,7 +1178,7 @@ module.exports = {
             // b.setAttribute('disabled', 'true');  (do we need o do this?)
             cardMain.innerHTML = ''
             var groupIndex = kb.any(book, ns.vcard('groupIndex'))
-            UI.store.fetcher.nowOrWhenFetched(groupIndex, undefined, function (
+            kb.fetcher.nowOrWhenFetched(groupIndex, undefined, function (
               ok,
               message
             ) {
@@ -1222,7 +1215,7 @@ module.exports = {
                     cardMain.appendChild(
                       UI.aclControl.ACLControlBox5(
                         body,
-                        dom,
+                        dataBrowserContext,
                         'group',
                         kb,
                         function (ok, body) {
@@ -1251,7 +1244,7 @@ module.exports = {
               selectedGroups,
               groupsMainTable,
               book,
-              dom,
+              dataBrowserContext,
               me
             )
           )
@@ -1464,7 +1457,7 @@ module.exports = {
       }
 
       var toBeFetched = [subject.doc()] // was: individualFormDoc, UI.ns.vcard('Type').doc()
-      UI.store.fetcher
+      kb.fetcher
         .load(toBeFetched)
 
         .catch(function (e) {
