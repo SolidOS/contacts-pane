@@ -9,9 +9,10 @@ function toolsPane (
   selectedGroups,
   groupsMainTable,
   book,
-  dom,
+  dataBrowserContext,
   me
 ) {
+  const dom = dataBrowserContext.dom
   var kb = UI.store
   const ns = UI.ns
   const VCARD = ns.vcard
@@ -47,12 +48,15 @@ function toolsPane (
   }
 
   box.appendChild(
-    UI.aclControl.ACLControlBox5(book.dir(), dom, 'book', kb, function (
-      ok,
-      body
-    ) {
-      if (!ok) box.innerHTML = 'ACL control box Failed: ' + body
-    })
+    UI.aclControl.ACLControlBox5(
+      book.dir(),
+      dataBrowserContext,
+      'book',
+      kb,
+      function (ok, body) {
+        if (!ok) box.innerHTML = 'ACL control box Failed: ' + body
+      }
+    )
   )
 
   //
@@ -112,7 +116,8 @@ function toolsPane (
   statButton.addEventListener('click', stats)
 
   var checkAccessButton = MainRow.appendChild(dom.createElement('button'))
-  checkAccessButton.textContent = 'Check individual card access of selected groups'
+  checkAccessButton.textContent =
+    'Check individual card access of selected groups'
   checkAccessButton.style.cssText = buttonStyle
   checkAccessButton.addEventListener('click', function (event) {
     function doCard (card) {
@@ -411,11 +416,10 @@ function toolsPane (
               }
               return resolve(true)
             }
-            checkOneNameless(x)
-              .then(function (exact) {
-                log('    Nameless check returns ' + exact)
-                checkAllNameless() // loop
-              })
+            checkOneNameless(x).then(function (exact) {
+              log('    Nameless check returns ' + exact)
+              checkAllNameless() // loop
+            })
           })
         }
 
