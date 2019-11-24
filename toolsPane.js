@@ -62,7 +62,7 @@ function toolsPane (
   //
   UI.authn
     .registrationControl(context, book, ns.vcard('AddressBook'))
-    .then(function (context) {
+    .then(function (_context) {
       console.log('Registration control finished.')
       // pane.appendChild(box)
     })
@@ -92,7 +92,7 @@ function toolsPane (
   var loadIndexButton = pane.appendChild(dom.createElement('button'))
   loadIndexButton.textContent = 'Load main index'
   loadIndexButton.style.cssText = buttonStyle
-  loadIndexButton.addEventListener('click', function (e) {
+  loadIndexButton.addEventListener('click', function (_event) {
     loadIndexButton.setAttribute('style', 'background-color: #ffc;')
 
     var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
@@ -119,7 +119,7 @@ function toolsPane (
   checkAccessButton.textContent =
     'Check individual card access of selected groups'
   checkAccessButton.style.cssText = buttonStyle
-  checkAccessButton.addEventListener('click', function (event) {
+  checkAccessButton.addEventListener('click', function (_event) {
     function doCard (card) {
       UI.widgets.fixIndividualCardACL(card, log, function (ok, message) {
         if (ok) {
@@ -152,7 +152,7 @@ function toolsPane (
   var checkDuplicates = MainRow.appendChild(dom.createElement('button'))
   checkDuplicates.textContent = 'Find duplicate cards'
   checkDuplicates.style.cssText = buttonStyle
-  checkDuplicates.addEventListener('click', function (event) {
+  checkDuplicates.addEventListener('click', function (_event) {
     var stats = {} // global god context
 
     stats.book = book
@@ -162,7 +162,7 @@ function toolsPane (
     UI.store.fetcher.nowOrWhenFetched(
       stats.nameEmailIndex,
       undefined,
-      function (ok, message) {
+      function (_ok, _message) {
         log('Loaded name index.')
 
         stats.cards = []
@@ -320,10 +320,10 @@ function toolsPane (
         stats.nameOnlyDuplicatesGroupDiff = []
 
         function checkOneNameless (card) {
-          return new Promise(function (resolve, reject) {
+          return new Promise(function (resolve) {
             kb.fetcher
               .load(card)
-              .then(function (xhr) {
+              .then(function (_xhr) {
                 log(' Nameless check ' + card)
                 var exclude = {}
                 exclude[ns.vcard('hasUID').uri] = true
@@ -397,7 +397,7 @@ function toolsPane (
           stats.namelessToCheck =
             stats.namelessToCheck || stats.nameless.slice()
           log('Nameless check left: ' + stats.namelessToCheck.length)
-          return new Promise(function (resolve, reject) {
+          return new Promise(function (resolve) {
             var x = stats.namelessToCheck.shift()
             if (!x) {
               log('namelessUniques: ' + stats.namelessUniques.length)
@@ -424,7 +424,7 @@ function toolsPane (
         }
 
         function checkGroupMembers () {
-          return new Promise(function (resolve, reject) {
+          return new Promise(function (resolve) {
             // var inUniques = 0
             log('Groups loaded')
             for (let i = 0; i < stats.uniques.length; i++) {
@@ -470,7 +470,7 @@ function toolsPane (
         } //  checkGroupMembers
 
         function scanForDuplicates () {
-          return new Promise(function (resolve, reject) {
+          return new Promise(function (resolve) {
             stats.cards = kb.each(undefined, VCARD('inAddressBook'), stats.book)
             log('' + stats.cards.length + ' total cards')
 
@@ -622,7 +622,7 @@ function toolsPane (
           })
           .then(saveCleanPeople)
           .then(saveAllGroups)
-          .then(function (resolve, reject) {
+          .then(function () {
             log('Done!')
           })
       }
@@ -632,7 +632,7 @@ function toolsPane (
   var checkGroupless = MainRow.appendChild(dom.createElement('button'))
   checkGroupless.style.cssText = buttonStyle
   checkGroupless.textContent = 'Find individuals with no group'
-  checkGroupless.addEventListener('click', function (event) {
+  checkGroupless.addEventListener('click', function (_event) {
     log('Loading groups...')
     selectAllGroups(selectedGroups, groupsMainTable, function (ok, message) {
       if (!ok) {
@@ -642,8 +642,8 @@ function toolsPane (
 
       var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       UI.store.fetcher.nowOrWhenFetched(nameEmailIndex, undefined, function (
-        ok,
-        message
+        _ok,
+        _message
       ) {
         log('Loaded groups and name index.')
         var reverseIndex = {}

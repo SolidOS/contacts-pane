@@ -71,7 +71,7 @@ module.exports = {
             ) // @@ write doc back
             kb.fetcher
               .putBack(doc, { contentType: 'text/turtle' })
-              .then(function (xhr) {
+              .then(function (_xhr) {
                 resolve(context)
               })
               .catch(function (err) {
@@ -257,7 +257,7 @@ module.exports = {
     var renderThreeColumnBrowser = function (books, context, options) {
       kb.fetcher
         .load(books)
-        .then(function (xhr) {
+        .then(function (_xhr) {
           renderThreeColumnBrowser2(books, context, options)
         })
         .catch(function (err) {
@@ -486,11 +486,12 @@ module.exports = {
           message
         ) {
           cardMain.innerHTML = ''
-          if (!ok)
+          if (!ok) {
             return complainIfBad(
               ok,
               "Can't load card: " + local + ': ' + message
             )
+          }
           // console.log("Loaded card " + local + '\n')
           cardMain.appendChild(cardPane(dom, local, 'contact'))
           cardMain.appendChild(dom.createElement('br'))
@@ -517,7 +518,7 @@ module.exports = {
                 deleteThing(person)
                 //  - delete the references to it in group files and save them background
                 //   - delete the reference in people.ttl and save it back
-                deleteRecursive(kb, container).then(res => {
+                deleteRecursive(kb, container).then(_res => {
                   refreshNames() // Doesn't work
                   cardMain.innerHTML = 'Contact Data Deleted.'
                 })
@@ -583,8 +584,7 @@ module.exports = {
               refreshNames() // @@ every time??
               todo -= 1
               if (!todo) {
-                if (callbackFunction)
-                  callbackFunction(badness.length === 0, badness)
+                if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
               }
             })
           }
@@ -692,7 +692,7 @@ module.exports = {
       //  For deleting an addressbook sub-folder eg person - use with care!
 
       function deleteRecursive (kb, folder) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
           kb.fetcher.load(folder).then(function () {
             const promises = kb.each(folder, ns.ldp('contains')).map(file => {
               if (kb.holds(file, ns.rdf('type'), ns.ldp('BasicContainer'))) {
@@ -710,14 +710,14 @@ module.exports = {
               throw new Error('User aborted delete file')
             }
             promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
-            Promise.all(promises).then(res => {
+            Promise.all(promises).then(_res => {
               resolve()
             })
           })
         })
       }
 
-      var localNode = function (person, div) {
+      var localNode = function (person, _div) {
         var aliases = kb.allAliases(person)
         var prefix = book.dir().uri
         for (var i = 0; i < aliases.length; i++) {
@@ -738,7 +738,7 @@ module.exports = {
           }
         }
         cards.sort(compareForSort) // @@ sort by name not UID later
-        for (var k = 0; k < cards.length - 1; ) {
+        for (var k = 0; k < cards.length - 1;) {
           if (cards[k].uri === cards[k + 1].uri) {
             cards.splice(k, 1)
           } else {
@@ -841,7 +841,7 @@ module.exports = {
 
                   kb.fetcher
                     .load(toBeFetched)
-                    .then(function (xhrs) {
+                    .then(function (_xhrs) {
                       var types = kb.findTypeURIs(thing)
                       for (var ty in types) {
                         console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
@@ -851,18 +851,18 @@ module.exports = {
                         ns.vcard('Organization').uri in types
                       ) {
                         var pname = kb.any(thing, ns.vcard('fn'))
-                        if (!pname)
-                          return alert('No vcard name known for ' + thing)
+                        if (!pname) { return alert('No vcard name known for ' + thing) }
                         var already = kb.holds(
                           group,
                           ns.vcard('hasMember'),
                           thing,
                           group.doc()
                         )
-                        if (already)
+                        if (already) {
                           return alert(
                             'ALREADY added ' + pname + ' to group ' + name
                           )
+                        }
                         var message = 'Add ' + pname + ' to group ' + name + '?'
                         if (confirm(message)) {
                           var ins = [
@@ -875,13 +875,14 @@ module.exports = {
                             $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
                           ]
                           kb.updater.update([], ins, function (uri, ok, err) {
-                            if (!ok)
+                            if (!ok) {
                               return complain(
                                 'Error adding member to group ' +
                                   group +
                                   ': ' +
                                   err
                               )
+                            }
                             console.log('Added ' + pname + ' to group ' + name)
                             // @@ refresh UI
                           })
@@ -925,11 +926,12 @@ module.exports = {
                     groupList.uri,
                     undefined,
                     function (ok, message) {
-                      if (!ok)
+                      if (!ok) {
                         return complainIfBad(
                           ok,
                           "Can't load group file: " + groupList + ': ' + message
                         )
+                      }
                       refreshNames()
 
                       if (!event.metaKey) {
@@ -1023,7 +1025,7 @@ module.exports = {
         'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
       )
 
-      searchInput.addEventListener('input', function (e) {
+      searchInput.addEventListener('input', function (_event) {
         refreshFilteredPeople(true) // Active: select person if justone left
       })
 
@@ -1058,7 +1060,7 @@ module.exports = {
         allGroups.textContent = 'All'
         var style = 'margin-left: 1em; font-size: 100%;'
         allGroups.setAttribute('style', style)
-        allGroups.addEventListener('click', function (event) {
+        allGroups.addEventListener('click', function (_event) {
           allGroups.state = allGroups.state ? 0 : 1
           peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
           if (allGroups.state) {
@@ -1116,7 +1118,7 @@ module.exports = {
 
       newContactButton.addEventListener(
         'click',
-        function (e) {
+        function (_event) {
           // b.setAttribute('disabled', 'true');  (do we need o do this?)
           cardMain.innerHTML = ''
 
@@ -1174,7 +1176,7 @@ module.exports = {
         newGroupButton.innerHTML = 'New Group' // + IndividualClassLabel
         newGroupButton.addEventListener(
           'click',
-          function (e) {
+          function (_event) {
             // b.setAttribute('disabled', 'true');  (do we need o do this?)
             cardMain.innerHTML = ''
             var groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -1219,9 +1221,10 @@ module.exports = {
                         'group',
                         kb,
                         function (ok, body) {
-                          if (!ok)
+                          if (!ok) {
                             cardMain.innerHTML =
                               'Group sharing setup failed: ' + body
+                          }
                         }
                       )
                     )
@@ -1236,7 +1239,7 @@ module.exports = {
         var toolsButton = cardFooter.appendChild(dom.createElement('button'))
         toolsButton.setAttribute('type', 'button')
         toolsButton.innerHTML = 'Tools'
-        toolsButton.addEventListener('click', function (e) {
+        toolsButton.addEventListener('click', function (_event) {
           cardMain.innerHTML = ''
           cardMain.appendChild(
             toolsPane(
@@ -1351,7 +1354,7 @@ module.exports = {
             kb.fetcher
               .putBack(subject.doc(), { contentType: 'text/turtle' })
               .then(
-                function (response) {
+                function (_response) {
                   if (isImage) {
                     mugshotDiv.refresh()
                   }
@@ -1464,7 +1467,7 @@ module.exports = {
           console.log('Error: Failed to load subject: ' + e)
         }) // load.then
 
-        .then(function (xhrs) {
+        .then(function (_xhrs) {
           var setPaneStyle = function () {
             var types = kb.findTypeURIs(subject)
             var mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
@@ -1619,7 +1622,7 @@ module.exports = {
 
             kb.fetcher
               .load(x)
-              .then(function (xhr) {
+              .then(function (_xhr) {
                 nameTD.textContent =
                   x.uri.split('/')[2] +
                   ' (' +
@@ -1698,10 +1701,11 @@ module.exports = {
                 $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
               ]
               kb.updater.update(del, [], function (uri, ok, err) {
-                if (!ok)
+                if (!ok) {
                   return complain(
                     'Error removing member from group ' + group + ': ' + err
                   )
+                }
                 console.log('Removed ' + pname + ' from group ' + gname)
                 syncGroupList()
               })
