@@ -230,7 +230,7 @@ module.exports = {
         dom,
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
         function (ws, newBase) {
-          thisPane.clone(thisAddressBook, newBase, {
+          thisPane.clone(thisAddressBook, newBase, { // @@ clone is not a thing - use mintNew
             me: me,
             div: div,
             dom: dom
@@ -738,7 +738,7 @@ module.exports = {
             cardMain.innerHTML = ''
           })
           */
-          personRow.addEventListener('click', function (event) {
+          personLeft.addEventListener('click', function (event) { // @@ was personRow
             event.preventDefault()
             selectPerson(person)
           })
@@ -761,16 +761,14 @@ module.exports = {
           }
         }
 
-        peopleMainTable.innerHTML = '' // clear
         peopleHeader.textContent =
           cards.length > 5 ? '' + cards.length + ' contacts' : 'contact'
 
-        for (var j = 0; j < cards.length; j++) {
-          var personRow = peopleMainTable.appendChild(dom.createElement('tr'))
+        function renderNameInGroupList (person) {
+          var personRow = dom.createElement('tr')
           var personLeft = personRow.appendChild(dom.createElement('td'))
           // var personRight = personRow.appendChild(dom.createElement('td'))
           personLeft.setAttribute('style', dataCellStyle)
-          var person = cards[j]
           personRow.subject = person
           var name = nameFor(person)
           personLeft.textContent = name
@@ -778,6 +776,12 @@ module.exports = {
           UI.widgets.makeDraggable(personRow, person)
 
           setPersonListener(personRow, person)
+          return personRow
+        }
+
+        peopleMainTable.innerHTML = '' // clear
+        for (var j = 0; j < cards.length; j++) {
+          peopleMainTable.appendChild(renderNameInGroupList(cards[j]))
         }
         refreshFilteredPeople()
       }
@@ -801,7 +805,7 @@ module.exports = {
       // Check every group is in the list and add it if not.
 
       function syncGroupTable () {
-        function addNewGroupRow2 (groupRow, group, name) {
+        function renderGroupRow (group) {
           // Is something is dropped on a group, add people to group
           function handleURIsDroppedOnGroup (uris) {
             uris.forEach(function (u) {
@@ -869,8 +873,77 @@ module.exports = {
                 })
             })
           }
-          UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
+          function groupRowClickListener (event) {
+            event.preventDefault()
+            var groupList = kb.sym(group.uri.split('#')[0])
+            if (!event.metaKey) {
+              selectedGroups = {} // If Command key pressed, accumulate multiple
+            }
+            selectedGroups[group.uri] = !selectedGroups[group.uri]
+            refreshGroupsSelected()
+            peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
 
+            kb.fetcher.nowOrWhenFetched(
+              groupList.uri,
+              undefined,
+              function (ok, message) {
+                if (!ok) {
+                  return complainIfBad(
+                    ok,
+                    "Can't load group file: " + groupList + ': ' + message
+                  )
+                }
+                refreshNames()
+
+                if (!event.metaKey) {
+                  // If only one group has beeen selected show ACL
+                  cardMain.innerHTML = ''
+                  var visible = false
+                  var aclControl = UI.aclControl.ACLControlBox5(
+                    group,
+                    dataBrowserContext,
+                    'group',
+                    kb,
+                    function (ok, body) {
+                      if (!ok) cardMain.innerHTML = 'Failed: ' + body
+                    }
+                  )
+                  var sharingButton = cardMain.appendChild(
+                    dom.createElement('button')
+                  )
+                  sharingButton.style.cssText =
+                    'padding: 1em; margin: 1em'
+                  var img = sharingButton.appendChild(
+                    dom.createElement('img')
+                  )
+                  img.style.cssText = 'width: 1.5em; height: 1.5em'
+                  img.setAttribute(
+                    'src',
+                    UI.icons.iconBase + 'noun_123691.svg'
+                  )
+                  sharingButton.addEventListener('click', function () {
+                    visible = !visible
+                    if (visible) {
+                      cardMain.appendChild(aclControl)
+                    } else {
+                      cardMain.removeChild(aclControl)
+                    }
+                  })
+                }
+              }
+            )
+          }
+
+          // Body of renderGroupRow
+          const name = kb.any(options.foreignGroup, ns.vcard('fn'))
+          const groupRow = dom.createElement('tr')
+          groupRow.subject = group
+          UI.widgets.makeDraggable(groupRow, group)
+
+          groupRow.setAttribute('style', dataCellStyle)
+          groupRow.textContent = name
+
+          UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
           UI.widgets.deleteButtonWithCheck(
             dom,
             groupRow,
@@ -880,71 +953,9 @@ module.exports = {
               syncGroupTable()
             }
           )
-          groupRow.addEventListener(
-            'click',
-            function (event) {
-              event.preventDefault()
-              var groupList = kb.sym(group.uri.split('#')[0])
-              if (!event.metaKey) {
-                selectedGroups = {} // If Command key pressed, accumulate multiple
-              }
-              selectedGroups[group.uri] = !selectedGroups[group.uri]
-              refreshGroupsSelected()
-              peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
-
-              kb.fetcher.nowOrWhenFetched(
-                groupList.uri,
-                undefined,
-                function (ok, message) {
-                  if (!ok) {
-                    return complainIfBad(
-                      ok,
-                      "Can't load group file: " + groupList + ': ' + message
-                    )
-                  }
-                  refreshNames()
-
-                  if (!event.metaKey) {
-                    // If only one group has beeen selected show ACL
-                    cardMain.innerHTML = ''
-                    var visible = false
-                    var aclControl = UI.aclControl.ACLControlBox5(
-                      group,
-                      dataBrowserContext,
-                      'group',
-                      kb,
-                      function (ok, body) {
-                        if (!ok) cardMain.innerHTML = 'Failed: ' + body
-                      }
-                    )
-                    var sharingButton = cardMain.appendChild(
-                      dom.createElement('button')
-                    )
-                    sharingButton.style.cssText =
-                      'padding: 1em; margin: 1em'
-                    var img = sharingButton.appendChild(
-                      dom.createElement('img')
-                    )
-                    img.style.cssText = 'width: 1.5em; height: 1.5em'
-                    img.setAttribute(
-                      'src',
-                      UI.icons.iconBase + 'noun_123691.svg'
-                    )
-                    sharingButton.addEventListener('click', function () {
-                      visible = !visible
-                      if (visible) {
-                        cardMain.appendChild(aclControl)
-                      } else {
-                        cardMain.removeChild(aclControl)
-                      }
-                    })
-                  }
-                }
-              )
-            },
-            true
-          )
-        }
+          groupRow.addEventListener('click', groupRowClickListener, true)
+          return groupRow
+        } // renderGroupRow
 
         var foundOne
         sortGroups()
@@ -972,14 +983,8 @@ module.exports = {
             }
           }
           if (!foundOne) {
-            var groupRow = groupsMainTable.appendChild(dom.createElement('tr'))
-            groupRow.subject = group
-            UI.widgets.makeDraggable(groupRow, group)
-
-            groupRow.setAttribute('style', dataCellStyle)
-            groupRow.textContent = name
-            addNewGroupRow2(groupRow, group, name)
-          } // if not foundOne
+            groupsMainTable.appendChild(renderGroupRow(group, name))
+          }
         } // loop g
 
         for (i = 0; i < groupsMainTable.children.length; i++) {
