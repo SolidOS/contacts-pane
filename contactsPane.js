@@ -122,7 +122,7 @@ module.exports = {
           //   @@ Add header to PUT     If-None-Match: *       to prevent overwrite
           //
 
-          var claimSuccess = function (newAppInstance, appInstanceNoun) {
+          function claimSuccess (newAppInstance, appInstanceNoun) {
             // @@ delete or grey other stuff
             console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
             var p = div.appendChild(dom.createElement('p'))
@@ -145,7 +145,27 @@ module.exports = {
             resolve(newContext)
           }
 
-          var doNextTask = function () {
+          function doNextTask () {
+            function checkOKSetACL (uri, ok) {
+              if (!ok) {
+                complain('Error writing new file ' + task.to)
+                return reject(new Error('Error writing new file ' + task.to))
+              }
+
+              UI.authn
+                .setACLUserPublic(dest, me, aclOptions)
+                .then(() => doNextTask())
+                .catch(err => {
+                  const message =
+                    'Error setting access permissions for ' +
+                    task.to +
+                    ' : ' +
+                    err.message
+                  complain(message)
+                  return reject(new Error(message))
+                })
+            }
+
             if (toBeWritten.length === 0) {
               claimSuccess(newAppInstance, appInstanceNoun)
             } else {
@@ -153,25 +173,6 @@ module.exports = {
               console.log('Creating new file ' + task.to + ' in new instance ')
               var dest = $rdf.uri.join(task.to, newBase) //
               var aclOptions = task.aclOptions || {}
-              var checkOKSetACL = function (uri, ok) {
-                if (!ok) {
-                  complain('Error writing new file ' + task.to)
-                  return reject(new Error('Error writing new file ' + task.to))
-                }
-
-                UI.authn
-                  .setACLUserPublic(dest, me, aclOptions)
-                  .then(() => doNextTask())
-                  .catch(err => {
-                    const message =
-                      'Error setting access permissions for ' +
-                      task.to +
-                      ' : ' +
-                      err.message
-                    complain(message)
-                    return reject(new Error(message))
-                  })
-              }
 
               if ('content' in task) {
                 kb.fetcher
@@ -211,11 +212,11 @@ module.exports = {
 
     div.setAttribute('class', 'contactPane')
 
-    var complain = function (message) {
+    function complain (message) {
       console.log(message)
       div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
     }
-    var complainIfBad = function (ok, body) {
+    function complainIfBad (ok, body) {
       if (!ok) {
         complain('Error: ' + body)
       }
@@ -224,7 +225,7 @@ module.exports = {
     var thisPane = this
 
     //  Reproduction: Spawn a new instance of this app
-    var newAddressBookButton = function (thisAddressBook) {
+    function newAddressBookButton (thisAddressBook) {
       return UI.authn.newAppInstance(
         dom,
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
@@ -254,7 +255,7 @@ module.exports = {
     } // missing: statusRegion
 
     //  Render a 3-column browser for an address book or a group
-    var renderThreeColumnBrowser = function (books, context, options) {
+    function renderThreeColumnBrowser (books, context, options) {
       kb.fetcher
         .load(books)
         .then(function (_xhr) {
@@ -283,7 +284,7 @@ module.exports = {
       title = title ? title.value : classLabel
 
       // The book could be the main subject, or linked from a group we are dealing with
-      var findBookFromGroups = function findBookFromGroups (book) {
+      function findBookFromGroups (book) {
         if (book) {
           return book
         }
@@ -299,7 +300,7 @@ module.exports = {
       }
 
       //  Write a new contact to the web
-      var createNewContact = function (
+      function createNewContact (
         book,
         name,
         selectedGroups,
@@ -335,7 +336,7 @@ module.exports = {
           ])
         }
 
-        var updateCallback = function (uri, success, body) {
+        function updateCallback (uri, success, body) {
           if (!success) {
             console.log(
               "Error: can't update " + uri + ' for new contact:' + body + '\n'
@@ -401,7 +402,7 @@ module.exports = {
       // Write new group to web
       // Creates an empty new group file and adds it to the index
       //
-      var saveNewGroup = function (book, name, callbackFunction) {
+      function saveNewGroup (book, name, callbackFunction) {
         var gix = kb.any(book, ns.vcard('groupIndex'))
 
         var x = book.uri.split('#')[0]
@@ -456,7 +457,7 @@ module.exports = {
       }
 
       // organization-name is a hack for Mac records with no FN which is mandatory.
-      var nameFor = function (x) {
+      function nameFor (x) {
         var name =
           kb.any(x, ns.vcard('fn')) ||
           kb.any(x, ns.foaf('name')) ||
@@ -464,7 +465,7 @@ module.exports = {
         return name ? name.value : '???'
       }
 
-      var filterName = function (name) {
+      function filterName (name) {
         var filter = searchInput.value.trim().toLowerCase()
         if (filter.length === 0) return true
         var parts = filter.split(' ') // Each name part must be somewhere
@@ -557,42 +558,42 @@ module.exports = {
         }
       }
 
-      var selectAllGroups = function (
+      function selectAllGroups (
         selectedGroups,
         groupsMainTable,
         callbackFunction
       ) {
+        function fetchGroupAndSelct (group, groupRow) {
+          groupRow.setAttribute('style', 'background-color: #ffe;')
+          kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
+            ok,
+            message
+          ) {
+            if (!ok) {
+              var msg = "Can't load group file: " + group + ': ' + message
+              badness.push(msg)
+              return complainIfBad(ok, msg)
+            }
+            groupRow.setAttribute('style', 'background-color: #cce;')
+            selectedGroups[group.uri] = true
+            refreshGroupsSelected()
+            refreshNames() // @@ every time??
+            todo -= 1
+            if (!todo) {
+              if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
+            }
+          })
+        }
         var todo = groupsMainTable.children.length
         var badness = []
         for (var k = 0; k < groupsMainTable.children.length; k++) {
           var groupRow = groupsMainTable.children[k]
           var group = groupRow.subject
-          var foo = function (group, groupRow) {
-            groupRow.setAttribute('style', 'background-color: #ffe;')
-            kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
-              ok,
-              message
-            ) {
-              if (!ok) {
-                var msg = "Can't load group file: " + group + ': ' + message
-                badness.push(msg)
-                return complainIfBad(ok, msg)
-              }
-              groupRow.setAttribute('style', 'background-color: #cce;')
-              selectedGroups[group.uri] = true
-              refreshGroupsSelected()
-              refreshNames() // @@ every time??
-              todo -= 1
-              if (!todo) {
-                if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
-              }
-            })
-          }
-          foo(group, groupRow)
+          fetchGroupAndSelct(group, groupRow)
         } // for each row
       }
 
-      var sortGroups = function () {
+      function sortGroups () {
         groups = []
         if (options.foreignGroup) {
           groups.push([
@@ -613,7 +614,7 @@ module.exports = {
         }
       }
 
-      var cardPane = function (dom, subject, paneName) {
+      function cardPane (dom, subject, paneName) {
         var p = dataBrowserContext.session.paneRegistry.byName(paneName)
         var d = p.render(subject, dataBrowserContext)
         d.setAttribute(
@@ -623,7 +624,7 @@ module.exports = {
         return d
       }
 
-      var compareForSort = function (self, other) {
+      function compareForSort (self, other) {
         var s = nameFor(self)
         var o = nameFor(other)
         if (s && o) {
@@ -717,7 +718,7 @@ module.exports = {
         })
       }
 
-      var localNode = function (person, _div) {
+      function localNode (person, _div) {
         var aliases = kb.allAliases(person)
         var prefix = book.dir().uri
         for (var i = 0; i < aliases.length; i++) {
@@ -728,7 +729,21 @@ module.exports = {
         throw new Error('No local URI for ' + person)
       }
 
-      var refreshNames = function () {
+      function refreshNames () {
+        function setPersonListener (personLeft, person) {
+          /*  No delete button on person in list: ambiguous: group or total? Do in card itself
+          UI.widgets.deleteButtonWithCheck(dom, personRight, 'contact', function () {
+            deleteThing(person) /// Just remove from group
+            refreshNames()
+            cardMain.innerHTML = ''
+          })
+          */
+          personRow.addEventListener('click', function (event) {
+            event.preventDefault()
+            selectPerson(person)
+          })
+        }
+
         var cards = []
         for (var u in selectedGroups) {
           if (selectedGroups[u]) {
@@ -762,19 +777,6 @@ module.exports = {
           personRow.subject = person
           UI.widgets.makeDraggable(personRow, person)
 
-          var setPersonListener = function toggle (personLeft, person) {
-            /*  No delete button on person in list: ambiguous: group or total? Do in card itself
-            UI.widgets.deleteButtonWithCheck(dom, personRight, 'contact', function () {
-              deleteThing(person) /// Just remove from group
-              refreshNames()
-              cardMain.innerHTML = ''
-            })
-            */
-            personRow.addEventListener('click', function (event) {
-              event.preventDefault()
-              selectPerson(person)
-            })
-          }
           setPersonListener(personRow, person)
         }
         refreshFilteredPeople()
@@ -798,7 +800,152 @@ module.exports = {
 
       // Check every group is in the list and add it if not.
 
-      var syncGroupTable = function () {
+      function syncGroupTable () {
+        function addNewGroupRow2 (groupRow, group, name) {
+          // Is something is dropped on a group, add people to group
+          function handleURIsDroppedOnGroup (uris) {
+            uris.forEach(function (u) {
+              console.log('Dropped on group: ' + u)
+              var thing = kb.sym(u)
+              var toBeFetched = [thing.doc(), group.doc()]
+
+              kb.fetcher
+                .load(toBeFetched)
+                .then(function (_xhrs) {
+                  var types = kb.findTypeURIs(thing)
+                  for (var ty in types) {
+                    console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+                  }
+                  if (
+                    ns.vcard('Individual').uri in types ||
+                    ns.vcard('Organization').uri in types
+                  ) {
+                    var pname = kb.any(thing, ns.vcard('fn'))
+                    if (!pname) { return alert('No vcard name known for ' + thing) }
+                    var already = kb.holds(
+                      group,
+                      ns.vcard('hasMember'),
+                      thing,
+                      group.doc()
+                    )
+                    if (already) {
+                      return alert(
+                        'ALREADY added ' + pname + ' to group ' + name
+                      )
+                    }
+                    var message = 'Add ' + pname + ' to group ' + name + '?'
+                    if (confirm(message)) {
+                      var ins = [
+                        $rdf.st(
+                          group,
+                          ns.vcard('hasMember'),
+                          thing,
+                          group.doc()
+                        ),
+                        $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
+                      ]
+                      kb.updater.update([], ins, function (uri, ok, err) {
+                        if (!ok) {
+                          return complain(
+                            'Error adding member to group ' +
+                              group +
+                              ': ' +
+                              err
+                          )
+                        }
+                        console.log('Added ' + pname + ' to group ' + name)
+                        // @@ refresh UI
+                      })
+                    }
+                  }
+                })
+                .catch(function (e) {
+                  complain(
+                    'Error looking up dropped thing ' +
+                      thing +
+                      ' and group: ' +
+                      e
+                  )
+                })
+            })
+          }
+          UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
+
+          UI.widgets.deleteButtonWithCheck(
+            dom,
+            groupRow,
+            'group ' + name,
+            function () {
+              deleteThing(group)
+              syncGroupTable()
+            }
+          )
+          groupRow.addEventListener(
+            'click',
+            function (event) {
+              event.preventDefault()
+              var groupList = kb.sym(group.uri.split('#')[0])
+              if (!event.metaKey) {
+                selectedGroups = {} // If Command key pressed, accumulate multiple
+              }
+              selectedGroups[group.uri] = !selectedGroups[group.uri]
+              refreshGroupsSelected()
+              peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
+
+              kb.fetcher.nowOrWhenFetched(
+                groupList.uri,
+                undefined,
+                function (ok, message) {
+                  if (!ok) {
+                    return complainIfBad(
+                      ok,
+                      "Can't load group file: " + groupList + ': ' + message
+                    )
+                  }
+                  refreshNames()
+
+                  if (!event.metaKey) {
+                    // If only one group has beeen selected show ACL
+                    cardMain.innerHTML = ''
+                    var visible = false
+                    var aclControl = UI.aclControl.ACLControlBox5(
+                      group,
+                      dataBrowserContext,
+                      'group',
+                      kb,
+                      function (ok, body) {
+                        if (!ok) cardMain.innerHTML = 'Failed: ' + body
+                      }
+                    )
+                    var sharingButton = cardMain.appendChild(
+                      dom.createElement('button')
+                    )
+                    sharingButton.style.cssText =
+                      'padding: 1em; margin: 1em'
+                    var img = sharingButton.appendChild(
+                      dom.createElement('img')
+                    )
+                    img.style.cssText = 'width: 1.5em; height: 1.5em'
+                    img.setAttribute(
+                      'src',
+                      UI.icons.iconBase + 'noun_123691.svg'
+                    )
+                    sharingButton.addEventListener('click', function () {
+                      visible = !visible
+                      if (visible) {
+                        cardMain.appendChild(aclControl)
+                      } else {
+                        cardMain.removeChild(aclControl)
+                      }
+                    })
+                  }
+                }
+              )
+            },
+            true
+          )
+        }
+
         var foundOne
         sortGroups()
 
@@ -831,151 +978,7 @@ module.exports = {
 
             groupRow.setAttribute('style', dataCellStyle)
             groupRow.textContent = name
-            var foo = function addNewGroupRow2 (groupRow, group, name) {
-              // Is something is dropped on a group, add people to group
-              var handleURIsDroppedOnGroup = function (uris) {
-                uris.forEach(function (u) {
-                  console.log('Dropped on group: ' + u)
-                  var thing = kb.sym(u)
-                  var toBeFetched = [thing.doc(), group.doc()]
-
-                  kb.fetcher
-                    .load(toBeFetched)
-                    .then(function (_xhrs) {
-                      var types = kb.findTypeURIs(thing)
-                      for (var ty in types) {
-                        console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
-                      }
-                      if (
-                        ns.vcard('Individual').uri in types ||
-                        ns.vcard('Organization').uri in types
-                      ) {
-                        var pname = kb.any(thing, ns.vcard('fn'))
-                        if (!pname) { return alert('No vcard name known for ' + thing) }
-                        var already = kb.holds(
-                          group,
-                          ns.vcard('hasMember'),
-                          thing,
-                          group.doc()
-                        )
-                        if (already) {
-                          return alert(
-                            'ALREADY added ' + pname + ' to group ' + name
-                          )
-                        }
-                        var message = 'Add ' + pname + ' to group ' + name + '?'
-                        if (confirm(message)) {
-                          var ins = [
-                            $rdf.st(
-                              group,
-                              ns.vcard('hasMember'),
-                              thing,
-                              group.doc()
-                            ),
-                            $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
-                          ]
-                          kb.updater.update([], ins, function (uri, ok, err) {
-                            if (!ok) {
-                              return complain(
-                                'Error adding member to group ' +
-                                  group +
-                                  ': ' +
-                                  err
-                              )
-                            }
-                            console.log('Added ' + pname + ' to group ' + name)
-                            // @@ refresh UI
-                          })
-                        }
-                      }
-                    })
-                    .catch(function (e) {
-                      complain(
-                        'Error looking up dropped thing ' +
-                          thing +
-                          ' and group: ' +
-                          e
-                      )
-                    })
-                })
-              }
-              UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
-
-              UI.widgets.deleteButtonWithCheck(
-                dom,
-                groupRow,
-                'group ' + name,
-                function () {
-                  deleteThing(group)
-                  syncGroupTable()
-                }
-              )
-              groupRow.addEventListener(
-                'click',
-                function (event) {
-                  event.preventDefault()
-                  var groupList = kb.sym(group.uri.split('#')[0])
-                  if (!event.metaKey) {
-                    selectedGroups = {} // If Command key pressed, accumulate multiple
-                  }
-                  selectedGroups[group.uri] = !selectedGroups[group.uri]
-                  refreshGroupsSelected()
-                  peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
-
-                  kb.fetcher.nowOrWhenFetched(
-                    groupList.uri,
-                    undefined,
-                    function (ok, message) {
-                      if (!ok) {
-                        return complainIfBad(
-                          ok,
-                          "Can't load group file: " + groupList + ': ' + message
-                        )
-                      }
-                      refreshNames()
-
-                      if (!event.metaKey) {
-                        // If only one group has beeen selected show ACL
-                        cardMain.innerHTML = ''
-                        var visible = false
-                        var aclControl = UI.aclControl.ACLControlBox5(
-                          group,
-                          dataBrowserContext,
-                          'group',
-                          kb,
-                          function (ok, body) {
-                            if (!ok) cardMain.innerHTML = 'Failed: ' + body
-                          }
-                        )
-                        var sharingButton = cardMain.appendChild(
-                          dom.createElement('button')
-                        )
-                        sharingButton.style.cssText =
-                          'padding: 1em; margin: 1em'
-                        var img = sharingButton.appendChild(
-                          dom.createElement('img')
-                        )
-                        img.style.cssText = 'width: 1.5em; height: 1.5em'
-                        img.setAttribute(
-                          'src',
-                          UI.icons.iconBase + 'noun_123691.svg'
-                        )
-                        sharingButton.addEventListener('click', function () {
-                          visible = !visible
-                          if (visible) {
-                            cardMain.appendChild(aclControl)
-                          } else {
-                            cardMain.removeChild(aclControl)
-                          }
-                        })
-                      }
-                    }
-                  )
-                },
-                true
-              )
-            }
-            foo(groupRow, group, name)
+            addNewGroupRow2(groupRow, group, name)
           } // if not foundOne
         } // loop g
 
@@ -1039,7 +1042,7 @@ module.exports = {
         'min-width: 10em; padding-bottom 0.2em;'
       )
 
-      var setGroupListVisibility = function (visible) {
+      function setGroupListVisibility (visible) {
         var vis = visible ? '' : 'display: none;'
         groupsHeader.setAttribute(
           'style',
@@ -1267,12 +1270,12 @@ module.exports = {
 
     // Render Individual card
 
-    var renderIndividual = function (subject) {
+    function renderIndividual (subject) {
       var mugshotDiv
       // ////////////////////  DRAG and Drop for mugshot image
       var card = subject
 
-      var handleDroppedThing = function (thing) {
+      function handleDroppedThing (thing) {
         kb.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
           if (!ok) {
             console.log('Error looking up dropped thing ' + thing + ': ' + mess)
@@ -1305,7 +1308,7 @@ module.exports = {
         }
       }
 
-      var uploadFileToContact = function (filename, contentType, data) {
+      function uploadFileToContact (filename, contentType, data) {
         // var fileExtension = filename.split('.').pop() // .toLowerCase()
         var extension = mime.extension(contentType)
         if (contentType !== mime.lookup(filename)) {
@@ -1369,7 +1372,7 @@ module.exports = {
       }
 
       // When a set of URIs are dropped on
-      var handleURIsDroppedOnMugshot = function (uris) {
+      function handleURIsDroppedOnMugshot (uris) {
         uris.map(function (u) {
           var thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
           console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
@@ -1409,7 +1412,7 @@ module.exports = {
       }
 
       // Drop an image file to set up the mugshot
-      var droppedFileHandler = function (files) {
+      function droppedFileHandler (files) {
         for (var i = 0; i < files.length; i++) {
           const f = files[i]
           console.log(
@@ -1468,7 +1471,7 @@ module.exports = {
         }) // load.then
 
         .then(function (_xhrs) {
-          var setPaneStyle = function () {
+          function setPaneStyle () {
             var types = kb.findTypeURIs(subject)
             var mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
             var backgroundColor = null
@@ -1613,7 +1616,7 @@ module.exports = {
             .appendChild(dom.createElement('tr'))
             .setAttribute('style', 'height: 1em') // spacer
 
-          var lookUpId = function (dom, container, x) {
+          function lookUpId (dom, container, x) {
             var tr = table.appendChild(dom.createElement('tr'))
             tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
             var nameTD = tr.appendChild(dom.createElement('td'))
@@ -1684,7 +1687,7 @@ module.exports = {
 
           // Remove a person from a group
 
-          var removeFromGroup = function (thing, group) {
+          function removeFromGroup (thing, group) {
             var pname = kb.any(thing, ns.vcard('fn'))
             var gname = kb.any(group, ns.vcard('fn'))
             var groups = kb.each(null, ns.vcard('hasMember'), thing)
