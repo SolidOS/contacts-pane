@@ -25,7 +25,7 @@ const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
 
-module.exports = {
+export default {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
 
   name: 'contact',

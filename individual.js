@@ -1,5 +1,8 @@
 import * as UI from 'solid-ui'
 import { renderMugshotGallery } from './mugshotGallery'
+import individualFormText from './individualForm'
+import VCARD_ONTOLOGY_TEXT from './vcard.js'
+
 const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
@@ -32,13 +35,13 @@ export function renderIndividual (dom, div, subject) {
   var individualFormDoc = individualForm.doc()
   if (!kb.holds(undefined, undefined, undefined, individualFormDoc)) {
     // If not loaded already
-    var individualFormText = require('./individualForm.js')
+    // var individualFormText = require('./individualForm.js')
     $rdf.parse(individualFormText, kb, individualFormDoc.uri, 'text/turtle') // Load form directly
   }
   var vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
-    $rdf.parse(require('./vcard.js'), kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
+    $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
   }
 
   var toBeFetched = [subject.doc()] // was: individualFormDoc, UI.ns.vcard('Type').doc()

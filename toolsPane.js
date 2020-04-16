@@ -2,9 +2,9 @@
 //
 /* global confirm, $rdf */
 
-var UI = require('solid-ui')
+import * as UI from 'solid-ui'
 
-function toolsPane (
+export function toolsPane (
   selectAllGroups,
   selectedGroups,
   groupsMainTable,
@@ -676,5 +676,5 @@ function toolsPane (
   })
   return pane
 } // toolsPane
-module.exports = {}
-module.exports.toolsPane = toolsPane
+
+// ends
