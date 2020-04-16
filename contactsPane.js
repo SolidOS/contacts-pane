@@ -22,6 +22,7 @@ var toolsPane = toolsPane0.toolsPane
 
 const $rdf = UI.rdf
 const ns = UI.ns
+const utils = UI.utils
 
 module.exports = {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
@@ -266,8 +267,8 @@ module.exports = {
         })
     }
     var renderThreeColumnBrowser2 = function (books, context, options) {
-      var classLabel = UI.utils.label(ns.vcard('AddressBook'))
-      // var IndividualClassLabel = UI.utils.label(ns.vcard('Individual'))
+      var classLabel = utils.label(ns.vcard('AddressBook'))
+      // var IndividualClassLabel = utils.label(ns.vcard('Individual'))
 
       var book = books[0] // for now
       var groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -309,7 +310,7 @@ module.exports = {
         book = findBookFromGroups(book)
         var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
-        var uuid = UI.utils.genUuid()
+        var uuid = utils.genUuid()
         var person = kb.sym(
           book.dir().uri + 'Person/' + uuid + '/index.ttl#this'
         )
@@ -593,10 +594,10 @@ module.exports = {
         } // for each row
       }
 
-      function sortGroups () {
-        groups = []
+      function groupsInOrder () {
+        var sortMe = []
         if (options.foreignGroup) {
-          groups.push([
+          sortMe.push([
             '',
             kb.any(options.foreignGroup, ns.vcard('fn')),
             options.foreignGroup
@@ -608,10 +609,11 @@ module.exports = {
             var gs2 = gs.map(function (g) {
               return [book, kb.any(g, ns.vcard('fn')), g]
             })
-            groups = groups.concat(gs2)
+            sortMe = sortMe.concat(gs2)
           })
-          groups.sort()
+          sortMe.sort()
         }
+        return sortMe.map(pair => pair[1])
       }
 
       function cardPane (dom, subject, paneName) {
@@ -957,50 +959,117 @@ module.exports = {
           return groupRow
         } // renderGroupRow
 
-        var foundOne
-        sortGroups()
-
-        var i
-        for (i = 0; i < groupsMainTable.children.length; i++) {
-          var row = groupsMainTable.children[i]
-          row.trashMe = true
-        }
-
-        for (var g = 0; g < groups.length; g++) {
-          // var book = groups[g][0]
-          var name = groups[g][1]
-          var group = groups[g][2]
-
-          // selectedGroups[group.uri] = false
-          foundOne = false
-
-          for (i = 0; i < groupsMainTable.children.length; i++) {
-            const row = groupsMainTable.children[i]
-            if (row.subject && row.subject.sameTerm(group)) {
-              row.trashMe = false
-              foundOne = true
-              break
-            }
-          }
-          if (!foundOne) {
-            groupsMainTable.appendChild(renderGroupRow(group, name))
-          }
-        } // loop g
-
-        for (i = 0; i < groupsMainTable.children.length; i++) {
-          const r = groupsMainTable.children[i]
-          if (r.trashMe) {
-            groupsMainTable.removeChild(r)
-          }
-        }
+        const groups = groupsInOrder()
+        utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
         refreshGroupsSelected()
       } // syncGroupTable
 
+      // Click on New Group button
+      function newGroupClickHandler (_event) {
+        // b.setAttribute('disabled', 'true');  (do we need o do this?)
+        cardMain.innerHTML = ''
+        var groupIndex = kb.any(book, ns.vcard('groupIndex'))
+        kb.fetcher.nowOrWhenFetched(groupIndex, undefined, function (
+          ok,
+          message
+        ) {
+          if (ok) {
+            console.log(' Group index has been loaded\n')
+          } else {
+            console.log(
+              'Error: Group index has NOT been loaded' + message + '\n'
+            )
+          }
+        })
+
+        UI.widgets
+          .askName(
+            dom,
+            kb,
+            cardMain,
+            UI.ns.foaf('name'),
+            ns.vcard('Group'),
+            'group'
+          )
+          .then(function (name) {
+            if (!name) return // cancelled by user
+            saveNewGroup(book, name, function (success, body) {
+              if (!success) {
+                console.log("Error: can't save new group:" + body)
+                cardMain.innerHTML = 'Failed to save group' + body
+              } else {
+                selectedGroups = {}
+                selectedGroups[body.uri] = true
+                syncGroupTable() // Refresh list of groups
+
+                cardMain.innerHTML = ''
+                cardMain.appendChild(
+                  UI.aclControl.ACLControlBox5(
+                    body,
+                    dataBrowserContext,
+                    'group',
+                    kb,
+                    function (ok, body) {
+                      if (!ok) {
+                        cardMain.innerHTML =
+                          'Group sharing setup failed: ' + body
+                      }
+                    }
+                  )
+                )
+              }
+            })
+          })
+      }
+
+      function newContactClickHandler (_event) {
+        // b.setAttribute('disabled', 'true');  (do we need o do this?)
+        cardMain.innerHTML = ''
+
+        var ourBook = findBookFromGroups(book)
+        kb.fetcher
+          .load(ourBook)
+          .then(function (response) {
+            if (!response.ok) throw new Error("Book won't load:" + ourBook)
+            var nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
+            if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
+            return kb.fetcher.load(nameEmailIndex)
+          })
+          .then(function (response) {
+            console.log('Name index loaded async' + response.url)
+          })
+
+        UI.widgets
+          .askName(
+            dom,
+            kb,
+            cardMain,
+            UI.ns.foaf('name'),
+            ns.vcard('Individual'),
+            'person'
+          )
+          .then(function (name) {
+            if (!name) return // cancelled by user
+            cardMain.innerHTML = 'indexing...'
+            createNewContact(book, name, selectedGroups, function (
+              success,
+              body
+            ) {
+              if (!success) {
+                console.log("Error: can't save new contact: " + body)
+              } else {
+                const person = body
+                selectedPeople = {}
+                selectedPeople[person.uri] = true
+                refreshNames() // Add name to list of group
+                cardMain.innerHTML = '' // Clear 'indexing'
+                cardMain.appendChild(cardPane(dom, person, 'contact'))
+              }
+            })
+          })
+      }
+
       // //////////////////////////// Three-column Contact Browser  - Body
-
-      // UI.store.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
-      //   if (!ok) return console.log('Cannot load group index: ' + body)
-
       // //////////////////   Body of 3-column browser
 
       var bookTable = dom.createElement('table')
@@ -1059,7 +1128,6 @@ module.exports = {
       }
       setGroupListVisibility(true)
 
-      var groups
       if (options.foreignGroup) {
         selectedGroups[options.foreignGroup.uri] = true
       }
@@ -1124,56 +1192,7 @@ module.exports = {
       newContactButton.innerHTML = 'New Contact' // + IndividualClassLabel
       peopleFooter.appendChild(container)
 
-      newContactButton.addEventListener(
-        'click',
-        function (_event) {
-          // b.setAttribute('disabled', 'true');  (do we need o do this?)
-          cardMain.innerHTML = ''
-
-          var ourBook = findBookFromGroups(book)
-          kb.fetcher
-            .load(ourBook)
-            .then(function (response) {
-              if (!response.ok) throw new Error("Book won't load:" + ourBook)
-              var nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
-              if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
-              return kb.fetcher.load(nameEmailIndex)
-            })
-            .then(function (response) {
-              console.log('Name index loaded async' + response.url)
-            })
-
-          UI.widgets
-            .askName(
-              dom,
-              kb,
-              cardMain,
-              UI.ns.foaf('name'),
-              ns.vcard('Individual'),
-              'person'
-            )
-            .then(function (name) {
-              if (!name) return // cancelled by user
-              cardMain.innerHTML = 'indexing...'
-              createNewContact(book, name, selectedGroups, function (
-                success,
-                body
-              ) {
-                if (!success) {
-                  console.log("Error: can't save new contact: " + body)
-                } else {
-                  const person = body
-                  selectedPeople = {}
-                  selectedPeople[person.uri] = true
-                  refreshNames() // Add name to list of group
-                  cardMain.innerHTML = '' // Clear 'indexing'
-                  cardMain.appendChild(cardPane(dom, person, 'contact'))
-                }
-              })
-            })
-        },
-        false
-      )
+      newContactButton.addEventListener('click', newContactClickHandler, false)
 
       // New Group button
       if (book) {
@@ -1183,63 +1202,7 @@ module.exports = {
         newGroupButton.setAttribute('type', 'button')
         newGroupButton.innerHTML = 'New Group' // + IndividualClassLabel
         newGroupButton.addEventListener(
-          'click',
-          function (_event) {
-            // b.setAttribute('disabled', 'true');  (do we need o do this?)
-            cardMain.innerHTML = ''
-            var groupIndex = kb.any(book, ns.vcard('groupIndex'))
-            kb.fetcher.nowOrWhenFetched(groupIndex, undefined, function (
-              ok,
-              message
-            ) {
-              if (ok) {
-                console.log(' Group index has been loaded\n')
-              } else {
-                console.log(
-                  'Error: Group index has NOT been loaded' + message + '\n'
-                )
-              }
-            })
-
-            UI.widgets
-              .askName(
-                dom,
-                kb,
-                cardMain,
-                UI.ns.foaf('name'),
-                ns.vcard('Group'),
-                'group'
-              )
-              .then(function (name) {
-                if (!name) return // cancelled by user
-                saveNewGroup(book, name, function (success, body) {
-                  if (!success) {
-                    console.log("Error: can't save new group:" + body)
-                    cardMain.innerHTML = 'Failed to save group' + body
-                  } else {
-                    selectedGroups = {}
-                    selectedGroups[body.uri] = true
-                    syncGroupTable() // Refresh list of groups
-
-                    cardMain.innerHTML = ''
-                    cardMain.appendChild(
-                      UI.aclControl.ACLControlBox5(
-                        body,
-                        dataBrowserContext,
-                        'group',
-                        kb,
-                        function (ok, body) {
-                          if (!ok) {
-                            cardMain.innerHTML =
-                              'Group sharing setup failed: ' + body
-                          }
-                        }
-                      )
-                    )
-                  }
-                })
-              })
-          },
+          'click', newGroupClickHandler,
           false
         )
 
@@ -1529,7 +1492,7 @@ module.exports = {
               mugshotDiv.innerHTML = '' // strictly, don't remove it if already there
               mugshotDiv.appendChild(placeholder)
             } else {
-              UI.utils.syncTableToArray(mugshotDiv, images, elementForImage)
+              utils.syncTableToArray(mugshotDiv, images, elementForImage)
             }
           }
 
@@ -1678,7 +1641,7 @@ module.exports = {
               tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
 
               var nameTD = tr.appendChild(dom.createElement('td'))
-              nameTD.textContent = UI.utils.label(cla)
+              nameTD.textContent = utils.label(cla)
 
               var formTD = tr.appendChild(dom.createElement('td'))
               var anchor = formTD.appendChild(dom.createElement('a'))
@@ -1734,7 +1697,7 @@ module.exports = {
           var groupList = div.appendChild(dom.createElement('table'))
           function syncGroupList () {
             var groups = kb.each(null, ns.vcard('hasMember'), subject)
-            UI.utils.syncTableToArray(groupList, groups, newRowForGroup)
+            utils.syncTableToArray(groupList, groups, newRowForGroup)
           }
           groupList.refresh = syncGroupList
           syncGroupList()
