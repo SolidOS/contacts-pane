@@ -730,7 +730,7 @@ module.exports = {
       }
 
       function refreshNames () {
-        function setPersonListener (personLeft, person) {
+        function setPersonListener (personRow, person) {
           /*  No delete button on person in list: ambiguous: group or total? Do in card itself
           UI.widgets.deleteButtonWithCheck(dom, personRight, 'contact', function () {
             deleteThing(person) /// Just remove from group
@@ -738,7 +738,7 @@ module.exports = {
             cardMain.innerHTML = ''
           })
           */
-          personLeft.addEventListener('click', function (event) { // @@ was personRow
+          personRow.addEventListener('click', function (event) { // @@ was personRow
             event.preventDefault()
             selectPerson(person)
           })
