@@ -18,10 +18,9 @@ import * as UI from 'solid-ui'
 import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
+import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
 
-// var toolsPane = toolsPane0.toolsPane
-
-const $rdf = UI.rdf
+// const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
 
@@ -144,161 +143,6 @@ export default {
       }
 
       //  Write a new contact to the web
-      function createNewContact (
-        book,
-        name,
-        selectedGroups,
-        callbackFunction
-      ) {
-        book = findBookFromGroups(book)
-        var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-
-        var uuid = utils.genUuid()
-        var person = kb.sym(
-          book.dir().uri + 'Person/' + uuid + '/index.ttl#this'
-        )
-        var doc = person.doc()
-
-        // Sets of statements to different files
-        var agenda = [
-          // Patch the main index to add the person
-          [
-            $rdf.st(person, ns.vcard('inAddressBook'), book, nameEmailIndex), // The people index
-            $rdf.st(person, ns.vcard('fn'), name, nameEmailIndex)
-          ]
-        ]
-
-        // @@ May be missing email - sync that differently
-
-        // sts.push(new $rdf.Statement(person, DCT('created'), new Date(), doc));  ??? include this?
-        for (var gu in selectedGroups) {
-          var g = kb.sym(gu)
-          var gd = g.doc()
-          agenda.push([
-            $rdf.st(g, ns.vcard('hasMember'), person, gd),
-            $rdf.st(person, ns.vcard('fn'), name, gd)
-          ])
-        }
-
-        function updateCallback (uri, success, body) {
-          if (!success) {
-            console.log(
-              "Error: can't update " + uri + ' for new contact:' + body + '\n'
-            )
-            callbackFunction(
-              false,
-              "Error: can't update " + uri + ' for new contact:' + body
-            )
-          } else {
-            if (agenda.length > 0) {
-              console.log('Patching ' + agenda[0] + '\n')
-              updater.update([], agenda.shift(), updateCallback)
-            } else {
-              // done!
-              console.log('Done patching. Now reading back in.\n')
-              kb.fetcher.nowOrWhenFetched(doc, undefined, function (ok, body) {
-                if (ok) {
-                  console.log('Read back in OK.\n')
-                  callbackFunction(true, person)
-                } else {
-                  console.log('Read back in FAILED: ' + body + '\n')
-                  callbackFunction(false, body)
-                }
-              })
-            }
-          }
-        }
-
-        kb.fetcher.nowOrWhenFetched(nameEmailIndex, undefined, function (
-          ok,
-          message
-        ) {
-          if (ok) {
-            console.log(' People index must be loaded\n')
-            updater.put(
-              doc,
-              [
-                $rdf.st(person, ns.vcard('fn'), name, doc),
-                $rdf.st(person, ns.rdf('type'), ns.vcard('Individual'), doc)
-              ],
-              'text/turtle',
-              updateCallback
-            )
-          } else {
-            console.log(
-              'Error loading people index!' +
-                nameEmailIndex.uri +
-                ': ' +
-                message
-            )
-            callbackFunction(
-              false,
-              'Error loading people index!' +
-                nameEmailIndex.uri +
-                ': ' +
-                message +
-                '\n'
-            )
-          }
-        })
-      }
-
-      // Write new group to web
-      // Creates an empty new group file and adds it to the index
-      //
-      function saveNewGroup (book, name, callbackFunction) {
-        var gix = kb.any(book, ns.vcard('groupIndex'))
-
-        var x = book.uri.split('#')[0]
-        // @@ Should also remove any non-alphanumeric and any double undersscore
-        var gname = name.replace(' ', '_')
-        var doc = kb.sym(
-          x.slice(0, x.lastIndexOf('/') + 1) + 'Group/' + gname + '.ttl'
-        )
-        var group = kb.sym(doc.uri + '#this')
-        console.log(' New group will be: ' + group + '\n')
-
-        kb.fetcher.nowOrWhenFetched(gix, function (ok, message) {
-          if (ok) {
-            console.log(' Group index must be loaded\n')
-
-            var insertTriples = [
-              $rdf.st(book, ns.vcard('includesGroup'), group, gix),
-              $rdf.st(group, ns.rdf('type'), ns.vcard('Group'), gix),
-              $rdf.st(group, ns.vcard('fn'), name, gix)
-            ]
-            updater.update([], insertTriples, function (uri, success, body) {
-              if (ok) {
-                var triples = [
-                  $rdf.st(book, ns.vcard('includesGroup'), group, gix), // Pointer back to book
-                  $rdf.st(group, ns.rdf('type'), ns.vcard('Group'), doc),
-                  $rdf.st(group, ns.vcard('fn'), name, doc)
-                ]
-                updater.put(doc, triples, 'text/turtle', function (
-                  uri,
-                  ok,
-                  body
-                ) {
-                  callbackFunction(
-                    ok,
-                    ok ? group : "Can't save new group file " + doc + body
-                  )
-                })
-              } else {
-                callbackFunction(ok, 'Could not update group index ' + body) // fail
-              }
-            })
-          } else {
-            console.log(
-              'Error loading people index!' + gix.uri + ': ' + message
-            )
-            callbackFunction(
-              false,
-              'Error loading people index!' + gix.uri + ': ' + message + '\n'
-            )
-          }
-        })
-      }
 
       // organization-name is a hack for Mac records with no FN which is mandatory.
       function nameFor (x) {
@@ -456,7 +300,7 @@ export default {
           })
           sortMe.sort()
         }
-        return sortMe.map(pair => pair[1])
+        return sortMe.map(tuple => tuple[2])
       }
 
       function cardPane (dom, subject, paneName) {
@@ -574,15 +418,10 @@ export default {
         throw new Error('No local URI for ' + person)
       }
 
+      /** Refresh the list of names
+      */
       function refreshNames () {
         function setPersonListener (personRow, person) {
-          /*  No delete button on person in list: ambiguous: group or total? Do in card itself
-          UI.widgets.deleteButtonWithCheck(dom, personRight, 'contact', function () {
-            deleteThing(person) /// Just remove from group
-            refreshNames()
-            cardMain.innerHTML = ''
-          })
-          */
           personRow.addEventListener('click', function (event) { // @@ was personRow
             event.preventDefault()
             selectPerson(person)
@@ -649,70 +488,16 @@ export default {
       function syncGroupTable () {
         function renderGroupRow (group) {
           // Is something is dropped on a group, add people to group
-          function handleURIsDroppedOnGroup (uris) {
+          async function handleURIsDroppedOnGroup (uris) {
             uris.forEach(function (u) {
               console.log('Dropped on group: ' + u)
               var thing = kb.sym(u)
-              var toBeFetched = [thing.doc(), group.doc()]
-
-              kb.fetcher
-                .load(toBeFetched)
-                .then(function (_xhrs) {
-                  var types = kb.findTypeURIs(thing)
-                  for (var ty in types) {
-                    console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
-                  }
-                  if (
-                    ns.vcard('Individual').uri in types ||
-                    ns.vcard('Organization').uri in types
-                  ) {
-                    var pname = kb.any(thing, ns.vcard('fn'))
-                    if (!pname) { return alert('No vcard name known for ' + thing) }
-                    var already = kb.holds(
-                      group,
-                      ns.vcard('hasMember'),
-                      thing,
-                      group.doc()
-                    )
-                    if (already) {
-                      return alert(
-                        'ALREADY added ' + pname + ' to group ' + name
-                      )
-                    }
-                    var message = 'Add ' + pname + ' to group ' + name + '?'
-                    if (confirm(message)) {
-                      var ins = [
-                        $rdf.st(
-                          group,
-                          ns.vcard('hasMember'),
-                          thing,
-                          group.doc()
-                        ),
-                        $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
-                      ]
-                      kb.updater.update([], ins, function (uri, ok, err) {
-                        if (!ok) {
-                          return complain(
-                            'Error adding member to group ' +
-                              group +
-                              ': ' +
-                              err
-                          )
-                        }
-                        console.log('Added ' + pname + ' to group ' + name)
-                        // @@ refresh UI
-                      })
-                    }
-                  }
-                })
-                .catch(function (e) {
-                  complain(
-                    'Error looking up dropped thing ' +
-                      thing +
-                      ' and group: ' +
-                      e
-                  )
-                })
+              try {
+                addPersonToGroup(thing, group)
+              } catch (e) {
+                complain(e)
+              }
+              refreshNames()
             })
           }
           function groupRowClickListener (event) {
@@ -777,7 +562,7 @@ export default {
           }
 
           // Body of renderGroupRow
-          const name = kb.any(options.foreignGroup, ns.vcard('fn'))
+          const name = kb.any(group, ns.vcard('fn'))
           const groupRow = dom.createElement('tr')
           groupRow.subject = group
           UI.widgets.makeDraggable(groupRow, group)
@@ -805,61 +590,40 @@ export default {
       } // syncGroupTable
 
       // Click on New Group button
-      function newGroupClickHandler (_event) {
+      async function newGroupClickHandler (_event) {
         cardMain.innerHTML = ''
         var groupIndex = kb.any(book, ns.vcard('groupIndex'))
-        kb.fetcher.nowOrWhenFetched(groupIndex, undefined, function (
-          ok,
-          message
-        ) {
-          if (ok) {
-            console.log(' Group index has been loaded\n')
-          } else {
-            console.log(
-              'Error: Group index has NOT been loaded' + message + '\n'
-            )
-          }
-        })
+        try {
+          await fetch.load(groupIndex)
+        } catch (e) {
+          console.log('Error: Group index  NOT loaded:' + e + '\n')
+        }
+        console.log(' Group index has been loaded\n')
 
-        UI.widgets
-          .askName(
-            dom,
-            kb,
-            cardMain,
-            UI.ns.foaf('name'),
-            ns.vcard('Group'),
-            'group'
-          )
-          .then(function (name) {
-            if (!name) return // cancelled by user
-            saveNewGroup(book, name, function (success, body) {
-              if (!success) {
-                console.log("Error: can't save new group:" + body)
-                cardMain.innerHTML = 'Failed to save group' + body
-              } else {
-                selectedGroups = {}
-                selectedGroups[body.uri] = true
-                syncGroupTable() // Refresh list of groups
+        var name = await UI.widgets.askName(
+          dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Group'), 'group')
+        if (!name) return // cancelled by user
+        try {
+          var group = await saveNewGroup(book, name)
+        } catch (err) {
+          console.log("Error: can't save new group:" + err)
+          cardMain.innerHTML = 'Failed to save group' + err
+          return
+        }
+        selectedGroups = {}
+        selectedGroups[group.uri] = true
+        syncGroupTable() // Refresh list of groups
 
-                cardMain.innerHTML = ''
-                cardMain.appendChild(
-                  UI.aclControl.ACLControlBox5(
-                    body,
-                    dataBrowserContext,
-                    'group',
-                    kb,
-                    function (ok, body) {
-                      if (!ok) {
-                        cardMain.innerHTML =
-                          'Group sharing setup failed: ' + body
-                      }
-                    }
-                  )
-                )
-              }
-            })
-          })
-      }
+        cardMain.innerHTML = ''
+        cardMain.appendChild(UI.aclControl.ACLControlBox5(
+          group.doc(), dataBrowserContext, 'group', kb,
+          function (ok, body) {
+            if (!ok) {
+              cardMain.innerHTML =
+                  'Group sharing setup failed: ' + body
+            }
+          }))
+      } // newGroupClickHandler
 
       function newContactClickHandler (_event) {
         // b.setAttribute('disabled', 'true');  (do we need o do this?)
@@ -890,7 +654,8 @@ export default {
           .then(function (name) {
             if (!name) return // cancelled by user
             cardMain.innerHTML = 'indexing...'
-            createNewContact(book, name, selectedGroups, function (
+            book = findBookFromGroups(book)
+            saveNewContact(book, name, selectedGroups, function (
               success,
               body
             ) {

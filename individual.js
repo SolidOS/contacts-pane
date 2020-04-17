@@ -26,7 +26,7 @@ export function renderIndividual (dom, div, subject) {
 
   /// ///////////////////////////
 
-  div.appendChild(renderMugshotGallery(dom, subject))
+  // div.appendChild(renderMugshotGallery(dom, subject))
 
   // Background metadata for this pane we bundle with the JS
   var individualForm = kb.sym(
@@ -73,7 +73,7 @@ export function renderIndividual (dom, div, subject) {
 
       UI.authn.checkUser() // kick off async operation
 
-      div.appendChild(renderMugshotGallery(subject))
+      div.appendChild(renderMugshotGallery(dom, subject))
 
       UI.widgets.appendForm(
         dom,
