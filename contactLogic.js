@@ -8,9 +8,20 @@ const utils = UI.utils
 const kb = UI.store
 const updater = kb.updater
 
+/** Perform updates on more than one document   @@ Move to rdflib!
+*/
+export async function updateMany (deletions, insertions) {
+  const docs = deletions.concat(insertions).map(st => st.why)
+  const uniqueDocs = Array.from(new Set(docs))
+  const updates = uniqueDocs.map(doc =>
+    kb.updater.update(deletions.filter(st => st.why.sameTerm(doc)),
+      insertions.filter(st => st.why.sameTerm(doc))))
+  return Promise.all(updates)
+}
+
 /** Add a new person to the web data
 *
-* addxs them to the given groups as well.
+* adds them to the given groups as well.
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups) {
@@ -45,7 +56,7 @@ export async function saveNewContact (book, name, selectedGroups) {
   }
 
   try {
-    await updater.updateMany([], agenda)
+    await updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
     console.log("Error: can't update " + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
@@ -70,9 +81,12 @@ export async function saveNewGroup (book, name) {
   const doc = group.doc()
   console.log(' New group will be: ' + group + '\n')
   try {
-    kb.fetcher.load(gix)
+    await kb.fetcher.load(gix)
   } catch (err) {
     throw new Error('Error loading group index!' + gix.uri + ': ' + err)
+  }
+  if (kb.holds(book, ns.vcard('includesGroup'), group, gix)) {
+    return group // Already exists
   }
   const insertTriples = [
     $rdf.st(book, ns.vcard('includesGroup'), group, gix),
@@ -91,7 +105,7 @@ export async function saveNewGroup (book, name) {
     $rdf.st(group, ns.vcard('fn'), name, doc)
   ]
   try {
-    updater.update([], triples)
+    await updater.update([], triples)
   } catch (err) {
     throw new Error('Could not update group file: ' + err) // fail
   }
@@ -101,7 +115,7 @@ export async function saveNewGroup (book, name) {
 export async function addPersonToGroup (thing, group) {
   var toBeFetched = [thing.doc(), group.doc()]
   try {
-    kb.fetcher.load(toBeFetched)
+    await kb.fetcher.load(toBeFetched)
   } catch (e) {
     throw new Error('addPersonToGroup: ' + e)
   }
@@ -112,17 +126,18 @@ export async function addPersonToGroup (thing, group) {
   }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
-    return alert('Can\'t add to a group:' + thing)
+    return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
   }
   var pname = kb.any(thing, ns.vcard('fn'))
+  var gname = kb.any(group, ns.vcard('fn'))
   if (!pname) { return alert('No vcard name known for ' + thing) }
   const already = kb.holds(group, ns.vcard('hasMember'), thing, group.doc())
   if (already) {
     return alert(
-      'ALREADY added ' + pname + ' to group ' + name
+      'ALREADY added ' + pname + ' to group ' + gname
     )
   }
-  var message = 'Add ' + pname + ' to group ' + name + '?'
+  var message = 'Add ' + pname + ' to group ' + gname + '?'
   if (!confirm(message)) return
   var ins = [
     $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
@@ -131,7 +146,7 @@ export async function addPersonToGroup (thing, group) {
   try {
     await updater.update([], ins)
   } catch (e) {
-    throw new Error(`Error adding ${pname} to group ${name}:` + e)
+    throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }
   return thing
 }

@@ -292,7 +292,7 @@ export default {
         }
         if (book) {
           books.map(function (book) {
-            var gs = book ? kb.each(book, ns.vcard('includesGroup')) : []
+            var gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
             var gs2 = gs.map(function (g) {
               return [book, kb.any(g, ns.vcard('fn')), g]
             })
@@ -422,7 +422,7 @@ export default {
       */
       function refreshNames () {
         function setPersonListener (personRow, person) {
-          personRow.addEventListener('click', function (event) { // @@ was personRow
+          personRow.addEventListener('click', function (event) {
             event.preventDefault()
             selectPerson(person)
           })
@@ -432,14 +432,13 @@ export default {
         for (var u in selectedGroups) {
           if (selectedGroups[u]) {
             var a = kb.each(kb.sym(u), ns.vcard('hasMember'))
-            // console.log('Adding '+ a.length + ' people from ' + u + '\n')
             cards = cards.concat(a)
           }
         }
         cards.sort(compareForSort) // @@ sort by name not UID later
         for (var k = 0; k < cards.length - 1;) {
           if (cards[k].uri === cards[k + 1].uri) {
-            cards.splice(k, 1)
+            cards.splice(k, 1) // Eliminate duplicates from more than one group
           } else {
             k++
           }
@@ -465,7 +464,7 @@ export default {
 
         utils.syncTableToArrayReOrdered(peopleMainTable, cards, renderNameInGroupList)
         refreshFilteredPeople()
-      }
+      } // refreshNames
 
       function refreshThingsSelected (table, selectionArray) {
         for (var i = 0; i < table.children.length; i++) {
@@ -531,8 +530,14 @@ export default {
                     dataBrowserContext,
                     'group',
                     kb,
-                    function (ok, body) {
-                      if (!ok) cardMain.innerHTML = 'Failed: ' + body
+                    function (ok, body, response) {
+                      if (!ok) {
+                        if (response && response.status && response.status === 403) {
+                          cardMain.innerHTML = 'No control access.'
+                        } else {
+                          cardMain.innerHTML = 'Failed to load access control: ' + body
+                        }
+                      }
                     }
                   )
                   var sharingButton = cardMain.appendChild(
@@ -625,52 +630,40 @@ export default {
           }))
       } // newGroupClickHandler
 
-      function newContactClickHandler (_event) {
-        // b.setAttribute('disabled', 'true');  (do we need o do this?)
+      async function newContactClickHandler (_event) {
         cardMain.innerHTML = ''
+        const ourBook = findBookFromGroups(book)
+        try {
+          await kb.fetcher.load(ourBook)
+        } catch (err) {
+          throw new Error("Book won't load:" + ourBook)
+        }
 
-        var ourBook = findBookFromGroups(book)
-        kb.fetcher
-          .load(ourBook)
-          .then(function (response) {
-            if (!response.ok) throw new Error("Book won't load:" + ourBook)
-            var nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
-            if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
-            return kb.fetcher.load(nameEmailIndex)
-          })
-          .then(function (response) {
-            console.log('Name index loaded async' + response.url)
-          })
+        var nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
+        if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
+        await kb.fetcher.load(nameEmailIndex)
+        console.log('Name index loaded async' + nameEmailIndex)
 
-        UI.widgets
-          .askName(
-            dom,
-            kb,
-            cardMain,
-            UI.ns.foaf('name'),
-            ns.vcard('Individual'),
-            'person'
-          )
-          .then(function (name) {
-            if (!name) return // cancelled by user
-            cardMain.innerHTML = 'indexing...'
-            book = findBookFromGroups(book)
-            saveNewContact(book, name, selectedGroups, function (
-              success,
-              body
-            ) {
-              if (!success) {
-                console.log("Error: can't save new contact: " + body)
-              } else {
-                const person = body
-                selectedPeople = {}
-                selectedPeople[person.uri] = true
-                refreshNames() // Add name to list of group
-                cardMain.innerHTML = '' // Clear 'indexing'
-                cardMain.appendChild(cardPane(dom, person, 'contact'))
-              }
-            })
-          })
+        const name = await UI.widgets
+          .askName(dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Individual'), 'person')
+
+        if (!name) return // cancelled by user
+        cardMain.innerHTML = 'indexing...'
+        book = findBookFromGroups(book)
+        var person
+        try {
+          person = await saveNewContact(book, name, selectedGroups)
+        } catch (err) {
+          const msg = "Error: can't save new contact: " + err
+          console.log(msg)
+          alert(msg)
+        }
+
+        selectedPeople = {}
+        selectedPeople[person.uri] = true
+        refreshNames() // Add name to list of group
+        cardMain.innerHTML = '' // Clear 'indexing'
+        cardMain.appendChild(cardPane(dom, person, 'contact'))
       }
 
       // //////////////////////////// Three-column Contact Browser  - Body
@@ -682,12 +675,29 @@ export default {
         'border-collapse: collapse; margin-right: 0; max-height: 9in;'
       )
       div.appendChild(bookTable)
+      /*
+      bookTable.innerHTML = `
+      <tr>
+        <td id="groupsHeader"></td>
+        <td id="peopleHeader"></td>
+        <td id="cardHeader"></td>
+      </tr>
+        <tr id="bookMain"></tr>
+      <tr>
+        <td id="groupsFooter">
+        </td><td id="peopleFooter">
+        </td><td id="cardFooter">
+        </td>
+      </tr>`
+*/
       var bookHeader = bookTable.appendChild(dom.createElement('tr'))
       var bookMain = bookTable.appendChild(dom.createElement('tr'))
       var bookFooter = bookTable.appendChild(dom.createElement('tr'))
+
       var groupsHeader = bookHeader.appendChild(dom.createElement('td'))
       var peopleHeader = bookHeader.appendChild(dom.createElement('td'))
       var cardHeader = bookHeader.appendChild(dom.createElement('td'))
+
       var groupsMain = bookMain.appendChild(dom.createElement('td'))
       var groupsMainTable = groupsMain.appendChild(dom.createElement('table'))
       var peopleMain = bookMain.appendChild(dom.createElement('td'))

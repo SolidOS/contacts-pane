@@ -14,7 +14,6 @@ export function toolsPane (
 ) {
   const dom = dataBrowserContext.dom
   const kb = UI.store
-  const fetcher = kb.fetcher
   const ns = UI.ns
   const VCARD = ns.vcard
 
@@ -98,7 +97,7 @@ export function toolsPane (
       loadIndexButton.setAttribute('style', 'background-color: #ffc;')
       var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       try {
-        await fetch.load(nameEmailIndex)
+        await kb.fetcher.load(nameEmailIndex)
       } catch (e) {
         loadIndexButton.setAttribute('style', 'background-color: #fcc;')
         log('Error: People index has NOT been loaded' + e + '\n')
@@ -116,7 +115,7 @@ export function toolsPane (
     statButton.style.cssText = buttonStyle
     statButton.addEventListener('click', stats)
 
-    const checkAccessButton = MainRow.appendChild(dom.createElement('button'))
+    const checkAccessButton = pane.appendChild(dom.createElement('button'))
     checkAccessButton.textContent =
       'Check individual card access of selected groups'
     checkAccessButton.style.cssText = buttonStyle
@@ -151,7 +150,7 @@ export function toolsPane (
     // ///////////////////////////////////////////////////////////////////////////
     //
     //      DUPLICATES CHECK
-    var checkDuplicates = MainRow.appendChild(dom.createElement('button'))
+    var checkDuplicates = pane.appendChild(dom.createElement('button'))
     checkDuplicates.textContent = 'Find duplicate cards'
     checkDuplicates.style.cssText = buttonStyle
     checkDuplicates.addEventListener('click', function (_event) {
@@ -404,7 +403,7 @@ export function toolsPane (
               if (!x) {
                 log('namelessUniques: ' + stats.namelessUniques.length)
                 log('namelessUniques: ' + stats.namelessUniques)
-                if (
+                if (stats.namelessUniques.length > 0 &&
                   confirm(
                     'Add all ' +
                       stats.namelessUniques.length +
@@ -633,9 +632,13 @@ export function toolsPane (
 
     async function fixGroupless (book) {
       const groupless = await getGroupless(book)
+      if (groupless.length === 0) {
+        log('No groupless cards found.')
+        return
+      }
       const groupOfUngrouped = await saveNewGroup(book, 'ZSortThese')
-      if (confirm('Add cards without groups to a ZSortThese group?')) {
-        for (const person in groupless) {
+      if (confirm(`Add the ${groupless.length} cards without groups to a ZSortThese group?`)) {
+        for (const person of groupless) {
           log('   adding ' + person)
           await addPersonToGroup(person, groupOfUngrouped)
         }
@@ -647,9 +650,9 @@ export function toolsPane (
       const groupIndex = kb.any(book, ns.vcard('groupIndex'))
       const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       try {
-        await fetch.load([nameEmailIndex, groupIndex])
+        await kb.fetcher.load([nameEmailIndex, groupIndex])
         const groups = kb.each(book, ns.vcard('includesGroup'))
-        await fetcher.load(groups)
+        await kb.fetcher.load(groups)
       } catch (e) {
         complain('Error loading stuff:' + e)
       }
@@ -683,7 +686,7 @@ export function toolsPane (
       return groupless
     }
 
-    var checkGroupless = MainRow.appendChild(dom.createElement('button'))
+    var checkGroupless = pane.appendChild(dom.createElement('button'))
     checkGroupless.style.cssText = buttonStyle
     checkGroupless.textContent = 'Find individuals with no group'
     checkGroupless.addEventListener('click', function (_event) {
@@ -696,16 +699,17 @@ export function toolsPane (
 
         var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
         try {
-          await fetcher.load(nameEmailIndex)
+          await kb.fetcher.load(nameEmailIndex)
         } catch (e) {
           complain(e)
         }
-
         log('Loaded groups and name index.')
+        getGroupless(book)
+        log('Groupless list finished..')
       }) // select all groups then
     })
 
-    var fixGrouplessButton = MainRow.appendChild(dom.createElement('button'))
+    var fixGrouplessButton = pane.appendChild(dom.createElement('button'))
     fixGrouplessButton.style.cssText = buttonStyle
     fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
