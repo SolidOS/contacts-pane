@@ -543,8 +543,8 @@ module.exports = {
             'style',
             matches
               ? selectedPeople[row.subject.uri]
-                ? 'background-color: #cce;'
-                : ''
+                  ? 'background-color: #cce;'
+                  : ''
               : 'display: none;'
           )
         }
