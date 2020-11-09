@@ -56,7 +56,7 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     function complain (message) {
-      console.log(message)
+      console.log('contactsPane: ' + message)
       div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
     }
     function complainIfBad (ok, body) {

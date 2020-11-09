@@ -86,18 +86,39 @@ export function renderIndividual (dom, div, subject) {
       )
 
       div
-        .appendChild(dom.createElement('tr'))
+        .appendChild(dom.createElement('div'))
         .setAttribute('style', 'height: 1em') // spacer
 
-      function lookUpId (dom, container, x) {
+      div
+        .appendChild(dom.createElement('h4')).textContent = 'WebIDs'
+
+      // IDs which are as WebId in VCARD data
+      // like  :me vcard:hasURL [ a vcard:WebId; vcard:value <https://...foo> ]
+      //
+      function vcardWebIDs (person) {
+        return kb.each(person, ns.vcard('url'), null, person.doc())
+          .filter(urlObject => kb.holds(urlObject, ns.rdf('type'), ns.vcard('WebID'), person.doc()))
+          .map(urlObject => kb.any(urlObject, ns.rdf('value'), null, person.doc()))
+      }
+
+      function getAliases (person) {
+        return kb.allAliases(person) // All the terms linked by sameAs
+          .filter(x => !x.sameTerm(person)) // Except this one
+      }
+
+      function renderNewRow (webid) {
+        const row = UI.widgets.personTR(dom, UI.ns.foaf('knows'), webid, {}) // @@ add delete function
+        row.style.backgroundColor = '#fed' // @@ just to trace
+        return row
+      }
+      function _renderNewRow2 (x) { // alternative
         var tr = table.appendChild(dom.createElement('tr'))
         tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
         var nameTD = tr.appendChild(dom.createElement('td'))
         var formTD = tr.appendChild(dom.createElement('td'))
-        nameTD.textContent = x.uri.split('/')[2]
-
-        kb.fetcher
-          .load(x)
+        nameTD.textContent = x.uri.split('/')[2] // domain part
+        kb.fetcher // Load the profile
+          .load(x.doc())
           .then(function (_xhr) {
             nameTD.textContent =
               x.uri.split('/')[2] +
@@ -113,23 +134,20 @@ export function renderIndividual (dom, div, subject) {
           .catch(function (e) {
             formTD.appendChild(UI.widgets.errorMessageBlock(dom, e, 'pink'))
           })
+        return tr
+      }
 
-        formTD.appendChild(UI.widgets.linkIcon(dom, x))
+      function refreshWebIDTable (person) {
+        const ids = vcardWebIDs(person).concat(getAliases(person))
+        ids.sort() // for repeatability
+        utils.syncTableToArray(table, ids, renderNewRow)
+        return ids
       }
 
       var table = div.appendChild(dom.createElement('table'))
+      var _ids = refreshWebIDTable()
 
-      var aliases = kb.allAliases(subject)
-      if (aliases.length > 1) {
-        for (var i = 0; i < aliases.length; i++) {
-          var x = aliases[i]
-          if (!x.sameTerm(subject)) {
-            lookUpId(dom, table, x)
-            // UI.widgets.appendForm(dom, formTD, {}, x, individualForm, x.doc(), complainIfBad)
-          }
-        }
-      }
-
+      // Allow to attach documents etc to the contact card
       UI.widgets.attachmentList(dom, subject, div, {
         // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
         predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
@@ -158,8 +176,9 @@ export function renderIndividual (dom, div, subject) {
 
       div.appendChild(dom.createElement('hr'))
 
-      // Remove a person from a group
+      // Groups the person is a member of
 
+      // Remove a person from a group
       function removeFromGroup (thing, group) {
         var pname = kb.any(thing, ns.vcard('fn'))
         var gname = kb.any(group, ns.vcard('fn'))
