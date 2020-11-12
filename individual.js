@@ -29,22 +29,22 @@ export function renderIndividual (dom, div, subject) {
   // div.appendChild(renderMugshotGallery(dom, subject))
 
   // Background metadata for this pane we bundle with the JS
-  var individualForm = kb.sym(
+  const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  var individualFormDoc = individualForm.doc()
+  const individualFormDoc = individualForm.doc()
   if (!kb.holds(undefined, undefined, undefined, individualFormDoc)) {
     // If not loaded already
     // var individualFormText = require('./individualForm.js')
     $rdf.parse(individualFormText, kb, individualFormDoc.uri, 'text/turtle') // Load form directly
   }
-  var vcardOnt = UI.ns.vcard('Type').doc()
+  const vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
     $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
   }
 
-  var toBeFetched = [subject.doc()] // was: individualFormDoc, UI.ns.vcard('Type').doc()
+  const toBeFetched = [subject.doc()] // was: individualFormDoc, UI.ns.vcard('Type').doc()
   kb.fetcher
     .load(toBeFetched)
 
@@ -54,10 +54,10 @@ export function renderIndividual (dom, div, subject) {
 
     .then(function (_xhrs) {
       function setPaneStyle () {
-        var types = kb.findTypeURIs(subject)
-        var mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
-        var backgroundColor = null
-        for (var uri in types) {
+        const types = kb.findTypeURIs(subject)
+        let mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
+        let backgroundColor = null
+        for (const uri in types) {
           backgroundColor = kb.anyValue(
             kb.sym(uri),
             ns.solid('profileHighlightColor')
@@ -90,10 +90,10 @@ export function renderIndividual (dom, div, subject) {
         .setAttribute('style', 'height: 1em') // spacer
 
       function lookUpId (dom, container, x) {
-        var tr = table.appendChild(dom.createElement('tr'))
+        const tr = table.appendChild(dom.createElement('tr'))
         tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
-        var nameTD = tr.appendChild(dom.createElement('td'))
-        var formTD = tr.appendChild(dom.createElement('td'))
+        const nameTD = tr.appendChild(dom.createElement('td'))
+        const formTD = tr.appendChild(dom.createElement('td'))
         nameTD.textContent = x.uri.split('/')[2]
 
         kb.fetcher
@@ -119,10 +119,10 @@ export function renderIndividual (dom, div, subject) {
 
       var table = div.appendChild(dom.createElement('table'))
 
-      var aliases = kb.allAliases(subject)
+      const aliases = kb.allAliases(subject)
       if (aliases.length > 1) {
-        for (var i = 0; i < aliases.length; i++) {
-          var x = aliases[i]
+        for (let i = 0; i < aliases.length; i++) {
+          const x = aliases[i]
           if (!x.sameTerm(subject)) {
             lookUpId(dom, table, x)
             // UI.widgets.appendForm(dom, formTD, {}, x, individualForm, x.doc(), complainIfBad)
@@ -137,21 +137,21 @@ export function renderIndividual (dom, div, subject) {
 
       div.appendChild(dom.createElement('hr'))
 
-      var pages = kb.each(subject, ns.vcard('url')) // vcard:url [ a vcard:HomePage; vcard:value <http://www.w3.org/People/Berners-Lee>],
+      const pages = kb.each(subject, ns.vcard('url')) // vcard:url [ a vcard:HomePage; vcard:value <http://www.w3.org/People/Berners-Lee>],
       pages.forEach(function (p) {
-        var cla = kb.any(p, ns.rdf('type'))
-        var val = kb.any(p, ns.vcard('value'))
+        const cla = kb.any(p, ns.rdf('type'))
+        const val = kb.any(p, ns.vcard('value'))
         if (val) {
-          var tr = table.appendChild(dom.createElement('tr'))
+          const tr = table.appendChild(dom.createElement('tr'))
           tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
 
-          var nameTD = tr.appendChild(dom.createElement('td'))
+          const nameTD = tr.appendChild(dom.createElement('td'))
           nameTD.textContent = utils.label(cla)
 
-          var formTD = tr.appendChild(dom.createElement('td'))
-          var anchor = formTD.appendChild(dom.createElement('a'))
+          const formTD = tr.appendChild(dom.createElement('td'))
+          const anchor = formTD.appendChild(dom.createElement('a'))
           anchor.setAttribute('href', val.uri)
-          var span = anchor.appendChild(dom.createElement('span'))
+          const span = anchor.appendChild(dom.createElement('span'))
           span.textContent = val.uri
         }
       })
@@ -161,18 +161,18 @@ export function renderIndividual (dom, div, subject) {
       // Remove a person from a group
 
       function removeFromGroup (thing, group) {
-        var pname = kb.any(thing, ns.vcard('fn'))
-        var gname = kb.any(group, ns.vcard('fn'))
-        var groups = kb.each(null, ns.vcard('hasMember'), thing)
+        const pname = kb.any(thing, ns.vcard('fn'))
+        const gname = kb.any(group, ns.vcard('fn'))
+        const groups = kb.each(null, ns.vcard('hasMember'), thing)
         if (groups.length < 2) {
           alert(
             'Must be a member of at least one group.  Add to another group first.'
           )
           return
         }
-        var message = 'Remove ' + pname + ' from group ' + gname + '?'
+        const message = 'Remove ' + pname + ' from group ' + gname + '?'
         if (confirm(message)) {
-          var del = [
+          const del = [
             $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
             $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
           ]
@@ -189,19 +189,19 @@ export function renderIndividual (dom, div, subject) {
       }
 
       function newRowForGroup (group) {
-        var options = {
+        const options = {
           deleteFunction: function () {
             removeFromGroup(subject, group)
           },
           noun: 'membership'
         }
-        var tr = UI.widgets.personTR(dom, null, group, options)
+        const tr = UI.widgets.personTR(dom, null, group, options)
         return tr
       }
 
-      var groupList = div.appendChild(dom.createElement('table'))
+      const groupList = div.appendChild(dom.createElement('table'))
       function syncGroupList () {
-        var groups = kb.each(null, ns.vcard('hasMember'), subject)
+        const groups = kb.each(null, ns.vcard('hasMember'), subject)
         utils.syncTableToArray(groupList, groups, newRowForGroup)
       }
       groupList.refresh = syncGroupList

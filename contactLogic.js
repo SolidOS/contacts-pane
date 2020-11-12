@@ -25,16 +25,16 @@ export async function updateMany (deletions, insertions) {
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups) {
-  var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
-  var uuid = utils.genUuid()
-  var person = kb.sym(
+  const uuid = utils.genUuid()
+  const person = kb.sym(
     book.dir().uri + 'Person/' + uuid + '/index.ttl#this'
   )
-  var doc = person.doc()
+  const doc = person.doc()
 
   // Set of statements to different files
-  var agenda = [
+  const agenda = [
     // Patch the main index to add the person
     $rdf.st(person, ns.vcard('inAddressBook'), book, nameEmailIndex), // The people index
     $rdf.st(person, ns.vcard('fn'), name, nameEmailIndex),
@@ -46,9 +46,9 @@ export async function saveNewContact (book, name, selectedGroups) {
     // Note this is propert of the file -- not when the person was created!
   ]
 
-  for (var gu in selectedGroups) {
-    var g = kb.sym(gu)
-    var gd = g.doc()
+  for (const gu in selectedGroups) {
+    const g = kb.sym(gu)
+    const gd = g.doc()
     agenda.push(
       $rdf.st(g, ns.vcard('hasMember'), person, gd),
       $rdf.st(person, ns.vcard('fn'), name, gd)
@@ -74,7 +74,7 @@ export function sanitizeToAlpha (name) { // https://mathiasbynens.be/notes/es6-u
  * @returns group
 */
 export async function saveNewGroup (book, name) {
-  var gix = kb.any(book, ns.vcard('groupIndex'))
+  const gix = kb.any(book, ns.vcard('groupIndex'))
 
   const gname = sanitizeToAlpha(name)
   const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
@@ -113,7 +113,7 @@ export async function saveNewGroup (book, name) {
 }
 
 export async function addPersonToGroup (thing, group) {
-  var toBeFetched = [thing.doc(), group.doc()]
+  const toBeFetched = [thing.doc(), group.doc()]
   try {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
@@ -121,15 +121,15 @@ export async function addPersonToGroup (thing, group) {
   }
 
   const types = kb.findTypeURIs(thing)
-  for (var ty in types) {
+  for (const ty in types) {
     console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
   }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
     return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
   }
-  var pname = kb.any(thing, ns.vcard('fn'))
-  var gname = kb.any(group, ns.vcard('fn'))
+  const pname = kb.any(thing, ns.vcard('fn'))
+  const gname = kb.any(group, ns.vcard('fn'))
   if (!pname) { return alert('No vcard name known for ' + thing) }
   const already = kb.holds(group, ns.vcard('hasMember'), thing, group.doc())
   if (already) {
@@ -137,9 +137,9 @@ export async function addPersonToGroup (thing, group) {
       'ALREADY added ' + pname + ' to group ' + gname
     )
   }
-  var message = 'Add ' + pname + ' to group ' + gname + '?'
+  const message = 'Add ' + pname + ' to group ' + gname + '?'
   if (!confirm(message)) return
-  var ins = [
+  const ins = [
     $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
