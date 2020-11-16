@@ -30,16 +30,16 @@ export async function renderIndividual (dom, div, subject) {
   // div.appendChild(renderMugshotGallery(dom, subject))
 
   // Background metadata for this pane we bundle with the JS
-  var individualForm = kb.sym(
+  const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  var individualFormDoc = individualForm.doc()
+  const individualFormDoc = individualForm.doc()
   if (!kb.holds(undefined, undefined, undefined, individualFormDoc)) {
     // If not loaded already
     // var individualFormText = require('./individualForm.js')
     $rdf.parse(individualFormText, kb, individualFormDoc.uri, 'text/turtle') // Load form directly
   }
-  var vcardOnt = UI.ns.vcard('Type').doc()
+  const vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
     $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly

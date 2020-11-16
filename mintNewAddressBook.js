@@ -16,20 +16,20 @@ export function mintNewAddressBook (dataBrowserContext, context) {
       context => {
         // 20180713
         console.log('Logged in as ' + context.me)
-        var me = context.me
+        const me = context.me
 
-        var dom = context.dom
-        var div = context.div
-        var kb = dataBrowserContext.session.store
-        var ns = UI.ns
-        var newBase = context.newBase || context.newInstance.dir().uri
-        var instanceClass = context.instanceClass || ns.vcard('AddressBook')
+        const dom = context.dom
+        const div = context.div
+        const kb = dataBrowserContext.session.store
+        const ns = UI.ns
+        const newBase = context.newBase || context.newInstance.dir().uri
+        const instanceClass = context.instanceClass || ns.vcard('AddressBook')
 
         if (instanceClass.sameTerm(ns.vcard('Group'))) {
           // Make a group not an address book
-          var g =
+          const g =
             context.newInstance || kb.sym(context.newBase + 'index.ttl#this')
-          var doc = g.doc()
+          const doc = g.doc()
           kb.add(g, ns.rdf('type'), ns.vcard('Group'), doc)
           kb.add(
             g,
@@ -49,13 +49,13 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             })
           return
         }
-        var appInstanceNoun = 'address book'
+        const appInstanceNoun = 'address book'
 
         function complain (message) {
           div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
         }
 
-        var bookContents = `@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+        let bookContents = `@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
   @prefix ab: <http://www.w3.org/ns/pim/ab#>.
   @prefix dc: <http://purl.org/dc/elements/1.1/>.
   @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
@@ -73,7 +73,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
 
         const newAppInstance = kb.sym(newBase + 'index.ttl#this')
 
-        var toBeWritten = [
+        const toBeWritten = [
           {
             to: 'index.ttl',
             content: bookContents,
@@ -93,7 +93,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
         function claimSuccess (newAppInstance, appInstanceNoun) {
           // @@ delete or grey other stuff
           console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
-          var p = div.appendChild(dom.createElement('p'))
+          const p = div.appendChild(dom.createElement('p'))
           p.setAttribute('style', 'font-size: 140%;')
           p.innerHTML =
             "Your <a href='" +
@@ -106,7 +106,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             "'>Go to new " +
             appInstanceNoun +
             '</a>'
-          var newContext = Object.assign(
+          const newContext = Object.assign(
             { newInstance: newAppInstance },
             context
           )

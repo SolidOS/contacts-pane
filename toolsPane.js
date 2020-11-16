@@ -18,24 +18,24 @@ export function toolsPane (
   const VCARD = ns.vcard
 
   const buttonStyle = 'font-size: 100%; margin: 0.8em; padding:0.5em;'
-  var pane = dom.createElement('div')
-  var table = pane.appendChild(dom.createElement('table'))
+  const pane = dom.createElement('div')
+  const table = pane.appendChild(dom.createElement('table'))
   table.setAttribute(
     'style',
     'font-size:120%; margin: 1em; border: 0.1em #ccc ;'
   )
-  var headerRow = table.appendChild(dom.createElement('tr'))
+  const headerRow = table.appendChild(dom.createElement('tr'))
   headerRow.textContent = UI.utils.label(book) + ' - tools'
   headerRow.setAttribute(
     'style',
     'min-width: 20em; padding: 1em; font-size: 150%; border-bottom: 0.1em solid red; margin-bottom: 2em;'
   )
 
-  var statusRow = table.appendChild(dom.createElement('tr'))
-  var statusBlock = statusRow.appendChild(dom.createElement('div'))
+  const statusRow = table.appendChild(dom.createElement('tr'))
+  const statusBlock = statusRow.appendChild(dom.createElement('div'))
   statusBlock.setAttribute('style', 'padding: 2em;')
-  var MainRow = table.appendChild(dom.createElement('tr'))
-  var box = MainRow.appendChild(dom.createElement('table'))
+  const MainRow = table.appendChild(dom.createElement('tr'))
+  const box = MainRow.appendChild(dom.createElement('table'))
   table.appendChild(dom.createElement('tr')) // bottomRow
 
   const context = {
@@ -82,11 +82,11 @@ export function toolsPane (
     }
 
     function stats () {
-      var totalCards = kb.each(undefined, VCARD('inAddressBook'), book).length
+      const totalCards = kb.each(undefined, VCARD('inAddressBook'), book).length
       log('' + totalCards + ' cards loaded. ')
-      var groups = kb.each(book, VCARD('includesGroup'))
+      const groups = kb.each(book, VCARD('includesGroup'))
       log('' + groups.length + ' total groups. ')
-      var gg = []
+      const gg = []
       for (const g in selectedGroups) {
         gg.push(g)
       }
@@ -95,7 +95,7 @@ export function toolsPane (
 
     async function loadIndexHandler (_event) {
       loadIndexButton.setAttribute('style', 'background-color: #ffc;')
-      var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+      const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       try {
         await kb.fetcher.load(nameEmailIndex)
       } catch (e) {
@@ -129,17 +129,17 @@ export function toolsPane (
           }
         })
       }
-      var gg = []
+      const gg = []
       for (const g in selectedGroups) {
         gg.push(g)
       }
 
-      for (var i = 0; i < gg.length; i++) {
-        var g = kb.sym(gg[i])
-        var a = kb.each(g, ns.vcard('hasMember'))
+      for (let i = 0; i < gg.length; i++) {
+        const g = kb.sym(gg[i])
+        const a = kb.each(g, ns.vcard('hasMember'))
         log(UI.utils.label(g) + ': ' + a.length + ' members')
-        for (var j = 0; j < a.length; j++) {
-          var card = a[j]
+        for (let j = 0; j < a.length; j++) {
+          const card = a[j]
           log(UI.utils.label(card))
           doCard(card)
         }
@@ -150,11 +150,11 @@ export function toolsPane (
     // ///////////////////////////////////////////////////////////////////////////
     //
     //      DUPLICATES CHECK
-    var checkDuplicates = pane.appendChild(dom.createElement('button'))
+    const checkDuplicates = pane.appendChild(dom.createElement('button'))
     checkDuplicates.textContent = 'Find duplicate cards'
     checkDuplicates.style.cssText = buttonStyle
     checkDuplicates.addEventListener('click', function (_event) {
-      var stats = {} // global god context
+      const stats = {} // global god context
 
       stats.book = book
       stats.nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
@@ -326,7 +326,7 @@ export function toolsPane (
                 .load(card)
                 .then(function (_xhr) {
                   log(' Nameless check ' + card)
-                  var exclude = {}
+                  const exclude = {}
                   exclude[ns.vcard('hasUID').uri] = true
                   exclude[ns.dc('created').uri] = true
                   exclude[ns.dc('modified').uri] = true
@@ -338,7 +338,7 @@ export function toolsPane (
                       })
                   }
 
-                  var desc = filtered(card)
+                  const desc = filtered(card)
                   // var desc = connectedStatements(card, card.doc(), exclude)
                   // var desc2 = connectedStatements(other, other.doc(), exclude)
                   if (!desc.length) {
@@ -350,17 +350,17 @@ export function toolsPane (
                   // Cheat: serialize and compare
                   // var cardText = $rdf.serialize(card.doc(), kb, card.doc().uri, 'text/turtle')
                   // var otherText = $rdf.serialize(other.doc(), kb, other.doc().uri, 'text/turtle')
-                  var cardText = new $rdf.Serializer(kb)
+                  const cardText = new $rdf.Serializer(kb)
                     .setBase(card.doc().uri)
                     .statementsToN3(desc)
-                  var other = stats.nameLessIndex[cardText]
+                  const other = stats.nameLessIndex[cardText]
                   if (other) {
                     log('  Matches with ' + other)
-                    var cardGroups = kb.each(null, ns.vcard('hasMember'), card)
-                    var otherGroups = kb.each(null, ns.vcard('hasMember'), other)
-                    for (var j = 0; j < cardGroups.length; j++) {
-                      var found = false
-                      for (var k = 0; k < otherGroups.length; k++) {
+                    const cardGroups = kb.each(null, ns.vcard('hasMember'), card)
+                    const otherGroups = kb.each(null, ns.vcard('hasMember'), other)
+                    for (let j = 0; j < cardGroups.length; j++) {
+                      let found = false
+                      for (let k = 0; k < otherGroups.length; k++) {
                         if (otherGroups[k].sameTerm(cardGroups[j])) found = true
                       }
                       if (!found) {
@@ -399,7 +399,7 @@ export function toolsPane (
               stats.namelessToCheck || stats.nameless.slice()
             log('Nameless check left: ' + stats.namelessToCheck.length)
             return new Promise(function (resolve) {
-              var x = stats.namelessToCheck.shift()
+              const x = stats.namelessToCheck.shift()
               if (!x) {
                 log('namelessUniques: ' + stats.namelessUniques.length)
                 log('namelessUniques: ' + stats.namelessUniques)
@@ -411,7 +411,7 @@ export function toolsPane (
                   )
                 ) {
                   stats.uniques = stats.uniques.concat(stats.namelessUniques)
-                  for (var k = 0; k < stats.namelessUniques.length; k++) {
+                  for (let k = 0; k < stats.namelessUniques.length; k++) {
                     stats.uniqueSet[stats.namelessUniques[k].uri] = true
                   }
                 }
@@ -436,12 +436,12 @@ export function toolsPane (
                 .map(st => st.object)
               log('  Naive group members ' + stats.groupMembers.length)
               stats.groupMemberSet = []
-              for (var j = 0; j < stats.groupMembers.length; j++) {
+              for (let j = 0; j < stats.groupMembers.length; j++) {
                 stats.groupMemberSet[stats.groupMembers[j].uri] =
                   stats.groupMembers[j]
               }
               stats.groupMembers2 = []
-              for (var g in stats.groupMemberSet) {
+              for (const g in stats.groupMemberSet) {
                 stats.groupMembers2.push(stats.groupMemberSet[g])
               }
               log('  Compact group members ' + stats.groupMembers2.length)
@@ -451,7 +451,7 @@ export function toolsPane (
               ) {
                 // Don't inspect as seems groups membership is complete
                 for (let i = 0; i < stats.groupMembers.length; i++) {
-                  var card = stats.groupMembers[i]
+                  const card = stats.groupMembers[i]
                   if (stats.uniquesSet[card.uri]) {
                     // inUniques += 1
                   } else {
@@ -475,7 +475,7 @@ export function toolsPane (
               stats.cards = kb.each(undefined, VCARD('inAddressBook'), stats.book)
               log('' + stats.cards.length + ' total cards')
 
-              var c, card, name
+              let c, card, name
               for (c = 0; c < stats.cards.length; c++) {
                 card = stats.cards[c]
                 name = kb.anyValue(card, ns.vcard('fn'))
@@ -486,7 +486,7 @@ export function toolsPane (
                 if (stats.definitive[name] === card) {
                   // pass
                 } else if (stats.definitive[name]) {
-                  var n = stats.duplicates.length
+                  const n = stats.duplicates.length
                   if (n < 100 || (n < 1000 && n % 10 === 0) || n % 100 === 0) {
                     // log('' + n + ') Possible duplicate ' + card + ' of: ' + definitive[name])
                   }
@@ -507,7 +507,7 @@ export function toolsPane (
               stats.uniques = []
               stats.uniqueSet = []
               for (i = 0; i < stats.cards.length; i++) {
-                var uri = stats.cards[i].uri
+                const uri = stats.cards[i].uri
                 if (!stats.duplicateSet[uri] && !stats.namelessSet[uri]) {
                   stats.uniques.push(stats.cards[i])
                   stats.uniqueSet[uri] = stats.cards[i]
@@ -528,20 +528,20 @@ export function toolsPane (
 
           // Save a new clean version
           function saveCleanPeople () {
-            var cleanPeople
+            let cleanPeople
 
             return Promise.resolve()
               .then(() => {
                 cleanPeople = kb.sym(stats.book.dir().uri + 'clean-people.ttl')
-                var sts = []
+                let sts = []
                 for (let i = 0; i < stats.uniques.length; i++) {
                   sts = sts.concat(
                     kb.connectedStatements(stats.uniques[i], stats.nameEmailIndex)
                   )
                 }
-                var sz = new $rdf.Serializer(kb).setBase(stats.nameEmailIndex.uri)
+                const sz = new $rdf.Serializer(kb).setBase(stats.nameEmailIndex.uri)
                 log('Serializing index of uniques...')
-                var data = sz.statementsToN3(sts)
+                const data = sz.statementsToN3(sts)
 
                 return kb.fetcher.webOperation('PUT', cleanPeople, {
                   data: data,
@@ -558,21 +558,21 @@ export function toolsPane (
           }
 
           function saveCleanGroup (g) {
-            var cleanGroup
+            let cleanGroup
 
             return Promise.resolve()
               .then(() => {
-                var s = g.uri.replace('/Group/', '/NewGroup/')
+                const s = g.uri.replace('/Group/', '/NewGroup/')
                 cleanGroup = kb.sym(s)
-                var sts = []
+                let sts = []
                 for (let i = 0; i < stats.uniques.length; i++) {
                   sts = sts.concat(
                     kb.connectedStatements(stats.uniques[i], g.doc())
                   )
                 }
-                var sz = new $rdf.Serializer(kb).setBase(g.uri)
+                const sz = new $rdf.Serializer(kb).setBase(g.uri)
                 log('   Regenerating group of uniques...' + cleanGroup)
-                var data = sz.statementsToN3(sts)
+                const data = sz.statementsToN3(sts)
 
                 return kb.fetcher.webOperation('PUT', cleanGroup, { data })
               })
@@ -590,13 +590,13 @@ export function toolsPane (
             return Promise.all(stats.groupObjects.map(saveCleanGroup))
           }
 
-          var getAndSortGroups = function () {
+          const getAndSortGroups = function () {
             let groups = []
             if (stats.book) {
               const books = [stats.book]
-              books.map(function (book) {
-                var gs = book ? kb.each(book, ns.vcard('includesGroup')) : []
-                var gs2 = gs.map(function (g) {
+              books.forEach(function (book) {
+                const gs = book ? kb.each(book, ns.vcard('includesGroup')) : []
+                const gs2 = gs.map(function (g) {
                   return [book, kb.any(g, ns.vcard('fn')), g]
                 })
                 groups = groups.concat(gs2)
@@ -605,7 +605,7 @@ export function toolsPane (
             }
             return groups
           }
-          var groups = getAndSortGroups() // Needed?
+          const groups = getAndSortGroups() // Needed?
 
           stats.groupObjects = groups.map(gstr => gstr[2])
           log('Loading ' + stats.groupObjects.length + ' groups... ')
@@ -657,24 +657,24 @@ export function toolsPane (
         complain('Error loading stuff:' + e)
       }
 
-      var reverseIndex = {}
-      var groupless = []
-      var groups = kb.each(book, VCARD('includesGroup'))
+      const reverseIndex = {}
+      const groupless = []
+      const groups = kb.each(book, VCARD('includesGroup'))
 
       log('' + groups.length + ' total groups. ')
 
-      for (var i = 0; i < groups.length; i++) {
+      for (let i = 0; i < groups.length; i++) {
         var g = groups[i]
-        var a = kb.each(g, ns.vcard('hasMember'))
+        const a = kb.each(g, ns.vcard('hasMember'))
         log(UI.utils.label(g) + ': ' + a.length + ' members')
-        for (var j = 0; j < a.length; j++) {
+        for (let j = 0; j < a.length; j++) {
           kb.allAliases(a[j]).forEach(function (y) {
             reverseIndex[y.uri] = g
           })
         }
       }
 
-      var cards = kb.each(undefined, VCARD('inAddressBook'), book)
+      const cards = kb.each(undefined, VCARD('inAddressBook'), book)
       log('' + cards.length + ' total cards')
       for (let c = 0; c < cards.length; c++) {
         if (!reverseIndex[cards[c].uri]) {
@@ -686,7 +686,7 @@ export function toolsPane (
       return groupless
     }
 
-    var checkGroupless = pane.appendChild(dom.createElement('button'))
+    const checkGroupless = pane.appendChild(dom.createElement('button'))
     checkGroupless.style.cssText = buttonStyle
     checkGroupless.textContent = 'Find individuals with no group'
     checkGroupless.addEventListener('click', function (_event) {
@@ -697,7 +697,7 @@ export function toolsPane (
           return
         }
 
-        var nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+        const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
         try {
           await kb.fetcher.load(nameEmailIndex)
         } catch (e) {
@@ -709,7 +709,7 @@ export function toolsPane (
       }) // select all groups then
     })
 
-    var fixGrouplessButton = pane.appendChild(dom.createElement('button'))
+    const fixGrouplessButton = pane.appendChild(dom.createElement('button'))
     fixGrouplessButton.style.cssText = buttonStyle
     fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))

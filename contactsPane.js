@@ -31,7 +31,7 @@ export default {
 
   // Does the subject deserve an contact pane?
   label: function (subject, context) {
-    var t = context.session.store.findTypeURIs(subject)
+    const t = context.session.store.findTypeURIs(subject)
     if (t[ns.vcard('Individual').uri]) return 'Contact'
     if (t[ns.vcard('Organization').uri]) return 'contact'
     if (t[ns.foaf('Person').uri]) return 'Person'

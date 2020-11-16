@@ -36,8 +36,8 @@ export function renderMugshotGallery (dom, subject) {
       if (!ok) {
         console.log('Error looking up dropped thing ' + thing + ': ' + mess)
       } else {
-        var types = kb.findTypeURIs(thing)
-        for (var ty in types) {
+        const types = kb.findTypeURIs(thing)
+        for (const ty in types) {
           console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
         }
         console.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
@@ -49,7 +49,7 @@ export function renderMugshotGallery (dom, subject) {
 
   function uploadFileToContact (filename, contentType, data) {
     // var fileExtension = filename.split('.').pop() // .toLowerCase()
-    var extension = mime.extension(contentType)
+    const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
       console.log('MIME TYPE MISMATCH -- adding extension: ' + filename)
@@ -64,7 +64,7 @@ export function renderMugshotGallery (dom, subject) {
       predicate = ns.wf('attachment')
     }
 
-    var n, pic
+    let n, pic
     for (n = 0; ; n++) {
       // Check filename is not used or invent new one
       pic = kb.sym(subject.dir().uri + filename)
@@ -112,8 +112,8 @@ export function renderMugshotGallery (dom, subject) {
 
   // When a set of URIs are dropped on
   function handleURIsDroppedOnMugshot (uris) {
-    uris.map(function (u) {
-      var thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
+    uris.forEach(function (u) {
+      const thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
       console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
       if (u.startsWith('http') && u.indexOf('#') < 0) {
         // Plain document
@@ -152,7 +152,7 @@ export function renderMugshotGallery (dom, subject) {
 
   // Drop an image file to set up the mugshot
   function droppedFileHandler (files) {
-    for (var i = 0; i < files.length; i++) {
+    for (let i = 0; i < files.length; i++) {
       const f = files[i]
       console.log(
         ' contacts: Filename: ' +
@@ -168,13 +168,13 @@ export function renderMugshotGallery (dom, subject) {
       ) // See e.g. https://www.html5rocks.com/en/tutorials/file/dndfiles/
 
       // @@ Add: progress bar(s)
-      var reader = new FileReader()
+      const reader = new FileReader()
       reader.onload = (function (theFile) {
         return function (e) {
-          var data = e.target.result
+          const data = e.target.result
           console.log(' File read byteLength : ' + data.byteLength)
-          var filename = encodeURIComponent(theFile.name)
-          var contentType = theFile.type
+          const filename = encodeURIComponent(theFile.name)
+          const contentType = theFile.type
           uploadFileToContact(filename, contentType, data)
         }
       })(f)
@@ -237,7 +237,7 @@ export function renderMugshotGallery (dom, subject) {
       const images = kb
         .each(subject, ns.vcard('hasPhoto'))
         .map(x => x.uri)
-      for (var uri of uris) {
+      for (const uri of uris) {
         if (!images.includes(uri)) {
           alert('Only drop images in this contact onto this trash can.')
           return
