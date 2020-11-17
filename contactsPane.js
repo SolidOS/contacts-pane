@@ -191,7 +191,7 @@ export default {
               )
             }
             // console.log("Loaded card " + local + '\n')
-            cardMain.appendChild(cardPane(dom, local, 'contact'))
+            cardMain.appendChild(renderPane(dom, local, 'contact'))
             cardMain.appendChild(dom.createElement('br'))
 
             cardMain.appendChild(UI.widgets.linkIcon(dom, local)) // hoverHide
@@ -312,7 +312,7 @@ export default {
           return sortMe.map(tuple => tuple[2])
         }
 
-        function cardPane (dom, subject, paneName) {
+        function renderPane (dom, subject, paneName) {
           var p = dataBrowserContext.session.paneRegistry.byName(paneName)
           var d = p.render(subject, dataBrowserContext)
           d.setAttribute(
@@ -672,7 +672,7 @@ export default {
           selectedPeople[person.uri] = true
           refreshNames() // Add name to list of group
           cardMain.innerHTML = '' // Clear 'indexing'
-          cardMain.appendChild(cardPane(dom, person, 'contact'))
+          cardMain.appendChild(renderPane(dom, person, 'contact'))
         }
 
         // //////////////////////////// Three-column Contact Browser  - Body
@@ -867,7 +867,7 @@ export default {
         t[ns.foaf('Person').uri] ||
         t[ns.schema('Person').uri]
       ) {
-        renderIndividual(dom, div, subject).then(() => console.log('(individual rendered)'))
+        renderIndividual(dom, div, subject, dataBrowserContext).then(() => console.log('(individual rendered)'))
 
         //          Render a Group instance
       } else if (t[ns.vcard('Group').uri]) {
