@@ -77,8 +77,8 @@ export default {
 
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
-    var div = dom.createElement('div')
-    var me = UI.authn.currentUser() // If already logged on
+    const div = dom.createElement('div')
+    const me = UI.authn.currentUser() // If already logged on
 
     UI.aclControl.preventBrowserDropEvents(dom) // protect drag and drop
 
@@ -94,11 +94,11 @@ export default {
       const updater = kb.updater
       UI.aclControl.preventBrowserDropEvents(dom)
 
-      var t = kb.findTypeURIs(subject)
+      const t = kb.findTypeURIs(subject)
 
-      var me = UI.authn.currentUser()
+      let me = UI.authn.currentUser()
 
-      var context = {
+      const context = {
         target: subject,
         me: me,
         noun: 'address book',
@@ -118,17 +118,17 @@ export default {
           })
       }
       function renderThreeColumnBrowser2 (books, context, options) {
-        var classLabel = utils.label(ns.vcard('AddressBook'))
-        // var IndividualClassLabel = utils.label(ns.vcard('Individual'))
+        const classLabel = utils.label(ns.vcard('AddressBook'))
+        // const IndividualClassLabel = utils.label(ns.vcard('Individual'))
 
-        var book = books[0] // for now
-        var groupIndex = kb.any(book, ns.vcard('groupIndex'))
-        var selectedGroups = {}
-        var selectedPeople = {} // Actually prob max 1
+        let book = books[0] // for now
+        const groupIndex = kb.any(book, ns.vcard('groupIndex'))
+        let selectedGroups = {}
+        let selectedPeople = {} // Actually prob max 1
 
-        var target = options.foreignGroup || book
+        const target = options.foreignGroup || book
 
-        var title =
+        let title =
           kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
         if (paneOptions.solo && title && typeof document !== 'undefined') {
           document.title = title.value // @@ only when the outermmost pane
@@ -140,7 +140,7 @@ export default {
           if (book) {
             return book
           }
-          var g
+          let g
           for (const gu in selectedGroups) {
             g = kb.sym(gu)
             const b = kb.any(undefined, ns.vcard('includesGroup'), g)
@@ -155,7 +155,7 @@ export default {
 
         // organization-name is a hack for Mac records with no FN which is mandatory.
         function nameFor (x) {
-          var name =
+          const name =
             kb.any(x, ns.vcard('fn')) ||
             kb.any(x, ns.foaf('name')) ||
             kb.any(x, ns.vcard('organization-name'))
@@ -163,11 +163,11 @@ export default {
         }
 
         function filterName (name) {
-          var filter = searchInput.value.trim().toLowerCase()
+          const filter = searchInput.value.trim().toLowerCase()
           if (filter.length === 0) return true
-          var parts = filter.split(' ') // Each name part must be somewhere
-          for (var j = 0; j < parts.length; j++) {
-            var word = parts[j]
+          const parts = filter.split(' ') // Each name part must be somewhere
+          for (let j = 0; j < parts.length; j++) {
+            const word = parts[j]
             if (name.toLowerCase().indexOf(word) < 0) return false
           }
           return true
@@ -178,7 +178,7 @@ export default {
           selectedPeople = {}
           selectedPeople[person.uri] = true
           refreshFilteredPeople() // Color to remember which one you picked
-          var local = book ? localNode(person) : person
+          const local = book ? localNode(person) : person
           kb.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
             ok,
             message
@@ -197,7 +197,7 @@ export default {
             cardMain.appendChild(UI.widgets.linkIcon(dom, local)) // hoverHide
 
             // Add in a delete button to delete from AB
-            var deleteButton = UI.widgets.deleteButtonWithCheck(
+            const deleteButton = UI.widgets.deleteButtonWithCheck(
               dom,
               cardMain,
               'contact',
@@ -228,10 +228,10 @@ export default {
         }
 
         function refreshFilteredPeople (active) {
-          var count = 0
-          var lastRow = null
-          for (var i = 0; i < peopleMainTable.children.length; i++) {
-            var row = peopleMainTable.children[i]
+          let count = 0
+          let lastRow = null
+          for (let i = 0; i < peopleMainTable.children.length; i++) {
+            const row = peopleMainTable.children[i]
             const matches = filterName(nameFor(row.subject))
             if (matches) {
               count++
@@ -267,7 +267,7 @@ export default {
               message
             ) {
               if (!ok) {
-                var msg = "Can't load group file: " + group + ': ' + message
+                const msg = "Can't load group file: " + group + ': ' + message
                 badness.push(msg)
                 return complainIfBad(ok, msg)
               }
@@ -281,17 +281,17 @@ export default {
               }
             })
           }
-          var todo = groupsMainTable.children.length
-          var badness = []
-          for (var k = 0; k < groupsMainTable.children.length; k++) {
-            var groupRow = groupsMainTable.children[k]
-            var group = groupRow.subject
+          let todo = groupsMainTable.children.length
+          var badness = [] /* eslint-disable-line no-var */
+          for (let k = 0; k < groupsMainTable.children.length; k++) {
+            const groupRow = groupsMainTable.children[k]
+            const group = groupRow.subject
             fetchGroupAndSelct(group, groupRow)
           } // for each row
         }
 
         function groupsInOrder () {
-          var sortMe = []
+          let sortMe = []
           if (options.foreignGroup) {
             sortMe.push([
               '',
@@ -300,9 +300,9 @@ export default {
             ])
           }
           if (book) {
-            books.map(function (book) {
-              var gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
-              var gs2 = gs.map(function (g) {
+            books.forEach(function (book) {
+              const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
+              const gs2 = gs.map(function (g) {
                 return [book, kb.any(g, ns.vcard('fn')), g]
               })
               sortMe = sortMe.concat(gs2)
@@ -313,8 +313,8 @@ export default {
         }
 
         function renderPane (dom, subject, paneName) {
-          var p = dataBrowserContext.session.paneRegistry.byName(paneName)
-          var d = p.render(subject, dataBrowserContext)
+          const p = dataBrowserContext.session.paneRegistry.byName(paneName)
+          const d = p.render(subject, dataBrowserContext)
           d.setAttribute(
             'style',
             'border: 0.1em solid #444; border-radius: 0.5em'
@@ -323,8 +323,8 @@ export default {
         }
 
         function compareForSort (self, other) {
-          var s = nameFor(self)
-          var o = nameFor(other)
+          let s = nameFor(self)
+          let o = nameFor(other)
           if (s && o) {
             s = s.toLowerCase()
             o = o.toLowerCase()
@@ -343,15 +343,15 @@ export default {
 
         function deleteThing (x) {
           console.log('deleteThing: ' + x)
-          var ds = kb
+          const ds = kb
             .statementsMatching(x)
             .concat(kb.statementsMatching(undefined, undefined, x))
-          var targets = {}
-          ds.map(function (st) {
+          const targets = {}
+          ds.forEach(function (st) {
             targets[st.why.uri] = st
           })
-          var agenda = [] // sets of statements of same dcoument to delete
-          for (var target in targets) {
+          const agenda = [] // sets of statements of same dcoument to delete
+          for (const target in targets) {
             agenda.push(
               ds.filter(function (st) {
                 return st.why.uri === target
@@ -417,9 +417,9 @@ export default {
         }
 
         function localNode (person, _div) {
-          var aliases = kb.allAliases(person)
-          var prefix = book.dir().uri
-          for (var i = 0; i < aliases.length; i++) {
+          const aliases = kb.allAliases(person)
+          const prefix = book.dir().uri
+          for (let i = 0; i < aliases.length; i++) {
             if (aliases[i].uri.slice(0, prefix.length) === prefix) {
               return aliases[i]
             }
@@ -437,15 +437,15 @@ export default {
             })
           }
 
-          var cards = []
-          for (var u in selectedGroups) {
+          let cards = []
+          for (const u in selectedGroups) {
             if (selectedGroups[u]) {
-              var a = kb.each(kb.sym(u), ns.vcard('hasMember'))
+              const a = kb.each(kb.sym(u), ns.vcard('hasMember'))
               cards = cards.concat(a)
             }
           }
           cards.sort(compareForSort) // @@ sort by name not UID later
-          for (var k = 0; k < cards.length - 1;) {
+          for (let k = 0; k < cards.length - 1;) {
             if (cards[k].uri === cards[k + 1].uri) {
               cards.splice(k, 1) // Eliminate duplicates from more than one group
             } else {
@@ -457,12 +457,12 @@ export default {
             cards.length > 5 ? '' + cards.length + ' contacts' : 'contact'
 
           function renderNameInGroupList (person) {
-            var personRow = dom.createElement('tr')
-            var personLeft = personRow.appendChild(dom.createElement('td'))
-            // var personRight = personRow.appendChild(dom.createElement('td'))
+            const personRow = dom.createElement('tr')
+            const personLeft = personRow.appendChild(dom.createElement('td'))
+            // const personRight = personRow.appendChild(dom.createElement('td'))
             personLeft.setAttribute('style', dataCellStyle)
             personRow.subject = person
-            var name = nameFor(person)
+            const name = nameFor(person)
             personLeft.textContent = name
             personRow.subject = person
             UI.widgets.makeDraggable(personRow, person)
@@ -476,8 +476,8 @@ export default {
         } // refreshNames
 
         function refreshThingsSelected (table, selectionArray) {
-          for (var i = 0; i < table.children.length; i++) {
-            var row = table.children[i]
+          for (let i = 0; i < table.children.length; i++) {
+            const row = table.children[i]
             if (row.subject) {
               row.setAttribute(
                 'style',
@@ -499,7 +499,7 @@ export default {
             async function handleURIsDroppedOnGroup (uris) {
               uris.forEach(function (u) {
                 console.log('Dropped on group: ' + u)
-                var thing = kb.sym(u)
+                const thing = kb.sym(u)
                 try {
                   addPersonToGroup(thing, group)
                 } catch (e) {
@@ -510,7 +510,7 @@ export default {
             }
             function groupRowClickListener (event) {
               event.preventDefault()
-              var groupList = kb.sym(group.uri.split('#')[0])
+              const groupList = kb.sym(group.uri.split('#')[0])
               if (!event.metaKey) {
                 selectedGroups = {} // If Command key pressed, accumulate multiple
               }
@@ -533,8 +533,8 @@ export default {
                   if (!event.metaKey) {
                     // If only one group has beeen selected show ACL
                     cardMain.innerHTML = ''
-                    var visible = false
-                    var aclControl = UI.aclControl.ACLControlBox5(
+                    let visible = false
+                    const aclControl = UI.aclControl.ACLControlBox5(
                       group,
                       dataBrowserContext,
                       'group',
@@ -549,12 +549,12 @@ export default {
                         }
                       }
                     )
-                    var sharingButton = cardMain.appendChild(
+                    const sharingButton = cardMain.appendChild(
                       dom.createElement('button')
                     )
                     sharingButton.style.cssText =
                       'padding: 1em; margin: 1em'
-                    var img = sharingButton.appendChild(
+                    const img = sharingButton.appendChild(
                       dom.createElement('img')
                     )
                     img.style.cssText = 'width: 1.5em; height: 1.5em'
@@ -606,7 +606,7 @@ export default {
         // Click on New Group button
         async function newGroupClickHandler (_event) {
           cardMain.innerHTML = ''
-          var groupIndex = kb.any(book, ns.vcard('groupIndex'))
+          const groupIndex = kb.any(book, ns.vcard('groupIndex'))
           try {
             await fetch.load(groupIndex)
           } catch (e) {
@@ -614,11 +614,12 @@ export default {
           }
           console.log(' Group index has been loaded\n')
 
-          var name = await UI.widgets.askName(
+          const name = await UI.widgets.askName(
             dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Group'), 'group')
           if (!name) return // cancelled by user
+          let group
           try {
-            var group = await saveNewGroup(book, name)
+            group = await saveNewGroup(book, name)
           } catch (err) {
             console.log("Error: can't save new group:" + err)
             cardMain.innerHTML = 'Failed to save group' + err
@@ -648,7 +649,7 @@ export default {
             throw new Error("Book won't load:" + ourBook)
           }
 
-          var nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
+          const nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
           if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
           await kb.fetcher.load(nameEmailIndex)
           console.log('Name index loaded async' + nameEmailIndex)
@@ -659,7 +660,7 @@ export default {
           if (!name) return // cancelled by user
           cardMain.innerHTML = 'indexing...'
           book = findBookFromGroups(book)
-          var person
+          let person
           try {
             person = await saveNewContact(book, name, selectedGroups)
           } catch (err) {
@@ -678,7 +679,7 @@ export default {
         // //////////////////////////// Three-column Contact Browser  - Body
         // //////////////////   Body of 3-column browser
 
-        var bookTable = dom.createElement('table')
+        const bookTable = dom.createElement('table')
         bookTable.setAttribute(
           'style',
           'border-collapse: collapse; margin-right: 0; max-height: 9in;'
@@ -699,26 +700,26 @@ export default {
           </td>
         </tr>`
   */
-        var bookHeader = bookTable.appendChild(dom.createElement('tr'))
-        var bookMain = bookTable.appendChild(dom.createElement('tr'))
-        var bookFooter = bookTable.appendChild(dom.createElement('tr'))
+        const bookHeader = bookTable.appendChild(dom.createElement('tr'))
+        const bookMain = bookTable.appendChild(dom.createElement('tr'))
+        const bookFooter = bookTable.appendChild(dom.createElement('tr'))
 
-        var groupsHeader = bookHeader.appendChild(dom.createElement('td'))
-        var peopleHeader = bookHeader.appendChild(dom.createElement('td'))
-        var cardHeader = bookHeader.appendChild(dom.createElement('td'))
+        const groupsHeader = bookHeader.appendChild(dom.createElement('td'))
+        const peopleHeader = bookHeader.appendChild(dom.createElement('td'))
+        const cardHeader = bookHeader.appendChild(dom.createElement('td'))
 
-        var groupsMain = bookMain.appendChild(dom.createElement('td'))
-        var groupsMainTable = groupsMain.appendChild(dom.createElement('table'))
-        var peopleMain = bookMain.appendChild(dom.createElement('td'))
-        var peopleMainTable = peopleMain.appendChild(dom.createElement('table'))
+        const groupsMain = bookMain.appendChild(dom.createElement('td'))
+        const groupsMainTable = groupsMain.appendChild(dom.createElement('table'))
+        const peopleMain = bookMain.appendChild(dom.createElement('td'))
+        const peopleMainTable = peopleMain.appendChild(dom.createElement('table'))
 
-        var groupsFooter = bookFooter.appendChild(dom.createElement('td'))
-        var peopleFooter = bookFooter.appendChild(dom.createElement('td'))
-        var cardFooter = bookFooter.appendChild(dom.createElement('td'))
+        const groupsFooter = bookFooter.appendChild(dom.createElement('td'))
+        const peopleFooter = bookFooter.appendChild(dom.createElement('td'))
+        const cardFooter = bookFooter.appendChild(dom.createElement('td'))
 
         cardHeader.appendChild(dom.createElement('div')) // searchDiv
         // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
-        var searchInput = cardHeader.appendChild(dom.createElement('input'))
+        const searchInput = cardHeader.appendChild(dom.createElement('input'))
         searchInput.setAttribute('type', 'text')
         searchInput.setAttribute(
           'style',
@@ -729,9 +730,9 @@ export default {
           refreshFilteredPeople(true) // Active: select person if justone left
         })
 
-        var cardMain = bookMain.appendChild(dom.createElement('td'))
+        const cardMain = bookMain.appendChild(dom.createElement('td'))
         cardMain.setAttribute('style', 'margin: 0;') // fill space available
-        var dataCellStyle = 'padding: 0.1em;'
+        const dataCellStyle = 'padding: 0.1em;'
 
         groupsHeader.textContent = 'groups'
         groupsHeader.setAttribute(
@@ -740,12 +741,12 @@ export default {
         )
 
         function setGroupListVisibility (visible) {
-          var vis = visible ? '' : 'display: none;'
+          const vis = visible ? '' : 'display: none;'
           groupsHeader.setAttribute(
             'style',
             'min-width: 10em; padding-bottom 0.2em;' + vis
           )
-          var hfstyle = 'padding: 0.1em;'
+          const hfstyle = 'padding: 0.1em;'
           groupsMain.setAttribute('style', hfstyle + vis)
           groupsFooter.setAttribute('style', hfstyle + vis)
         }
@@ -755,9 +756,9 @@ export default {
           selectedGroups[options.foreignGroup.uri] = true
         }
         if (book) {
-          var allGroups = groupsHeader.appendChild(dom.createElement('button'))
+          const allGroups = groupsHeader.appendChild(dom.createElement('button'))
           allGroups.textContent = 'All'
-          var style = 'margin-left: 1em; font-size: 100%;'
+          const style = 'margin-left: 1em; font-size: 100%;'
           allGroups.setAttribute('style', style)
           allGroups.addEventListener('click', function (_event) {
             allGroups.state = allGroups.state ? 0 : 1
@@ -798,8 +799,8 @@ export default {
         peopleMain.setAttribute('style', 'overflow:scroll;')
 
         // New Contact button
-        var newContactButton = dom.createElement('button')
-        var container = dom.createElement('div')
+        const newContactButton = dom.createElement('button')
+        const container = dom.createElement('div')
         newContactButton.setAttribute('type', 'button')
 
         if (!me) newContactButton.setAttribute('disabled', 'true')
@@ -819,7 +820,7 @@ export default {
 
         // New Group button
         if (book) {
-          var newGroupButton = groupsFooter.appendChild(
+          const newGroupButton = groupsFooter.appendChild(
             dom.createElement('button')
           )
           newGroupButton.setAttribute('type', 'button')
@@ -830,7 +831,7 @@ export default {
           )
 
           // Tools button
-          var toolsButton = cardFooter.appendChild(dom.createElement('button'))
+          const toolsButton = cardFooter.appendChild(dom.createElement('button'))
           toolsButton.setAttribute('type', 'button')
           toolsButton.innerHTML = 'Tools'
           toolsButton.addEventListener('click', function (_event) {
@@ -875,10 +876,10 @@ export default {
         UI.authn
           .findAppInstances(context, ns.vcard('AddressBook'))
           .then(function (context) {
-            var addressBooks = context.instances
-            var options = { foreignGroup: subject }
+            const addressBooks = context.instances
+            const options = { foreignGroup: subject }
             if (addressBooks.length > 0) {
-              // var book = addressBooks[0]
+              // const book = addressBooks[0]
               renderThreeColumnBrowser(addressBooks, context, options)
             } else {
               renderThreeColumnBrowser([], context, options)

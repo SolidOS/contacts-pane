@@ -497,16 +497,16 @@ export function toolsPane (
               }
 
               stats.duplicateSet = []
-              for (var i = 0; i < stats.duplicates.length; i++) {
+              for (let i = 0; i < stats.duplicates.length; i++) {
                 stats.duplicateSet[stats.duplicates[i].uri] = stats.duplicates[i]
               }
               stats.namelessSet = []
-              for (i = 0; i < stats.nameless.length; i++) {
+              for (let i = 0; i < stats.nameless.length; i++) {
                 stats.namelessSet[stats.nameless[i].uri] = stats.nameless[i]
               }
               stats.uniques = []
               stats.uniqueSet = []
-              for (i = 0; i < stats.cards.length; i++) {
+              for (let i = 0; i < stats.cards.length; i++) {
                 const uri = stats.cards[i].uri
                 if (!stats.duplicateSet[uri] && !stats.namelessSet[uri]) {
                   stats.uniques.push(stats.cards[i])
@@ -664,7 +664,7 @@ export function toolsPane (
       log('' + groups.length + ' total groups. ')
 
       for (let i = 0; i < groups.length; i++) {
-        var g = groups[i]
+        const g = groups[i]
         const a = kb.each(g, ns.vcard('hasMember'))
         log(UI.utils.label(g) + ': ' + a.length + ' members')
         for (let j = 0; j < a.length; j++) {

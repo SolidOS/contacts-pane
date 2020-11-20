@@ -32,10 +32,10 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   }
 
   function setPaneStyle () {
-    var types = kb.findTypeURIs(subject)
-    var mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
-    var backgroundColor = null
-    for (var uri in types) {
+    const types = kb.findTypeURIs(subject)
+    let mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
+    let backgroundColor = null
+    for (const uri in types) {
       backgroundColor = kb.anyValue(
         kb.sym(uri),
         ns.solid('profileHighlightColor')

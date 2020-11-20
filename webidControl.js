@@ -15,9 +15,61 @@ const WEBID_NOUN = 'Solid ID'
 const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
 const webidPanelBackgroundColor = '#ffe6ff'
 
+/// //////  TEMPOARY local version - test and move to buttons.ts
+
+/**
+ * A TR to represent a draggable person, etc in a list
+ *
+ * pred is unused param at the moment
+ */
+// export function personTR (dom: HTMLDocument, pred: NamedNode, obj: NamedNode, options: any): HTMLTableRowElement {
+const { faviconOrDefault, setName, deleteButtonWithCheck, linkIcon } = widgets
+function personTR (dom, pred, obj, options) {
+  const tr = dom.createElement('tr')
+  options = options || {}
+  // tr.predObj = [pred.uri, obj.uri]   moved to acl-control
+  const td1 = tr.appendChild(dom.createElement('td'))
+  const td2 = tr.appendChild(dom.createElement('td'))
+  const td3 = tr.appendChild(dom.createElement('td'))
+
+  td1.setAttribute('style', 'vertical-align: middle; width:2.5em; padding:0.5em; height: 2.5em;')
+  td2.setAttribute('style', 'vertical-align: middle; text-align:left;')
+  td3.setAttribute('style', 'vertical-align: middle; width:2em; padding:0.5em; height: 4em;')
+
+  const image = options.image || faviconOrDefault(dom, obj)
+  td1.appendChild(image)
+
+  if (options.title) {
+    td2.textContent = options.title
+  } else {
+    setName(td2, obj)
+  }
+
+  if (options.deleteFunction) {
+    deleteButtonWithCheck(dom, td3, options.noun || 'one', options.deleteFunction)
+  }
+  if (obj.uri) {
+    // blank nodes need not apply
+    if (options.link !== false) {
+      const anchor = td3.appendChild(linkIcon(dom, obj))
+      anchor.classList.add('HoverControlHide')
+      td3.appendChild(dom.createElement('br'))
+    }
+    if (options.draggable !== false) {
+      // default is on
+      image.setAttribute('draggable', 'false') // Stop the image being dragged instead - just the TR
+      UI.dragAndDrop.makeDraggable(tr, obj)
+    }
+  }
+  tr.subject = obj
+  return tr
+}
+
+/// //////////////////////////////////////////////////////////
+
 // Logic
 export async function addWebIDToContacts (person, webid, context) {
-  if (!webid.startsWith('https')) { /// @@ well we will have other protcols like DID
+  if (!webid.startsWith('https:')) { /// @@ well we will have other protcols like DID
     throw new Error('Does not look like a webid, must start with https:')
   }
   const kb = context.kb
@@ -75,18 +127,23 @@ export async function renderWedidControl (person, dataBrowserContext) {
       await refreshWebIDTable()
     }
     const delFunParam = editable ? deleteFunction : null
-    const options = { deleteFunction: delFunParam, draggable: true }
-    const row = UI.widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, options)
+    const title = webidObject.uri.split['/'][2] // domain name
+    const image = widgets.faviconOrDefault(dom, webidObject.origin()) // image just for domain
+    const options = { deleteFunction: delFunParam, draggable: true, title, image }
+
+    const row = personTR(dom, UI.ns.foaf('knows'), webidObject, options)
+    // const row = UI.widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, options)
+    row.childrem[1].textConent = title // @@ will be overwritten
     row.style.backgroundColor = webidPanelBackgroundColor
     row.style.padding = '0.2em'
 
     return row
   }
   function _renderNewRow2 (x) { // alternative
-    var tr = table.appendChild(dom.createElement('tr'))
+    const tr = table.appendChild(dom.createElement('tr'))
     tr.setAttribute('style', 'margin-top: 0.1em solid #ccc;')
-    var nameTD = tr.appendChild(dom.createElement('td'))
-    var formTD = tr.appendChild(dom.createElement('td'))
+    const nameTD = tr.appendChild(dom.createElement('td'))
+    const formTD = tr.appendChild(dom.createElement('td'))
     nameTD.textContent = x.uri.split('/')[2] // domain part
     kb.fetcher // Load the profile
       .load(x.doc())
@@ -109,8 +166,8 @@ export async function renderWedidControl (person, dataBrowserContext) {
   }
 
   function renderPane (dom, subject, paneName) {
-    var p = dataBrowserContext.session.paneRegistry.byName(paneName)
-    var d = p.render(subject, dataBrowserContext) // @@@ change some bits of context!
+    const p = dataBrowserContext.session.paneRegistry.byName(paneName)
+    const d = p.render(subject, dataBrowserContext) // @@@ change some bits of context!
     d.setAttribute(
       'style',
       'border: 0.1em solid #444; border-radius: 0.5em'
@@ -118,10 +175,14 @@ export async function renderWedidControl (person, dataBrowserContext) {
     return d
   }
 
-  async function refreshWebIDTable () {
+  function getPersonas () {
     const lits = vcardWebIDs(person).concat(getAliases(person))
     const personas = lits.map(lit => kb.sym(lit.value)) // The UI tables do better with Named Nodes than Literals
     personas.sort() // for repeatability
+    return personas
+  }
+  async function refreshWebIDTable () {
+    const personas = getPersonas()
     prompt.textContent = personas.length ? '' // multiline-ternary
       : `If you know someones ${WEBID_NOUN} then you can do more stuff with them.`
     utils.syncTableToArrayReOrdered(table, personas, renderNewRow)
@@ -155,6 +216,12 @@ export async function renderWedidControl (person, dataBrowserContext) {
   const { dom } = dataBrowserContext
   const editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
+  div.style = 'border-radius:0.3em; border: 0.1em solid #888; padding: 0.8em;'
+
+  if (getPersonas().legth === 0 && !editable) {
+    return div // No point listing an empty headding
+  }
+
   const h4 = div.appendChild(dom.createElement('h4'))
   h4.textContent = WEBID_NOUN
   h4.style = style.formHeadingStyle
@@ -168,8 +235,6 @@ export async function renderWedidControl (person, dataBrowserContext) {
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()
-
-  div.style = 'border-radius:0.3em; border: 0.1em solid #888; padding: 0.8em;'
 
   return div
 }

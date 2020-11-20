@@ -51,7 +51,7 @@ export function renderMugshotGallery (dom, subject) {
   }
 
   function uploadFileToContact (filename, contentType, data) {
-    // var fileExtension = filename.split('.').pop() // .toLowerCase()
+    // const fileExtension = filename.split('.').pop() // .toLowerCase()
     const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
@@ -290,7 +290,7 @@ export function renderMugshotGallery (dom, subject) {
   const editable = kb.updater.editable(subject.doc().uri, kb)
   const galleryDiv = dom.createElement('div')
   const mugshotDiv = galleryDiv.appendChild(dom.createElement('div'))
-  var placeholder = elementForImage()
+  const placeholder = elementForImage()
   UI.widgets.setImage(placeholder, subject) // Fallback icon or get from web
   syncMugshots()
   mugshotDiv.refresh = syncMugshots

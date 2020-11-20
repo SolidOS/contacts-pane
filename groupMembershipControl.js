@@ -15,18 +15,18 @@ const kb = UI.store
 export async function renderGroupMemberships (person, context) {
   // Remove a person from a group
   function removeFromGroup (thing, group) {
-    var pname = kb.any(thing, ns.vcard('fn'))
-    var gname = kb.any(group, ns.vcard('fn'))
-    var groups = kb.each(null, ns.vcard('hasMember'), thing)
+    const pname = kb.any(thing, ns.vcard('fn'))
+    const gname = kb.any(group, ns.vcard('fn'))
+    const groups = kb.each(null, ns.vcard('hasMember'), thing)
     if (groups.length < 2) {
       alert(
         'Must be a member of at least one group.  Add to another group first.'
       )
       return
     }
-    var message = 'Remove ' + pname + ' from group ' + gname + '?'
+    const message = 'Remove ' + pname + ' from group ' + gname + '?'
     if (confirm(message)) {
-      var del = [
+      const del = [
         $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
         $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
       ]
@@ -42,18 +42,18 @@ export async function renderGroupMemberships (person, context) {
     }
   }
   function newRowForGroup (group) {
-    var options = {
+    const options = {
       deleteFunction: function () {
         removeFromGroup(person, group)
       },
       noun: 'membership'
     }
-    var tr = UI.widgets.personTR(dom, null, group, options)
+    const tr = UI.widgets.personTR(dom, null, group, options)
     return tr
   }
 
   function syncGroupList () {
-    var groups = kb.each(null, ns.vcard('hasMember'), person)
+    const groups = kb.each(null, ns.vcard('hasMember'), person)
     utils.syncTableToArray(groupList, groups, newRowForGroup)
   }
 

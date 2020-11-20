@@ -1,8 +1,8 @@
 const UI = require('solid-ui')
 
-// var mime = require('mime-types')
-// var toolsPane0 = require('./toolsPane')
-// var toolsPane = toolsPane0.toolsPane
+// const mime = require('mime-types')
+// const toolsPane0 = require('./toolsPane')
+// const toolsPane = toolsPane0.toolsPane
 
 const $rdf = UI.rdf
 // const ns = UI.ns
@@ -137,10 +137,10 @@ export function mintNewAddressBook (dataBrowserContext, context) {
           if (toBeWritten.length === 0) {
             claimSuccess(newAppInstance, appInstanceNoun)
           } else {
-            var task = toBeWritten.shift()
+            var task = toBeWritten.shift() /* eslint-disable-line no-var */
             console.log('Creating new file ' + task.to + ' in new instance ')
-            var dest = $rdf.uri.join(task.to, newBase) //
-            var aclOptions = task.aclOptions || {}
+            var dest = $rdf.uri.join(task.to, newBase) /* eslint-disable-line no-var */
+            var aclOptions = task.aclOptions || {} /* eslint-disable-line no-var */
 
             if ('content' in task) {
               kb.fetcher
@@ -154,7 +154,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
               checkOKSetACL(dest, true)
             } else {
               reject(new Error('copy not expected buiding new app!!'))
-              // var from = task.from || task.to // default source to be same as dest
+              // const from = task.from || task.to // default source to be same as dest
               // UI.widgets.webCopy(base + from, dest, task.contentType, checkOKSetACL)
             }
           }
