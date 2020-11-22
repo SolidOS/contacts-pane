@@ -85,7 +85,7 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     asyncRender().then(
-      () => console.log('contctsPane Rendered'),
+      () => console.log('contctsPane Rendered ' + subject),
       err => complain('' + err))
     return div
 

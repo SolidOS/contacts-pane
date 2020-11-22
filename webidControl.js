@@ -13,65 +13,17 @@ const style = UI.style
 const WEBID_NOUN = 'Solid ID'
 
 const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
+const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
+const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
+
 const webidPanelBackgroundColor = '#ffe6ff'
-
-/// //////  TEMPOARY local version - test and move to buttons.ts
-
-/**
- * A TR to represent a draggable person, etc in a list
- *
- * pred is unused param at the moment
- */
-// export function personTR (dom: HTMLDocument, pred: NamedNode, obj: NamedNode, options: any): HTMLTableRowElement {
-const { faviconOrDefault, setName, deleteButtonWithCheck, linkIcon } = widgets
-function personTR (dom, pred, obj, options) {
-  const tr = dom.createElement('tr')
-  options = options || {}
-  // tr.predObj = [pred.uri, obj.uri]   moved to acl-control
-  const td1 = tr.appendChild(dom.createElement('td'))
-  const td2 = tr.appendChild(dom.createElement('td'))
-  const td3 = tr.appendChild(dom.createElement('td'))
-
-  td1.setAttribute('style', 'vertical-align: middle; width:2.5em; padding:0.5em; height: 2.5em;')
-  td2.setAttribute('style', 'vertical-align: middle; text-align:left;')
-  td3.setAttribute('style', 'vertical-align: middle; width:2em; padding:0.5em; height: 4em;')
-
-  const image = options.image || faviconOrDefault(dom, obj)
-  td1.appendChild(image)
-
-  if (options.title) {
-    td2.textContent = options.title
-  } else {
-    setName(td2, obj)
-  }
-
-  if (options.deleteFunction) {
-    deleteButtonWithCheck(dom, td3, options.noun || 'one', options.deleteFunction)
-  }
-  if (obj.uri) {
-    // blank nodes need not apply
-    if (options.link !== false) {
-      const anchor = td3.appendChild(linkIcon(dom, obj))
-      anchor.classList.add('HoverControlHide')
-      td3.appendChild(dom.createElement('br'))
-    }
-    if (options.draggable !== false) {
-      // default is on
-      image.setAttribute('draggable', 'false') // Stop the image being dragged instead - just the TR
-      UI.dragAndDrop.makeDraggable(tr, obj)
-    }
-  }
-  tr.subject = obj
-  return tr
-}
-
-/// //////////////////////////////////////////////////////////
 
 // Logic
 export async function addWebIDToContacts (person, webid, context) {
   if (!webid.startsWith('https:')) { /// @@ well we will have other protcols like DID
     throw new Error('Does not look like a webid, must start with https:')
   }
+  console.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
   const kb = context.kb
   const vcardURLThing = kb.bnode()
   const insertables = [
@@ -84,6 +36,7 @@ export async function addWebIDToContacts (person, webid, context) {
 
 export async function removeWebIDFromContacts (person, webid, context) {
   const { kb } = context
+  console.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
   const existing = kb.each(person, ns.vcard('url'), null, person.doc())
     .filter(urlObject => kb.holds(urlObject, ns.rdf('type'), ns.vcard('WebID'), person.doc()))
     .filter(urlObject => kb.holds(urlObject, ns.vcard('value'), webid, person.doc()))
@@ -111,9 +64,33 @@ export async function renderWedidControl (person, dataBrowserContext) {
       .filter(x => !!x) // remove nulls
   }
 
-  function getAliases (person) {
+  function _getAliases (person) {
     return kb.allAliases(person) // All the terms linked by sameAs
       .filter(x => !x.sameTerm(person)) // Except this one
+  }
+
+  // Trace things the same as this - other IDs for same thing
+  // returns as array of node
+  function getSameAs (thing, doc) { // Should this recurse?
+    const found = new Set()
+    const agenda = new Set([thing.uri])
+
+    while (agenda.size) {
+      const uri = Array.from(agenda)[0] // clumsy
+      agenda.delete(uri)
+      if (found.has(uri)) continue
+      found.add(uri)
+      const node = kb.sym(uri)
+      const left = kb.each(node, ns.owl('sameAs'), null, doc)
+      const right = kb.each(null, ns.owl('sameAs'), node, doc)
+      left.concat(right).forEach(next => {
+        // if (found.has(next)) return
+        console.log('        sameAs: found ' + next)
+        agenda.add(next.uri)
+      })
+    }
+    found.delete(thing.uri) // don't want the one we knew about
+    return Array.from(found).map(uri => kb.sym(uri)) // return as array of nodes
   }
 
   function renderNewRow (webidObject) {
@@ -127,13 +104,13 @@ export async function renderWedidControl (person, dataBrowserContext) {
       await refreshWebIDTable()
     }
     const delFunParam = editable ? deleteFunction : null
-    const title = webidObject.uri.split['/'][2] // domain name
-    const image = widgets.faviconOrDefault(dom, webidObject.origin()) // image just for domain
+    const title = webidObject.uri.split('/')[2] // domain name
+    const image = widgets.faviconOrDefault(dom, webidObject.site()) // image just for domain
     const options = { deleteFunction: delFunParam, draggable: true, title, image }
 
-    const row = personTR(dom, UI.ns.foaf('knows'), webidObject, options)
+    const row = widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, options)
     // const row = UI.widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, options)
-    row.childrem[1].textConent = title // @@ will be overwritten
+    row.children[1].textConent = title // @@ will be overwritten
     row.style.backgroundColor = webidPanelBackgroundColor
     row.style.padding = '0.2em'
 
@@ -176,16 +153,52 @@ export async function renderWedidControl (person, dataBrowserContext) {
   }
 
   function getPersonas () {
-    const lits = vcardWebIDs(person).concat(getAliases(person))
-    const personas = lits.map(lit => kb.sym(lit.value)) // The UI tables do better with Named Nodes than Literals
+    const lits = vcardWebIDs(person).concat(getSameAs(person, person.doc()))
+    const strings = new Set(lits.map(lit => lit.value)) // remove dups
+    const personas = [...strings].map(uri => kb.sym(uri)) // The UI tables do better with Named Nodes than Literals
     personas.sort() // for repeatability
+    personas.filter(x => !x.sameTerm(person))
     return personas
   }
+  function renderPersona (persona) {
+    function profileOpenHandler (_event) {
+      profileIsVisible = !profileIsVisible
+      main.style.visibility = profileIsVisible ? 'visible' : 'collapse'
+      openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
+    }
+
+    const div = dom.createElement('div')
+    const nav = div.appendChild(dom.createElement('nav'))
+    nav.style = 'width: 100%; height: 4em; background-color: #eee;'
+    const title = persona.uri // .split('/')[2] // domain name
+    let main
+
+    const header = nav.appendChild(dom.createElement('span'))
+    header.textContent = title
+    let profileIsVisible = false
+
+    const openButton = nav.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
+    openButton.style.align = 'right'
+    kb.fetcher.load(persona).then(_resp => {
+      try {
+        main = div.appendChild(renderPane(dom, persona, 'profile'))
+        main.style.visibility = 'collapse'
+      } catch (err) {
+        main = widgets.errorMessageBlock(dom, `Error loading persona ${persona}: ${err}`)
+      }
+    }, err => {
+      main = widgets.errorMessageBlock(dom, `Problem displaying persona ${persona}: ${err}`)
+    })
+    return div
+  } // renderPersona
+
   async function refreshWebIDTable () {
     const personas = getPersonas()
-    prompt.textContent = personas.length ? '' // multiline-ternary
-      : `If you know someones ${WEBID_NOUN} then you can do more stuff with them.`
+    console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
+    prompt.style.visibility = personas.length ? 'collapse' : 'visible'
     utils.syncTableToArrayReOrdered(table, personas, renderNewRow)
+    utils.syncTableToArrayReOrdered(profileArea, personas, renderPersona)
+    /*
     if (personas.length === 0) {
       profileArea.innerHTML = ''
     } else {
@@ -201,8 +214,8 @@ export async function renderWedidControl (person, dataBrowserContext) {
         }
       } // else assume already there
     }
+    */
   }
-
   async function greenButtonHandler (_event) {
     const webid = await UI.widgets.askName(dom, UI.store, div, UI.ns.vcard('url'), null, WEBID_NOUN)
     try {
@@ -213,13 +226,25 @@ export async function renderWedidControl (person, dataBrowserContext) {
     await refreshWebIDTable()
   }
 
+  async function droppedURIHandler (uris) {
+    for (const webid of uris) {
+      try {
+        await addWebIDToContacts(person, webid, { kb: kb })
+      } catch (err) {
+        div.appendChild(widgets.errorMessageBlock(dom, err))
+      }
+    }
+    await refreshWebIDTable()
+  }
+
   const { dom } = dataBrowserContext
   const editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
   div.style = 'border-radius:0.3em; border: 0.1em solid #888; padding: 0.8em;'
 
-  if (getPersonas().legth === 0 && !editable) {
-    return div // No point listing an empty headding
+  if (getPersonas().length === 0 && !editable) {
+    div.style.visibility = 'collapse'
+    return div // No point listing an empty list you can't change
   }
 
   const h4 = div.appendChild(dom.createElement('h4'))
@@ -229,9 +254,12 @@ export async function renderWedidControl (person, dataBrowserContext) {
 
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.style = style.commentStyle
+  prompt.textContent = `If you know someones ${WEBID_NOUN} then you can do more stuff with them.
+  To record their ${WEBID_NOUN}, click the plus or drag it onto the plus.`
   const table = div.appendChild(dom.createElement('table'))
   if (editable) {
-    const _plus = div.appendChild(widgets.button(dom, GREEN_PLUS, WEBID_NOUN, greenButtonHandler))
+    const plus = div.appendChild(widgets.button(dom, GREEN_PLUS, WEBID_NOUN, greenButtonHandler))
+    UI.widgets.makeDropTarget(plus, droppedURIHandler, null)
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

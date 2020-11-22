@@ -95,9 +95,12 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   spacer()
 
   // Allow to attach documents etc to the contact card
+
+  const editable = kb.updater.editable(subject.doc().uri, kb)
   UI.widgets.attachmentList(dom, subject, div, {
+    modify: editable
     // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
-    predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
+    // predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
   })
 
   spacer()
