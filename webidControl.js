@@ -237,8 +237,9 @@ export async function renderWedidControl (person, dataBrowserContext) {
 
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.style = style.commentStyle
-  prompt.textContent = `If you know someones ${WEBID_NOUN} then you can do more stuff with them.
-  To record their ${WEBID_NOUN}, click the plus or drag it onto the plus.`
+  prompt.textContent = `If you know someone's ${WEBID_NOUN}, you can do more stuff with them.
+  To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus 
+  to bring up a selector.`
   const table = div.appendChild(dom.createElement('table'))
   if (editable) {
     const plus = div.appendChild(widgets.button(dom, GREEN_PLUS, WEBID_NOUN, greenButtonHandler))

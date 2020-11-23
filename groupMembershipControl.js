@@ -1,5 +1,5 @@
 
-// Render a control to record the group membetships we have for this agent
+// Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
 
 const $rdf = UI.rdf
