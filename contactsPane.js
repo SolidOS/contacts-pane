@@ -350,7 +350,7 @@ export default {
           ds.forEach(function (st) {
             targets[st.why.uri] = st
           })
-          const agenda = [] // sets of statements of same dcoument to delete
+          const agenda = [] // sets of statements of same document to delete
           for (const target in targets) {
             agenda.push(
               ds.filter(function (st) {
@@ -531,7 +531,7 @@ export default {
                   refreshNames()
 
                   if (!event.metaKey) {
-                    // If only one group has beeen selected show ACL
+                    // If only one group has been selected, show ACL
                     cardMain.innerHTML = ''
                     let visible = false
                     const aclControl = UI.aclControl.ACLControlBox5(
@@ -727,7 +727,7 @@ export default {
         )
 
         searchInput.addEventListener('input', function (_event) {
-          refreshFilteredPeople(true) // Active: select person if justone left
+          refreshFilteredPeople(true) // Active: select person if just one left
         })
 
         const cardMain = bookMain.appendChild(dom.createElement('td'))
