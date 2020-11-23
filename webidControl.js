@@ -198,23 +198,6 @@ export async function renderWedidControl (person, dataBrowserContext) {
     prompt.style.visibility = personas.length ? 'collapse' : 'visible'
     utils.syncTableToArrayReOrdered(table, personas, renderNewRow)
     utils.syncTableToArrayReOrdered(profileArea, personas, renderPersona)
-    /*
-    if (personas.length === 0) {
-      profileArea.innerHTML = ''
-    } else {
-      if (profileArea.children.length === 0) {
-        for (const persona of personas) {
-          try {
-            await kb.fetcher.load(persona)
-          } catch (err) {
-            profileArea.appendChild(widgets.errorMessageBlock(dom, `Error loading profile ${persona}: ${err}`))
-            return
-          }
-          profileArea.appendChild(renderPane(dom, persona, 'profile'))
-        }
-      } // else assume already there
-    }
-    */
   }
   async function greenButtonHandler (_event) {
     const webid = await UI.widgets.askName(dom, UI.store, div, UI.ns.vcard('url'), null, WEBID_NOUN)
