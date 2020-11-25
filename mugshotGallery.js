@@ -6,8 +6,11 @@ const ns = UI.ns
 const utils = UI.utils
 const kb = UI.store
 
-// //////// End of drag and drop
-
+/*  Mugshot Gallery
+*
+* A widget for managing a set of images.
+* Make this a form field?
+*/
 export function renderMugshotGallery (dom, subject) {
   function complain (message) {
     console.log(message)
@@ -48,7 +51,7 @@ export function renderMugshotGallery (dom, subject) {
   }
 
   function uploadFileToContact (filename, contentType, data) {
-    // var fileExtension = filename.split('.').pop() // .toLowerCase()
+    // const fileExtension = filename.split('.').pop() // .toLowerCase()
     const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
@@ -206,7 +209,9 @@ export function renderMugshotGallery (dom, subject) {
     images = images.slice(0, 5) // max number for the space
     if (images.length === 0) {
       mugshotDiv.innerHTML = '' // strictly, don't remove it if already there
-      mugshotDiv.appendChild(placeholder)
+      if (editable) {
+        mugshotDiv.appendChild(placeholder) // A head image to drop pictures on
+      } // otherwise leave gallery empty .. nothing to see here folks
     } else {
       utils.syncTableToArray(mugshotDiv, images, elementForImage)
     }
@@ -282,10 +287,10 @@ export function renderMugshotGallery (dom, subject) {
 
   // Body of renderMugshotGallery
 
-  const editable = kb.updater.editable(subject.doc().uri, kb) // @@ ToDo -- also check wac-allow
+  const editable = kb.updater.editable(subject.doc().uri, kb)
   const galleryDiv = dom.createElement('div')
   const mugshotDiv = galleryDiv.appendChild(dom.createElement('div'))
-  var placeholder = elementForImage()
+  const placeholder = elementForImage()
   UI.widgets.setImage(placeholder, subject) // Fallback icon or get from web
   syncMugshots()
   mugshotDiv.refresh = syncMugshots
