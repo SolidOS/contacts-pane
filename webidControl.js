@@ -81,13 +81,18 @@ export async function renderWedidControl (person, dataBrowserContext) {
       if (found.has(uri)) continue
       found.add(uri)
       const node = kb.sym(uri)
-      const left = kb.each(node, ns.owl('sameAs'), null, doc)
-      const right = kb.each(null, ns.owl('sameAs'), node, doc)
-      left.concat(right).forEach(next => {
-        // if (found.has(next)) return
-        console.log('        sameAs: found ' + next)
-        agenda.add(next.uri)
-      })
+      kb.each(node, ns.owl('sameAs'), null, doc)
+        .concat(kb.each(null, ns.owl('sameAs'), node, doc))
+        .forEach(next => {
+          console.log('        OWL sameAs found ' + next)
+          agenda.add(next.uri)
+        })
+      kb.each(node, ns.schema('sameAs'), null, doc)
+        .concat(kb.each(null, ns.schema('sameAs'), node, doc))
+        .forEach(next => {
+          console.log('        Schema sameAs found ' + next)
+          agenda.add(next.uri)
+        })
     }
     found.delete(thing.uri) // don't want the one we knew about
     return Array.from(found).map(uri => kb.sym(uri)) // return as array of nodes
@@ -169,7 +174,7 @@ export async function renderWedidControl (person, dataBrowserContext) {
 
     const div = dom.createElement('div')
     const nav = div.appendChild(dom.createElement('nav'))
-    nav.style = 'width: 100%; height: 4em; background-color: #eee;'
+    nav.style = style.personaBarStyle
     const title = persona.uri // .split('/')[2] // domain name
     let main
 
@@ -178,7 +183,9 @@ export async function renderWedidControl (person, dataBrowserContext) {
     let profileIsVisible = false
 
     const openButton = nav.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
-    openButton.style.align = 'right'
+    openButton.style.float = 'right'
+    delete openButton.style.backgroundColor
+    delete openButton.style.border
     kb.fetcher.load(persona).then(_resp => {
       try {
         main = div.appendChild(renderPane(dom, persona, 'profile'))
@@ -238,7 +245,7 @@ export async function renderWedidControl (person, dataBrowserContext) {
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.style = style.commentStyle
   prompt.textContent = `If you know someone's ${WEBID_NOUN}, you can do more stuff with them.
-  To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus 
+  To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus
   to bring up a selector.`
   const table = div.appendChild(dom.createElement('table'))
   if (editable) {

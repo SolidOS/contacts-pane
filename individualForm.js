@@ -1,4 +1,6 @@
-export default `
+module.exports = `
+# Now hand-edited
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
 @prefix : <#>.
@@ -29,12 +31,14 @@ export default `
 
     <#roleField>
         a <http://www.w3.org/ns/ui#SingleLineTextField> ;
+        ui:suppressEmptyUneditable true;
         <http://www.w3.org/ns/ui#maxLength> "128" ;
         <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#role> ;
         <http://www.w3.org/ns/ui#size> "40" .
 
       <#fullNameFieldC>
           a <http://www.w3.org/ns/ui#SingleLineTextField> ;
+          ui:suppressEmptyUneditable true;
           <http://www.w3.org/ns/ui#maxLength> "128" ;
           <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#organization-name> ;
           <http://www.w3.org/ns/ui#size> "40" .
@@ -42,6 +46,7 @@ export default `
 
 <#addressesComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "Address" .
 
 
@@ -95,6 +100,8 @@ export default `
 
 <#emailComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
+
     <http://www.w3.org/ns/ui#contents> "Email" .
 
 
@@ -123,6 +130,7 @@ export default `
 
 <#telephoneComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "Phones" .
 
 
@@ -151,9 +159,12 @@ export default `
 
 <#noteComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "General Notes" .
 
 <#noteField>
     a <http://www.w3.org/ns/ui#MultiLineTextField> ;
+    ui:suppressEmptyUneditable true;
+
     <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#note> .
 `

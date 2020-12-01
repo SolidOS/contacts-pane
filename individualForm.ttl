@@ -1,3 +1,5 @@
+# Now hand-edited
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
 @prefix : <#>.
@@ -28,12 +30,14 @@
 
     <#roleField>
         a <http://www.w3.org/ns/ui#SingleLineTextField> ;
+        ui:suppressEmptyUneditable true;
         <http://www.w3.org/ns/ui#maxLength> "128" ;
         <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#role> ;
         <http://www.w3.org/ns/ui#size> "40" .
 
       <#fullNameFieldC>
           a <http://www.w3.org/ns/ui#SingleLineTextField> ;
+          ui:suppressEmptyUneditable true;
           <http://www.w3.org/ns/ui#maxLength> "128" ;
           <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#organization-name> ;
           <http://www.w3.org/ns/ui#size> "40" .
@@ -41,6 +45,7 @@
 
 <#addressesComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "Address" .
 
 
@@ -94,6 +99,8 @@
 
 <#emailComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
+
     <http://www.w3.org/ns/ui#contents> "Email" .
 
 
@@ -122,6 +129,7 @@
 
 <#telephoneComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "Phones" .
 
 
@@ -150,8 +158,11 @@
 
 <#noteComment>
     a <http://www.w3.org/ns/ui#Comment> ;
+    ui:suppressIfUneditable true;
     <http://www.w3.org/ns/ui#contents> "General Notes" .
 
 <#noteField>
     a <http://www.w3.org/ns/ui#MultiLineTextField> ;
+    ui:suppressEmptyUneditable true;
+
     <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#note> .
