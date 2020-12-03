@@ -2,8 +2,24 @@ module.exports = `
 # Now hand-edited
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
 @prefix : <#>.
+
+# Ontology additions or interpretations needed for the form to work well
+
+# The ontolgy file doesnt make them disjoint.  This makes the selctor be a choice.
+vcard:TelephoneType   owl:disjointUnionOf ( vcard:Cell vcard:Home vcard:Work) .
+vcard:Type   owl:disjointUnionOf (vcard:Home vcard:Work) . # for email
+
+# Better field labels
+vcard:Cell ui:label "mobile"@en . # app will imake nitial caps if nec
+vcard:hasAddress ui:label "address"@en .
+vcard:hasEmail ui:label "email"@en .
+vcard:hasTelephone ui:label "phone"@en .
+
+#  The forms themselves
 
 <http://www.w3.org/2006/vcard/ns#Individual>
     ui:creationForm <#form1> .
@@ -111,8 +127,9 @@ module.exports = `
     <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#hasEmail> .
 
 <#oneEMail>
-    a <http://www.w3.org/ns/ui#Group> ;
-    <http://www.w3.org/ns/ui#part> <#emailValue>, <#emailType> .
+    a <http://www.w3.org/ns/ui#Group> ; # hint: side by side is good
+    <http://www.w3.org/ns/ui#part> <#emailValue>, <#emailType> ;
+    <http://www.w3.org/ns/ui#parts> ( <#emailType>  <#emailValue> ).
 
 <#emailValue>
     a <http://www.w3.org/ns/ui#EmailField> ; ui:label "email";
@@ -125,6 +142,7 @@ module.exports = `
     <http://www.w3.org/ns/ui#category> <http://www.w3.org/2006/vcard/ns#Type> ;
     <http://www.w3.org/ns/ui#from> <http://www.w3.org/2006/vcard/ns#Type> ;
     <http://www.w3.org/ns/ui#property> <http://purl.org/dc/terms/type> .
+
 
 ##############################
 
@@ -141,7 +159,8 @@ module.exports = `
 
 <#onetelephone>
     a <http://www.w3.org/ns/ui#Group> ;
-    <http://www.w3.org/ns/ui#part> <#telephoneValue>, <#telephoneType> .
+    <http://www.w3.org/ns/ui#part> <#telephoneValue>, <#telephoneType> ;
+    <http://www.w3.org/ns/ui#parts> (  <#telephoneType> <#telephoneValue> ).
 
 <#telephoneValue>
     a <http://www.w3.org/ns/ui#PhoneField> ;
@@ -151,7 +170,7 @@ module.exports = `
 <#telephoneType>
     a <http://www.w3.org/ns/ui#Classifier> ;
     <http://www.w3.org/ns/ui#canMintNew> "0" ;
-    <http://www.w3.org/ns/ui#category> <http://www.w3.org/2006/vcard/ns#Type> ;
+    <http://www.w3.org/ns/ui#category> <http://www.w3.org/2006/vcard/ns#TelephoneType> ;
     <http://www.w3.org/ns/ui#from> <http://www.w3.org/2006/vcard/ns#Type> ;
     <http://www.w3.org/ns/ui#property> <http://purl.org/dc/terms/type> .
 
