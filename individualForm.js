@@ -188,7 +188,7 @@ vcard:Individual
 ##############################
 
 :birthdayField
-    a ui:dateField ;
+    a ui:DateField ;
     ui:label "Born";
     ui:suppressEmptyUneditable true;
     ui:property vcard:bday .
