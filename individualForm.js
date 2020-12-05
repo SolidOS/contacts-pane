@@ -26,9 +26,9 @@ vcard:note ui:label "notes"@en .
 vcard:Individual
     ui:creationForm :form1 .
 
-# The addressComment etc fields with a ccomment before each type of field
-# were originally partyly because the labels on the fields were clumsy like "hasAddress".
-# This is fixed by adding the ui:label to the properties above, so lets try
+# The addressComment, etc., fields with a comment before each type of field
+# were originally partly because the labels on the fields were clumsy like "hasAddress".
+# This is fixed by adding the ui:label to the properties above, so let's try
 # removing the little micro-headings
 
 :form1
