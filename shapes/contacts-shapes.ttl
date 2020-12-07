@@ -13,6 +13,9 @@
 # @prefix shsh: <http://www.w3.org/ns/shacl-shacl#> .
 @prefix : <#>.
 
+
+# see https://www.w3.org/TR/vcard-rdf/
+
 ################################## Book
 
 :AddressBookShape a sh:NodeShape ;
@@ -92,6 +95,11 @@
 		sh:path vcard:hasAddress ;
 	]  ;
   sh:property [
+		sh:path vcard:bday;
+    sh:datatype xsd:dateTime; # @@@ Date would be more logical? dateTime in data
+    sh:maxCount 1;
+	]  ;
+  sh:property [
 		sh:path vcard:anniversary;
     sh:datatype xsd:dateTime; # @@@ Date would be more logical? dateTime in data
     sh:maxCount 1;
@@ -150,6 +158,8 @@
         sh:pattern "^tel:" ;    # starts with tel:
    sh:count 1;
   ].
+
+
   ####### web page
 
 :WebPageShape a sh:NodeShape;
@@ -159,6 +169,17 @@
         sh:pattern "^https?:" ;    # starts with http: or https:
    sh:count 1;
   ].
+
+  :WebIdShape a sh:NodeShape; # @@ This is a placeholder - work in progress.
+  # A card may have any number of webids, with property vcard:url and where the type must be vcard:WebId
+  # but it can have other vcard:urls of other types.
+    sh:targetObjectsOf vcard:url;
+    sh:property [
+     sh:path vcard:value;    # @@ also need to contrail the type part
+          sh:pattern "^https?:" ;    # starts with http: or https:
+     sh:count 1;
+    ].
+
 
 ######## Structured name
 

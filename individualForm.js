@@ -1,159 +1,209 @@
-export default `
+module.exports = `
+# Now hand-edited
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix dct: <http://purl.org/dc/terms/>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
 @prefix : <#>.
 
-<http://www.w3.org/2006/vcard/ns#Individual>
-    ui:creationForm <#form1> .
+# Ontology additions or interpretations needed for the form to work well
 
+# The ontology file doesn't make them disjoint.  This makes the selector be a choice.
+vcard:TelephoneType   owl:disjointUnionOf ( vcard:Cell vcard:Home vcard:Work) .
+vcard:Type   owl:disjointUnionOf (vcard:Home vcard:Work) . # for email
 
-<#form1>
-    <http://purl.org/dc/elements/1.1/title> "Contact Details" ;
+# Better field labels
+vcard:Cell ui:label "mobile"@en . # app will imake nitial caps if nec
+vcard:hasAddress ui:label "address"@en .
+vcard:bday ui:label "born"@en.
+vcard:hasEmail ui:label "email"@en .
+vcard:hasTelephone ui:label "phone"@en .
+vcard:note ui:label "notes"@en .
+
+#  The forms themselves
+
+vcard:Individual
+    ui:creationForm :form1 .
+
+# The addressComment, etc., fields with a comment before each type of field
+# were originally partly because the labels on the fields were clumsy like "hasAddress".
+# This is fixed by adding the ui:label to the properties above, so let's try
+# removing the little micro-headings
+
+:form1
+    dct:title "Contact Details" ;
     a ui:Form ;
     ui:part
-        <#fullNameField>,   <#roleField>,   <#fullNameFieldC>, <#addressesComment>, <#addresses>,
-        <#emailComment>, <#eMails>,
-        <#telephoneComment>, <#telephones>, <#noteComment>, <#noteField> ;
+        :fullNameField,   :roleField,   :fullNameFieldC, :addressesComment, :addresses,
+        :emailComment, :eMails,
+        :telephoneComment, :telephones, :noteComment, :noteField ;
     ui:parts (
-                <#fullNameField>  <#roleField> <#fullNameFieldC>
-                 <#addressesComment> <#addresses>
-                <#emailComment> <#eMails>
-                <#telephoneComment> <#telephones> <#noteComment> <#noteField> ) .
+                :fullNameField  :roleField :fullNameFieldC
+                # :addressesComment
+                  :addresses
+                # :emailComment
+                 :eMails
+                # :telephoneComment
+                 :telephones  :birthdayField
+                 # :noteComment
+                  :noteField ) .
 
-    <#fullNameField>
-        a <http://www.w3.org/ns/ui#SingleLineTextField> ;
+    :fullNameField
+        a ui:SingleLineTextField ;
         ui:label "Name";
-        <http://www.w3.org/ns/ui#maxLength> "128" ;
-        <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#fn> ;
-        <http://www.w3.org/ns/ui#size> "40" .
+        ui:maxLength "128" ;
+        ui:property vcard:fn ;
+        ui:size "40" .
 
-    <#roleField>
-        a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-        <http://www.w3.org/ns/ui#maxLength> "128" ;
-        <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#role> ;
-        <http://www.w3.org/ns/ui#size> "40" .
+    :roleField
+        a ui:SingleLineTextField ;
+        ui:suppressEmptyUneditable true;
+        ui:maxLength "128" ;
+        ui:property vcard:role ;
+        ui:size "40" .
 
-      <#fullNameFieldC>
-          a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-          <http://www.w3.org/ns/ui#maxLength> "128" ;
-          <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#organization-name> ;
-          <http://www.w3.org/ns/ui#size> "40" .
-
-
-<#addressesComment>
-    a <http://www.w3.org/ns/ui#Comment> ;
-    <http://www.w3.org/ns/ui#contents> "Address" .
+      :fullNameFieldC
+          a ui:SingleLineTextField ;
+          ui:suppressEmptyUneditable true;
+          ui:maxLength "128" ;
+          ui:property vcard:organization-name ;
+          ui:size "40" .
 
 
-<#addresses>
-    <http://purl.org/dc/elements/1.1/title> "Address details" ;
-    a <http://www.w3.org/ns/ui#Multiple> ;
-    <http://www.w3.org/ns/ui#part> <#oneAddress> ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#hasAddress> .
+:addressesComment
+    a ui:Comment ;
+    ui:suppressIfUneditable true;
+    ui:contents "Address" .
 
-<#oneAddress>
-    a <http://www.w3.org/ns/ui#Group> ;
-    <http://www.w3.org/ns/ui#parts> ( <#id1409437207443> <#id1409437292400> <#id1409437421996> <#id1409437467649> <#id1409437569420> <#id1409437646712> ).
 
-<#id1409437207443>
-    a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-    <http://www.w3.org/ns/ui#maxLength> "128" ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#street-address> ;
-    <http://www.w3.org/ns/ui#size> "40" .
+:addresses
+    dct:title "Address details" ;
+    a ui:Multiple ;
+    ui:part :oneAddress ;
+    ui:property vcard:hasAddress .
 
-<#id1409437292400>
-    a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-    <http://www.w3.org/ns/ui#maxLength> "128" ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#locality> ;
-    <http://www.w3.org/ns/ui#size> "40" .
+:oneAddress
+    a ui:Group ;
+    ui:parts ( :id1409437207443 :id1409437292400 :id1409437421996 :id1409437467649 :id1409437569420 :id1409437646712 ).
 
-<#id1409437421996>
-    a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-    <http://www.w3.org/ns/ui#maxLength> "25" ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#postal-code> ;
-    <http://www.w3.org/ns/ui#size> "25" .
+:id1409437207443
+    a ui:SingleLineTextField ;
+    ui:maxLength "128" ;
+    ui:property vcard:street-address ;
+    ui:size "40" .
 
-<#id1409437467649>
-    a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-    <http://www.w3.org/ns/ui#maxLength> "128" ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#region> ;
-    <http://www.w3.org/ns/ui#size> "40" .
+:id1409437292400
+    a ui:SingleLineTextField ;
+    ui:maxLength "128" ;
+    ui:property vcard:locality ;
+    ui:size "40" .
 
-<#id1409437569420>
-    a <http://www.w3.org/ns/ui#SingleLineTextField> ;
-    <http://www.w3.org/ns/ui#maxLength> "128" ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#country-name> ;
-    <http://www.w3.org/ns/ui#size> "40" .
+:id1409437421996
+    a ui:SingleLineTextField ;
+    ui:maxLength "25" ;
+    ui:property vcard:postal-code ;
+    ui:size "25" .
 
-<#id1409437646712>
-    a <http://www.w3.org/ns/ui#Classifier> ;
-    <http://www.w3.org/ns/ui#from> rdf:Class ;
-    <http://www.w3.org/ns/ui#property> <http://purl.org/dc/terms/type> .
+:id1409437467649
+    a ui:SingleLineTextField ;
+    ui:maxLength "128" ;
+    ui:property vcard:region ;
+    ui:size "40" .
+
+:id1409437569420
+    a ui:SingleLineTextField ;
+    ui:maxLength "128" ;
+    ui:property vcard:country-name ;
+    ui:size "40" .
+
+:id1409437646712
+    a ui:Classifier ;
+    ui:from rdf:Class ;
+    ui:property rdf:type .
 
 
 ##############################
 
-<#emailComment>
-    a <http://www.w3.org/ns/ui#Comment> ;
-    <http://www.w3.org/ns/ui#contents> "Email" .
+:emailComment
+    a ui:Comment ;
+    ui:suppressIfUneditable true;
+
+    ui:contents "Email" .
 
 
-<#eMails>
-    a <http://www.w3.org/ns/ui#Multiple> ;
-    <http://www.w3.org/ns/ui#part> <#oneEMail> ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#hasEmail> .
+:eMails
+    a ui:Multiple ;
+    ui:part :oneEMail ;
+    ui:property vcard:hasEmail .
 
-<#oneEMail>
-    a <http://www.w3.org/ns/ui#Group> ;
-    <http://www.w3.org/ns/ui#part> <#emailValue>, <#emailType> .
+:oneEMail
+    a ui:Group ; # hint: side by side is good
+    ui:part :emailValue, :emailType ;
+    ui:parts ( :emailType  :emailValue ).
 
-<#emailValue>
-    a <http://www.w3.org/ns/ui#EmailField> ; ui:label "email";
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#value> ;
-    <http://www.w3.org/ns/ui#size> "50" .
+:emailValue
+    a ui:EmailField ; ui:label "email";
+    ui:property vcard:value ;
+    ui:size "50" .
 
-<#emailType>
-    a <http://www.w3.org/ns/ui#Classifier> ;
-    <http://www.w3.org/ns/ui#canMintNew> "0" ;
-    <http://www.w3.org/ns/ui#category> <http://www.w3.org/2006/vcard/ns#Type> ;
-    <http://www.w3.org/ns/ui#from> <http://www.w3.org/2006/vcard/ns#Type> ;
-    <http://www.w3.org/ns/ui#property> <http://purl.org/dc/terms/type> .
+:emailType
+    a ui:Classifier ;
+    ui:canMintNew "0" ;
+    ui:category vcard:Type ;
+    ui:from vcard:Type ;
+    ui:property rdf:type .
+
 
 ##############################
 
-<#telephoneComment>
-    a <http://www.w3.org/ns/ui#Comment> ;
-    <http://www.w3.org/ns/ui#contents> "Phones" .
+:telephoneComment
+    a ui:Comment ;
+    ui:suppressIfUneditable true;
+    ui:contents "Phones" .
 
 
-<#telephones>
-    a <http://www.w3.org/ns/ui#Multiple> ;
-    <http://www.w3.org/ns/ui#part> <#onetelephone> ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#hasTelephone> .
+:telephones
+    a ui:Multiple ;
+    ui:part :onetelephone ;
+    ui:property vcard:hasTelephone .
 
-<#onetelephone>
-    a <http://www.w3.org/ns/ui#Group> ;
-    <http://www.w3.org/ns/ui#part> <#telephoneValue>, <#telephoneType> .
+:onetelephone
+    a ui:Group ;
+    ui:part :telephoneValue, :telephoneType ;
+    ui:parts (  :telephoneType :telephoneValue ).
 
-<#telephoneValue>
-    a <http://www.w3.org/ns/ui#PhoneField> ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#value> ;
-    <http://www.w3.org/ns/ui#size> "50" .
+:telephoneValue
+    a ui:PhoneField ;
+    ui:property vcard:value ;
+    ui:size "50" .
 
-<#telephoneType>
-    a <http://www.w3.org/ns/ui#Classifier> ;
-    <http://www.w3.org/ns/ui#canMintNew> "0" ;
-    <http://www.w3.org/ns/ui#category> <http://www.w3.org/2006/vcard/ns#Type> ;
-    <http://www.w3.org/ns/ui#from> <http://www.w3.org/2006/vcard/ns#Type> ;
-    <http://www.w3.org/ns/ui#property> <http://purl.org/dc/terms/type> .
+:telephoneType
+    a ui:Classifier ;
+    ui:canMintNew "0" ;
+    ui:category vcard:TelephoneType ;
+    ui:from vcard:Type ;
+    ui:property rdf:type .
 
 ##############################
 
-<#noteComment>
-    a <http://www.w3.org/ns/ui#Comment> ;
-    <http://www.w3.org/ns/ui#contents> "General Notes" .
+:birthdayField
+    a ui:DateField;
+    ui:label "Born";
+    ui:suppressEmptyUneditable true;
+    ui:property vcard:bday .
 
-<#noteField>
-    a <http://www.w3.org/ns/ui#MultiLineTextField> ;
-    <http://www.w3.org/ns/ui#property> <http://www.w3.org/2006/vcard/ns#note> .
+##############################
+
+:noteComment
+    a ui:Comment ;
+    ui:suppressIfUneditable true;
+    ui:contents "General Notes" .
+
+:noteField
+    a ui:MultiLineTextField ;
+    ui:suppressEmptyUneditable true;
+
+    ui:property vcard:note .
 `

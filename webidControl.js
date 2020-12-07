@@ -81,13 +81,18 @@ export async function renderWedidControl (person, dataBrowserContext) {
       if (found.has(uri)) continue
       found.add(uri)
       const node = kb.sym(uri)
-      const left = kb.each(node, ns.owl('sameAs'), null, doc)
-      const right = kb.each(null, ns.owl('sameAs'), node, doc)
-      left.concat(right).forEach(next => {
-        // if (found.has(next)) return
-        console.log('        sameAs: found ' + next)
-        agenda.add(next.uri)
-      })
+      kb.each(node, ns.owl('sameAs'), null, doc)
+        .concat(kb.each(null, ns.owl('sameAs'), node, doc))
+        .forEach(next => {
+          console.log('        OWL sameAs found ' + next)
+          agenda.add(next.uri)
+        })
+      kb.each(node, ns.schema('sameAs'), null, doc)
+        .concat(kb.each(null, ns.schema('sameAs'), node, doc))
+        .forEach(next => {
+          console.log('        Schema sameAs found ' + next)
+          agenda.add(next.uri)
+        })
     }
     found.delete(thing.uri) // don't want the one we knew about
     return Array.from(found).map(uri => kb.sym(uri)) // return as array of nodes
@@ -160,7 +165,7 @@ export async function renderWedidControl (person, dataBrowserContext) {
     personas.filter(x => !x.sameTerm(person))
     return personas
   }
-  function renderPersona (persona) {
+  function _renderPersona (persona) {
     function profileOpenHandler (_event) {
       profileIsVisible = !profileIsVisible
       main.style.visibility = profileIsVisible ? 'visible' : 'collapse'
@@ -169,7 +174,7 @@ export async function renderWedidControl (person, dataBrowserContext) {
 
     const div = dom.createElement('div')
     const nav = div.appendChild(dom.createElement('nav'))
-    nav.style = 'width: 100%; height: 4em; background-color: #eee;'
+    nav.style = style.personaBarStyle
     const title = persona.uri // .split('/')[2] // domain name
     let main
 
@@ -178,7 +183,9 @@ export async function renderWedidControl (person, dataBrowserContext) {
     let profileIsVisible = false
 
     const openButton = nav.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
-    openButton.style.align = 'right'
+    openButton.style.float = 'right'
+    delete openButton.style.backgroundColor
+    delete openButton.style.border
     kb.fetcher.load(persona).then(_resp => {
       try {
         main = div.appendChild(renderPane(dom, persona, 'profile'))
@@ -192,15 +199,60 @@ export async function renderWedidControl (person, dataBrowserContext) {
     return div
   } // renderPersona
 
+  function renderPersona2 (persona) {
+    function profileOpenHandler (_event) {
+      profileIsVisible = !profileIsVisible
+      main.style.visibility = profileIsVisible ? 'visible' : 'collapse'
+      openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
+    }
+
+    const div = dom.createElement('div')
+    div.style.width = '100%'
+    const personaTable = div.appendChild(dom.createElement('table'))
+    personaTable.style.width = '100%'
+    const nav = personaTable.appendChild(renderNewRow(persona))
+    nav.style.width = '100%'
+    const mainRow = personaTable.appendChild(dom.createElement('tr'))
+    const mainCell = mainRow.appendChild(dom.createElement('td'))
+    mainCell.setAttribute('colspan', 3)
+    let main
+
+    let profileIsVisible = true
+
+    const rhs = nav.children[2]
+    const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
+    openButton.style.float = 'right'
+    delete openButton.style.backgroundColor
+    delete openButton.style.border
+    kb.fetcher.load(persona).then(_resp => {
+      try {
+        main = renderPane(dom, persona, 'profile')
+        main.style.width = '100%'
+        // main.style.visibility = 'collapse'
+        mainCell.appendChild(main)
+      } catch (err) {
+        main = widgets.errorMessageBlock(dom, `Problem displaying persona ${persona}: ${err}`)
+        mainCell.appendChild(main)
+      }
+    }, err => {
+      main = widgets.errorMessageBlock(dom, `Error loading persona ${persona}: ${err}`)
+      mainCell.appendChild(main)
+    })
+    return div
+  } // renderPersona2
+
   async function refreshWebIDTable () {
     const personas = getPersonas()
     console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
-    prompt.style.visibility = personas.length ? 'collapse' : 'visible'
-    utils.syncTableToArrayReOrdered(table, personas, renderNewRow)
-    utils.syncTableToArrayReOrdered(profileArea, personas, renderPersona)
+    prompt.style.display = personas.length ? 'none' : ''
+    // utils.syncTableToArrayReOrdered(table, personas, renderNewRow)
+    utils.syncTableToArrayReOrdered(profileArea, personas, renderPersona2)
   }
   async function greenButtonHandler (_event) {
     const webid = await UI.widgets.askName(dom, UI.store, div, UI.ns.vcard('url'), null, WEBID_NOUN)
+    if (!webid) {
+      return // cancelled by user
+    }
     try {
       await addWebIDToContacts(person, webid, { kb: kb })
     } catch (err) {
@@ -223,10 +275,10 @@ export async function renderWedidControl (person, dataBrowserContext) {
   const { dom } = dataBrowserContext
   const editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
-  div.style = 'border-radius:0.3em; border: 0.1em solid #888; padding: 0.8em;'
+  div.style = 'border-radius:0.3em; border: 0.1em solid #888;' // padding: 0.8em;
 
   if (getPersonas().length === 0 && !editable) {
-    div.style.visibility = 'collapse'
+    div.style.display = 'none'
     return div // No point listing an empty list you can't change
   }
 
@@ -238,9 +290,10 @@ export async function renderWedidControl (person, dataBrowserContext) {
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.style = style.commentStyle
   prompt.textContent = `If you know someone's ${WEBID_NOUN}, you can do more stuff with them.
-  To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus 
+  To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus
   to bring up a selector.`
   const table = div.appendChild(dom.createElement('table'))
+  table.style.width = '100%'
   if (editable) {
     const plus = div.appendChild(widgets.button(dom, GREEN_PLUS, WEBID_NOUN, greenButtonHandler))
     UI.widgets.makeDropTarget(plus, droppedURIHandler, null)
