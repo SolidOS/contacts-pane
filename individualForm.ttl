@@ -119,7 +119,7 @@ vcard:Individual
 :id1409437646712
     a ui:Classifier ;
     ui:from rdf:Class ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 
 ##############################
@@ -151,7 +151,7 @@ vcard:Individual
     ui:canMintNew "0" ;
     ui:category vcard:Type ;
     ui:from vcard:Type ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 
 ##############################
@@ -182,7 +182,7 @@ vcard:Individual
     ui:canMintNew "0" ;
     ui:category vcard:TelephoneType ;
     ui:from vcard:Type ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 ##############################
 
