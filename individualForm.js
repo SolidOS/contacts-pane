@@ -2,6 +2,7 @@ module.exports = `
 # Now hand-edited
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix dct: <http://purl.org/dc/terms/>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
@@ -32,7 +33,7 @@ vcard:Individual
 # removing the little micro-headings
 
 :form1
-    <http://purl.org/dc/elements/1.1/title> "Contact Details" ;
+    dct:title "Contact Details" ;
     a ui:Form ;
     ui:part
         :fullNameField,   :roleField,   :fullNameFieldC, :addressesComment, :addresses,
@@ -78,7 +79,7 @@ vcard:Individual
 
 
 :addresses
-    <http://purl.org/dc/elements/1.1/title> "Address details" ;
+    dct:title "Address details" ;
     a ui:Multiple ;
     ui:part :oneAddress ;
     ui:property vcard:hasAddress .
@@ -120,7 +121,7 @@ vcard:Individual
 :id1409437646712
     a ui:Classifier ;
     ui:from rdf:Class ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 
 ##############################
@@ -152,7 +153,7 @@ vcard:Individual
     ui:canMintNew "0" ;
     ui:category vcard:Type ;
     ui:from vcard:Type ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 
 ##############################
@@ -183,12 +184,12 @@ vcard:Individual
     ui:canMintNew "0" ;
     ui:category vcard:TelephoneType ;
     ui:from vcard:Type ;
-    ui:property <http://purl.org/dc/terms/type> .
+    ui:property rdf:type .
 
 ##############################
 
 :birthdayField
-    a ui:DateField ;
+    a ui:DateField;
     ui:label "Born";
     ui:suppressEmptyUneditable true;
     ui:property vcard:bday .
