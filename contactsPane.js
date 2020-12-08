@@ -23,6 +23,7 @@ import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
 // const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
+const style = UI.style
 
 export default {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
@@ -721,10 +722,8 @@ export default {
         // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
         const searchInput = cardHeader.appendChild(dom.createElement('input'))
         searchInput.setAttribute('type', 'text')
-        searchInput.setAttribute(
-          'style',
+        searchInput.style = style.searchInputStyle ||
           'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
-        )
 
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
@@ -864,9 +863,10 @@ export default {
 
       if (
         t[ns.vcard('Individual').uri] ||
-        t[ns.vcard('Organization').uri] ||
         t[ns.foaf('Person').uri] ||
-        t[ns.schema('Person').uri]
+        t[ns.schema('Person').uri] ||
+        t[ns.vcard('Organization').uri] ||
+        t[ns.schema('Organization').uri]
       ) {
         renderIndividual(dom, div, subject, dataBrowserContext).then(() => console.log('(individual rendered)'))
 

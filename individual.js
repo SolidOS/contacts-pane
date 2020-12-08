@@ -3,12 +3,22 @@ import { renderMugshotGallery } from './mugshotGallery'
 import { renderWedidControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
 import individualFormText from './individualForm'
+import organizationFormText from './organizationForm'
 import VCARD_ONTOLOGY_TEXT from './vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
 // const utils = UI.utils
 const kb = UI.store
+const style = UI.style
+
+export function loadTurtleText (kb, thing, text) {
+  const doc = thing.doc()
+  if (!kb.holds(undefined, undefined, undefined, doc)) {
+    // If not loaded already
+    $rdf.parse(text, kb, doc.uri, 'text/turtle') // Load  directly
+  }
+}
 
 // Render Individual card
 
@@ -31,35 +41,21 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     }
   }
 
-  function setPaneStyle () {
-    const types = kb.findTypeURIs(subject)
-    let mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
-    let backgroundColor = null
-    for (const uri in types) {
-      backgroundColor = kb.anyValue(
-        kb.sym(uri),
-        ns.solid('profileHighlightColor')
-      )
-      if (backgroundColor) break
-    }
-    // allow the parent element to define background by default
-    backgroundColor = backgroundColor || 'transparent'
-    mystyle += 'background-color: ' + backgroundColor + '; '
-    div.setAttribute('style', mystyle)
-  }
-
   /// ///////////////////////////
+  const t = kb.findTypeURIs(subject)
+  const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
 
-  // Background metadata for this pane we bundle with the JS
   const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  const individualFormDoc = individualForm.doc()
-  if (!kb.holds(undefined, undefined, undefined, individualFormDoc)) {
-    // If not loaded already
-    // var individualFormText = require('./individualForm.js')
-    $rdf.parse(individualFormText, kb, individualFormDoc.uri, 'text/turtle') // Load form directly
-  }
+  loadTurtleText(kb, individualForm, individualFormText)
+
+  const organizationForm = kb.sym(
+    'https://solid.github.io/solid-panes/contact/organizationForm.ttl#form1'
+  )
+  loadTurtleText(kb, organizationForm, organizationFormText)
+
+  // Background metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
@@ -72,18 +68,19 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     complain('Error: Failed to load contact card: ' + err)
   } // end of try catch on load
 
-  setPaneStyle()
+  div.style = style.paneDivStyle || 'padding: 0.5em 1.5em 1em 1.5em;'
 
   UI.authn.checkUser() // kick off async operation @@@ use async version
 
   div.appendChild(renderMugshotGallery(dom, subject))
 
+  const form = isOrganization ? organizationForm : individualForm
   UI.widgets.appendForm(
     dom,
     div,
     {},
     subject,
-    individualForm,
+    form,
     subject.doc(),
     complainIfBad
   )
