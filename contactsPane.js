@@ -641,7 +641,7 @@ export default {
             }))
         } // newGroupClickHandler
 
-        async function newContactClickHandler (_event) {
+        async function craeteNewCard (klass) {
           cardMain.innerHTML = ''
           const ourBook = findBookFromGroups(book)
           try {
@@ -656,14 +656,14 @@ export default {
           console.log('Name index loaded async' + nameEmailIndex)
 
           const name = await UI.widgets
-            .askName(dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Individual'), 'person')
+            .askName(dom, kb, cardMain, UI.ns.foaf('name'), klass) // @@ was, 'person'
 
           if (!name) return // cancelled by user
           cardMain.innerHTML = 'indexing...'
           book = findBookFromGroups(book)
           let person
           try {
-            person = await saveNewContact(book, name, selectedGroups)
+            person = await saveNewContact(book, name, selectedGroups, klass)
           } catch (err) {
             const msg = "Error: can't save new contact: " + err
             console.log(msg)
@@ -801,21 +801,33 @@ export default {
         const newContactButton = dom.createElement('button')
         const container = dom.createElement('div')
         newContactButton.setAttribute('type', 'button')
-
         if (!me) newContactButton.setAttribute('disabled', 'true')
-
         UI.authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newContactButton.removeAttribute('disabled')
           }
         })
-
         container.appendChild(newContactButton)
         newContactButton.innerHTML = 'New Contact' // + IndividualClassLabel
         peopleFooter.appendChild(container)
+        newContactButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Individual')), false)
 
-        newContactButton.addEventListener('click', newContactClickHandler, false)
+        // New Organization button
+        const newOrganizationButton = dom.createElement('button')
+        const container2 = dom.createElement('div')
+        newOrganizationButton.setAttribute('type', 'button')
+        if (!me) newOrganizationButton.setAttribute('disabled', 'true')
+        UI.authn.checkUser().then(webId => {
+          if (webId) {
+            me = webId
+            newOrganizationButton.removeAttribute('disabled')
+          }
+        })
+        container2.appendChild(newOrganizationButton)
+        newOrganizationButton.innerHTML = 'New Organization' // + IndividualClassLabel
+        peopleFooter.appendChild(container2)
+        newOrganizationButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Organization')), false)
 
         // New Group button
         if (book) {

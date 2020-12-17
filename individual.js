@@ -1,7 +1,8 @@
 import * as UI from 'solid-ui'
 import { renderMugshotGallery } from './mugshotGallery'
-import { renderWedidControl } from './webidControl'
+import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
+import { renderAutoComplete } from './autocompletePicker.js'
 import individualFormText from './individualForm'
 import organizationFormText from './organizationForm'
 import VCARD_ONTOLOGY_TEXT from './vcard.js'
@@ -44,6 +45,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   /// ///////////////////////////
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
+  const editable = kb.updater.editable(subject.doc().uri, kb)
 
   const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
@@ -51,7 +53,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   loadTurtleText(kb, individualForm, individualFormText)
 
   const organizationForm = kb.sym(
-    'https://solid.github.io/solid-panes/contact/organizationForm.ttl#form1'
+    'https://solid.github.io/solid-panes/contact/organizationForm.ttl#OrganinizationForm'
   )
   loadTurtleText(kb, organizationForm, organizationFormText)
 
@@ -91,9 +93,27 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   spacer()
 
+  // Auto complete searches
+
+  if (isOrganization) {
+    const publicDataTable = div.appendChild(dom.createElement('table'))
+    async function publicDataSearchRow (name) {
+      async function autoCompleteDone (object, _name) {
+        right.innerHTML = ''
+        right.appendchild(UI.widgets.personTR(dom, object))
+      }
+      const row = dom.createElement('tr')
+      const left = row.appendChild(dom.createElement('td'))
+      left.textContent = name
+      const right = row.appendChild(dom.createElement('td'))
+      right.appendChild(await renderAutoComplete(dom, subject, ns.owl('sameAs'), autoCompleteDone))
+      return row
+    }
+    publicDataTable.appendChild(await publicDataSearchRow('dbpedia'))
+  }
+
   // Allow to attach documents etc to the contact card
 
-  const editable = kb.updater.editable(subject.doc().uri, kb)
   UI.widgets.attachmentList(dom, subject, div, {
     modify: editable
     // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
@@ -102,7 +122,10 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   spacer()
 
-  div.appendChild(await renderWedidControl(subject, dataBrowserContext))
-
+  if (isOrganization) {
+    div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
+  } else {
+    div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
+  }
   // div.appendChild(dom.createElement('hr'))
 } // renderIndividual

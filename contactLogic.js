@@ -24,7 +24,7 @@ export async function updateMany (deletions, insertions) {
 * adds them to the given groups as well.
 * @returns {NamedNode} the person
 */
-export async function saveNewContact (book, name, selectedGroups) {
+export async function saveNewContact (book, name, selectedGroups, klass) {
   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
   const uuid = utils.genUuid()
@@ -40,7 +40,7 @@ export async function saveNewContact (book, name, selectedGroups) {
     $rdf.st(person, ns.vcard('fn'), name, nameEmailIndex),
     // The new person file
     $rdf.st(person, ns.vcard('fn'), name, doc),
-    $rdf.st(person, ns.rdf('type'), ns.vcard('Individual'), doc),
+    $rdf.st(person, ns.rdf('type'), klass, doc),
 
     $rdf.st(doc, ns.dct('created'), new Date(), doc) // Note when created - useful for triaging later
     // Note this is propert of the file -- not when the person was created!
