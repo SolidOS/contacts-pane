@@ -1,6 +1,6 @@
 /* Create and edit data on Organizations
 **
-** organizations conver many distinct typed of thing.. Th
+** organizations conveys many distinct typed of thing.
 **
 */
 import { icons, ns, style, widgets, store } from 'solid-ui'
@@ -19,7 +19,7 @@ const USER_PREFERED_LANGUAGE = ['fr', 'en', 'de', 'it'] // @ get from user prefe
 const autocompleteRowStyle = 'border: 0.2em solid straw;'
 
 /*
-Four phases:
+Autocomplete hapopens in four phases:
   - The saerch string is too small to bother
   - The search string is big enough, and we have not loaded the arrray
   - The search string is big enough, and we have loaded arrray up to the limit
@@ -41,6 +41,36 @@ interface Binding {
 }
 
 type Bindings = Binding[]
+
+type QueryParameters =
+{ label: string;
+  sparql: string;
+  endpoint: string;
+  class: object
+}
+
+export const dbpediaParameters:QueryParameters = {
+  label: 'DBPedia',
+  sparql: `select distinct ?subject, ?name where {
+    ?subject a $(class); rdfs:label ?name
+    FILTER regex(?name, "$(name)", "i")
+  } LIMIT $(limit)`,
+  endpoint: 'https://dbpedia.org/sparql/',
+    class: { AcaemicInsitution: '<http://umbel.org/umbel/rc/EducationalOrganization>'}
+}
+
+export const wikidataParameters = {
+  label: 'WikiData',
+  sparql: `SELECT ?item ?name ?pic
+  WHERE
+  {     ?klass wdt:P279* $(class) .
+  ?item wdt:P31 ?klass .
+  ?item wdt:P18 ?pic ; rdfs:label ?name.
+  FILTER regex(?name, "$(name)", "i")
+} LIMIT $(limit) `, // was SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
+  endpoint: 'https://query.wikidata.org/sparql',
+  class: { AcaemicInsitution: 'wd:Q4671277'}
+}
 
 /* From an array of bindings with a names for each row,
  * remove dupliacte names for the same thing, leaving the user's
@@ -75,6 +105,32 @@ export function filterByLanguage (bindings, languagePrefs) {
   return slimmed
 }
 
+export async function queryPublicData (filter: string, theClass:NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
+  const sparql = queryTarget.sparql
+    .replace('$(name)', filter)
+    .replace('$(limit)', '' + AUTOCOMPLETE_LIMIT)
+    .replace('$(class)', theClass)
+  console.log('Querying public data - sparql: ' + sparql)
+
+  const myUrlWithParams = new URL(queryTarget.endpoint);
+  myUrlWithParams.searchParams.append("query", sparql);
+  const queryURI = myUrlWithParams.href
+  console.log(' queryPublicData uri: ' + queryURI);
+
+  const options = { credentials: 'omit',
+    headers: { 'Accept': 'application/json'}
+  } // CORS
+  var response
+  response = await kb.fetcher.webOperation('GET', queryURI, options)
+  //complain('Error querying db of organizations: ' + err)
+  const text = response.responseText
+  console.log('    Query result ' + text)
+  const json = JSON.parse(text)
+  console.log('    Query result JSON' + JSON.stringify(json, null, 4))
+  const bindings = json.results.bindings
+  return bindings
+}
+
 export function queryURIForDbpediaSearch (query:string):string {
   const myUrlWithParams = new URL("https://dbpedia.org/sparql/");
 
@@ -102,7 +158,9 @@ export async function queryDbpedia (sparql: string): Promise<Bindings> {
   return bindings
 }
 
-type AutocompleteOptions = { cancelButton?: HTMLElement, acceptButton?: HTMLElement }
+type AutocompleteOptions = { cancelButton?: HTMLElement, acceptButton?: HTMLElement,
+                             class: NamedNode,
+                             queryParams: QueryParameters  }
 
 interface Callback1 {
   (subject: NamedNode, name: string): void;
@@ -184,16 +242,20 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   async function refreshList() {
     var languagePrefs = USER_PREFERED_LANGUAGE
     const filter = searchInput.value.trim().toLowerCase()
-    if (filter.length === 0) return
-    if (filter.length >= 4) {
+    if (filter.length < 4) { // too small
+      clearList()
+      candidatesLoaded = false
+      return
+    } else {
       if (candidatesLoaded && lastFilter && filter.startsWith(lastFilter)) {
           thinOut(filter) // reversible?
           return
       }
-      const sparql = sparqlForSearch(filter, OrgClass)
+      // const sparql = sparqlForSearch(filter, OrgClass)
       var bindings
       try {
-        bindings = await queryDbpedia(sparql)
+        bindings = await queryPublicData(filter, OrgClass, dbpediaParameters)
+        // bindings = await queryDbpedia(sparql)
       } catch (err) {
         complain('Error querying db of organizations: ' + err)
         return
@@ -218,8 +280,6 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         row.textContent = name
         row.addEventListener('click', _event => { gotIt(kb.sym(uri), name)})
       })
-    } else {
-      candidatesLoaded = false
     }
   } // refreshList
 
@@ -238,9 +298,11 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     return sparql
   }
 
+  const queryParams: QueryParameters = options.queryParams
+  const OrgClass = options.class // kb.sym('http://umbel.org/umbel/rc/EducationalOrganization') // @@@ other
+
   var candidatesLoaded = false
   var lastFilter = null
-  const OrgClass = kb.sym('http://umbel.org/umbel/rc/EducationalOrganization') // @@@ other
   const numberOfRows = AUTOCOMPLETE_ROWS
   var div = dom.createElement('div')
   var foundName = null // once found accepted string must match this

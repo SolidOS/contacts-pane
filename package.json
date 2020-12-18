@@ -4,7 +4,7 @@
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
-    "build": "echo nothing to build",
+    "build": "make",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
     "test": "npm run lint",

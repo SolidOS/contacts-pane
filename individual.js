@@ -2,7 +2,7 @@ import * as UI from 'solid-ui'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
-import { renderAutoComplete } from './autocompletePicker.js'
+// import { renderAutoComplete, dbpediaParameters, wikidataParameters } from './lib/autocompletePicker.js'
 import individualFormText from './individualForm'
 import organizationFormText from './organizationForm'
 import VCARD_ONTOLOGY_TEXT from './vcard.js'
@@ -93,8 +93,9 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   spacer()
 
-  // Auto complete searches
-
+  // Auto complete searches in a table
+  // Prefer the fom below renderPublicIdControl
+  /*
   if (isOrganization) {
     const publicDataTable = div.appendChild(dom.createElement('table'))
     async function publicDataSearchRow (name) {
@@ -111,7 +112,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     }
     publicDataTable.appendChild(await publicDataSearchRow('dbpedia'))
   }
-
+*/
   // Allow to attach documents etc to the contact card
 
   UI.widgets.attachmentList(dom, subject, div, {

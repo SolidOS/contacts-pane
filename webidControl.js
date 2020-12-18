@@ -1,7 +1,7 @@
 // Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
-import { renderAutoComplete } from './autocompletePicker.js'
+import { renderAutoComplete, dbpediaParameters, wikidataParameters } from './lib/autocompletePicker.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -240,7 +240,12 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       const webid = object.uri
       return addOneIdAndRefresh(person, webid)
     }
-    creationArea.appendChild(await renderAutoComplete(dom, autoCompleteDone))
+
+    const acOptions = { // maybe later cancelButton, acceptButton
+      queryParameters: dbpediaParameters,
+      class: kb.sym('http://umbel.org/umbel/rc/EducationalOrganization')
+    }
+    creationArea.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
   }
 
   async function droppedURIHandler (uris) {
