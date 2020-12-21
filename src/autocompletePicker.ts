@@ -5,14 +5,13 @@
 */
 import { icons, ns, style, widgets, store } from 'solid-ui'
 import { NamedNode, Store, st } from 'rdflib'
-// import { getChat, longChatPane } from 'chat-pane'
-// import { renderGroupMemberships } from './groupMembershipControl.js'
+import { queryPublicDataByName, filterByLanguage, wikidataParameters,
+  AUTOCOMPLETE_LIMIT, QueryParameters } from './publicData'
 
 const kb = store
 
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
-const AUTOCOMPLETE_LIMIT = 100 // How many to get from server
 
 const USER_PREFERED_LANGUAGE = ['fr', 'en', 'de', 'it'] // @ get from user preferences
 
@@ -30,141 +29,17 @@ Autocomplete hapopens in four phases:
   - Optionally waiting for accept button to be pressed
 */
 
-interface Term {
-  type: string;
-  value: string
-}
 
-interface Binding {
-  subject: Term;
-  name: Term
-}
 
-type Bindings = Binding[]
-
-type QueryParameters =
-{ label: string;
-  sparql: string;
-  endpoint: string;
-  class: object
-}
-
-export const dbpediaParameters:QueryParameters = {
-  label: 'DBPedia',
-  sparql: `select distinct ?subject, ?name where {
-    ?subject a $(class); rdfs:label ?name
-    FILTER regex(?name, "$(name)", "i")
-  } LIMIT $(limit)`,
-  endpoint: 'https://dbpedia.org/sparql/',
-    class: { AcaemicInsitution: '<http://umbel.org/umbel/rc/EducationalOrganization>'}
-}
-
-export const wikidataParameters = {
-  label: 'WikiData',
-  sparql: `SELECT ?item ?name ?pic
-  WHERE
-  {     ?klass wdt:P279* $(class) .
-  ?item wdt:P31 ?klass .
-  ?item wdt:P18 ?pic ; rdfs:label ?name.
-  FILTER regex(?name, "$(name)", "i")
-} LIMIT $(limit) `, // was SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
-  endpoint: 'https://query.wikidata.org/sparql',
-  class: { AcaemicInsitution: 'wd:Q4671277'}
-}
-
-/* From an array of bindings with a names for each row,
- * remove dupliacte names for the same thing, leaving the user's
- * preferred language version
-*/
-export function filterByLanguage (bindings, languagePrefs) {
-  let uris = {}
-  console.log(' Filter by language: '  + bindings.length)
-  bindings.forEach(binding => { // Organize names by their subject
-    const uri = binding.subject.value
-    uris[uri] = uris[uri] || []
-    uris[uri].push(binding)
-  })
-
-  var languagePrefs2 = languagePrefs
-  languagePrefs2.reverse() // prefered last
-
-  var slimmed = []
-  for (const u in uris) { // needs hasOwnProperty ?
-    // console.log('   Filter uri : ' + u )
-    const bindings = uris[u]
-    // console.log('   Filter bindings : ' + JSON.stringify(bindings) )
-    const sortMe  = bindings.map(binding => {
-      return [ languagePrefs2.indexOf(binding.name['xml:lang']), binding]
-    })
-    // console.log('   Filter sortme : ' + sortMe.length )
-
-    sortMe.sort() // best at th ebottom
-    sortMe.reverse() // best at the top
-    slimmed.push(sortMe[0][1])
-  } // map u
-  return slimmed
-}
-
-export async function queryPublicData (filter: string, theClass:NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
-  const sparql = queryTarget.sparql
-    .replace('$(name)', filter)
-    .replace('$(limit)', '' + AUTOCOMPLETE_LIMIT)
-    .replace('$(class)', theClass)
-  console.log('Querying public data - sparql: ' + sparql)
-
-  const myUrlWithParams = new URL(queryTarget.endpoint);
-  myUrlWithParams.searchParams.append("query", sparql);
-  const queryURI = myUrlWithParams.href
-  console.log(' queryPublicData uri: ' + queryURI);
-
-  const options = { credentials: 'omit',
-    headers: { 'Accept': 'application/json'}
-  } // CORS
-  var response
-  response = await kb.fetcher.webOperation('GET', queryURI, options)
-  //complain('Error querying db of organizations: ' + err)
-  const text = response.responseText
-  console.log('    Query result ' + text)
-  const json = JSON.parse(text)
-  console.log('    Query result JSON' + JSON.stringify(json, null, 4))
-  const bindings = json.results.bindings
-  return bindings
-}
-
-export function queryURIForDbpediaSearch (query:string):string {
-  const myUrlWithParams = new URL("https://dbpedia.org/sparql/");
-
-  // myUrlWithParams.searchParams.append("default-graph-uri", "http://dbpedia.org");
-  myUrlWithParams.searchParams.append("query", query);
-
-  console.log(myUrlWithParams.href);
-  return myUrlWithParams.href
-}
-
-export async function queryDbpedia (sparql: string): Promise<Bindings> {
-  console.log('Querying org data in dbpedia: ' + sparql)
-  const queryURI  = queryURIForDbpediaSearch(sparql)
-  const options = { credentials: 'omit',
-    headers: { 'Accept': 'application/json'}
-  } // CORS
-  var response
-  response = await kb.fetcher.webOperation('GET', queryURI, options)
-  //complain('Error querying db of organizations: ' + err)
-  const text = response.responseText
-  console.log('    Query result ' + text)
-  const json = JSON.parse(text)
-  console.log('    Query result JSON' + JSON.stringify(json, null, 4))
-  const bindings = json.results.bindings
-  return bindings
-}
-
-type AutocompleteOptions = { cancelButton?: HTMLElement, acceptButton?: HTMLElement,
+type AutocompleteOptions = { cancelButton?: HTMLElement,
+                             acceptButton?: HTMLElement,
                              class: NamedNode,
                              queryParams: QueryParameters  }
 
 interface Callback1 {
   (subject: NamedNode, name: string): void;
 }
+
 export async function renderAutoComplete (dom: HTMLDocument, options:AutocompleteOptions, // subject:NamedNode, predicate:NamedNode,
   callback: Callback1) {
   function complain (message) {
@@ -174,9 +49,16 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     style.setStyle(errorRow, 'autocompleteRowStyle')
     errorRow.style.padding = '1em'
   }
+  function remove (ele?: HTMLElement) {
+    if (ele) {
+      ele.parentNode.removeChild(ele)
+    }
+  }
   function finish (object, name) {
     console.log('Auto complete: finish! '  + object)
-    div.innerHTML = '' // Clear out the table
+    remove(options.cancelButton)
+    remove(options.acceptButton)
+    remove(div)
     if (callback) callback(object, name)
   }
   async function gotIt(object:NamedNode, name:string) {
@@ -185,6 +67,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
        searchInput.value = name // complete it
        foundName = name
        foundObject = object
+       console.log('Auto complete: name: '  + name)
        console.log('Auto complete: waiting for accept '  + object)
        return
     }
@@ -199,6 +82,11 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
   }
 
+  async function cancelButtonHandler (_event) {
+    console.log('Auto complete: Canceled by user! ')
+    div.innerHTML = '' // Clear out the table
+  }
+
   function nameMatch (filter:string, candidate: string):boolean {
     const parts = filter.split(' ') // Each name part must be somewhere
     for (let j = 0; j < parts.length; j++) {
@@ -210,7 +98,9 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 
   function cancelText (_event) {
      searchInput.value = '';
-     (options.acceptButton as any).disabled == true; // start again
+     if (options.acceptButton) {
+       (options.acceptButton as any).disabled == true; // start again
+     }
      candidatesLoaded = false
   }
 
@@ -230,7 +120,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
     if (hits == 1) { // Maybe require green confirmation button clicked?
       console.log(`  auto complete elimination:  "${filter}" -> "${pickedName}"`)
-      gotIt(kb.sym(pick), table.children[1].textContent) // uri, name
+      gotIt(kb.sym(pick), pickedName) // uri, name
     }
   }
 
@@ -251,10 +141,9 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
           thinOut(filter) // reversible?
           return
       }
-      // const sparql = sparqlForSearch(filter, OrgClass)
       var bindings
       try {
-        bindings = await queryPublicData(filter, OrgClass, dbpediaParameters)
+        bindings = await queryPublicDataByName(filter, OrgClass, options.queryParams)
         // bindings = await queryDbpedia(sparql)
       } catch (err) {
         complain('Error querying db of organizations: ' + err)
@@ -273,12 +162,16 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
       slimmed.forEach(binding => {
         const row = table.appendChild(dom.createElement('tr'))
         style.setStyle(row, 'autocompleteRowStyle')
-        const uri = binding.subject.value
-        const name = binding.name.value
+        var uri = binding.subject.value
+        var name = binding.name.value
         row.setAttribute('style', 'padding: 0.3em;')
         row.setAttribute('subject', uri)
         row.textContent = name
-        row.addEventListener('click', _event => { gotIt(kb.sym(uri), name)})
+        row.addEventListener('click', async _event => {
+          console.log('       click row textContent: ' + row.textContent)
+          console.log('       click name: ' + name)
+          gotIt(kb.sym(uri), name)
+        })
       })
     }
   } // refreshList
@@ -300,6 +193,12 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 
   const queryParams: QueryParameters = options.queryParams
   const OrgClass = options.class // kb.sym('http://umbel.org/umbel/rc/EducationalOrganization') // @@@ other
+  if (options.acceptButton) {
+    options.acceptButton.addEventListener('click', acceptButtonHandler, false)
+  }
+  if (options.cancelButton) {
+    options.cancelButton.addEventListener('click', cancelButtonHandler, false)
+  }
 
   var candidatesLoaded = false
   var lastFilter = null
@@ -322,64 +221,6 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     refreshList() // Active: select thing if just one left
   })
   return div
-}
-
-export async function getDbpediaDetails (kb, solidSubject:NamedNode, dbpediaSubject:NamedNode) {
-// Note below the string form of the named node with <> works in SPARQL
-  const sparql = `select distinct ?city, ?state, ?country, ?homepage, ?logo, ?lat, ?long,  WHERE {
-    OPTIONAL { <${dbpediaSubject}> <http://dbpedia.org/ontology/city> ?city }
-    OPTIONAL { ${dbpediaSubject} <http://dbpedia.org/ontology/state> ?state }
-    OPTIONAL { ${dbpediaSubject} <http://dbpedia.org/ontology/country> ?country }
-    OPTIONAL { ${dbpediaSubject} foaf:homepage ?homepage }
-    OPTIONAL { ${dbpediaSubject} foaf:lat ?lat; foaf:long ?long }
-    OPTIONAL { ${dbpediaSubject} <http://dbpedia.org/ontology/country> ?country }
-   }`
-   const predMap = {
-     city: ns.vcard('locality'),
-     state: ns.vcard('region'),
-     country: ns.vcard('country-name'),
-     homepage: ns.foaf('homepage'),
-     lat: ns.geo('latitude'),
-     long: ns.geo('longitude'),
-   }
-  const bindings = await queryDbpedia(sparql)
-  bindings.forEach(binding => {
-    const uri = binding.subject.value
-    const name = binding.name.value
-  })
-}
-
-
-function wikidataQueryAcadInstite (name) {
-  let clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp
-  return `#Acad Inst, with pictures
-#defaultView:ImageGrid
-SELECT ?item ?name ?pic
-WHERE
-{
-  ?item wdt:P31 wd:Q4671277 .
-  ?item wdt:P18 ?pic ; rdfs:label ?name.
-  FILTER regex(?name, "${clean}", "i")
-
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
-} LIMIT ${AUTOCOMPLETE_LIMIT}`
-}
-
-const wikidataEndpoint = 'https://query.wikidata.org/sparql?query=(SPARQL_query)'
-
-const test1 =
-`SELECT ?item ?name ?pic
-WHERE
-{
-
-   ?klass wdt:P279* wd:Q4671277 .
-
-?item wdt:P31 ?klass .
-?item wdt:P18 ?pic ; rdfs:label ?name.
-FILTER regex(?name, "mass", "i")
-
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
-} LIMIT 20 `;
-
+} // renderAutoComplete
 
 const ends = 'ENDS';

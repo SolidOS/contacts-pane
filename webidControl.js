@@ -1,7 +1,8 @@
 // Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
-import { renderAutoComplete, dbpediaParameters, wikidataParameters } from './lib/autocompletePicker.js'
+import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
+import { wikidataParameters } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -240,12 +241,23 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       const webid = object.uri
       return addOneIdAndRefresh(person, webid)
     }
+    // was = dbpediaParameters
+    const queryParams = wikidataParameters
 
-    const acOptions = { // maybe later cancelButton, acceptButton
-      queryParameters: dbpediaParameters,
-      class: kb.sym('http://umbel.org/umbel/rc/EducationalOrganization')
+    const classURI = queryParams.class.Insitute
+    if (!classURI) throw new Error('Fatal: public data parms no class for this')
+    acceptButton = widgets.continueButton(dom)
+    cancelButton = widgets.cancelButton(dom)
+
+    const acOptions = {
+      queryParams,
+      class: kb.sym(classURI),
+      acceptButton,
+      cancelButton
     }
     creationArea.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
+    creationArea.appendChild(acceptButton)
+    creationArea.appendChild(cancelButton)
   }
 
   async function droppedURIHandler (uris) {
@@ -275,7 +287,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
   table.style.width = '100%'
-  let creationArea
+  let creationArea, acceptButton, cancelButton
   if (options.editable) {
     creationArea = div.appendChild(dom.createElement('div'))
     creationArea.style = 'width: 100%;'
