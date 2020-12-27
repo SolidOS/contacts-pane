@@ -1,6 +1,6 @@
 # Wrap TTL files into JS files for bundling with library
 
-,all : individualForm.js vcard.js organizationForm.js lib/autocompletePicker.js
+,all : individualForm.js vcard.js organizationForm.js lib/autocompletePicker.js lib/instituteDetailsQuery.js
 
 individualForm.js : individualForm.ttl
 				(echo 'module.exports = `' ; cat individualForm.ttl; echo '`') >  individualForm.js
@@ -16,3 +16,6 @@ vcard.js : vcard.ttl
 
 lib/autocompletePicker.js: src/autocompletePicker.ts
 				npx tsc src/*.ts --outDir lib
+				
+lib/instituteDetailsQuery.js : src/instituteDetailsQuery.sparql
+				(echo 'module.exports = `' ; cat $< ; echo '`') >  $@

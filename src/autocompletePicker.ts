@@ -6,14 +6,12 @@
 import { icons, ns, style, widgets, store } from 'solid-ui'
 import { NamedNode, Store, st } from 'rdflib'
 import { queryPublicDataByName, filterByLanguage, wikidataParameters,
-  AUTOCOMPLETE_LIMIT, QueryParameters } from './publicData'
+  AUTOCOMPLETE_LIMIT, QueryParameters, getPreferredLanguages } from './publicData'
 
 const kb = store
 
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
-
-const USER_PREFERED_LANGUAGE = ['fr', 'en', 'de', 'it'] // @ get from user preferences
 
 const autocompleteRowStyle = 'border: 0.2em solid straw;'
 
@@ -130,7 +128,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
   }
   async function refreshList() {
-    var languagePrefs = USER_PREFERED_LANGUAGE
+    var languagePrefs = await getPreferredLanguages()
     const filter = searchInput.value.trim().toLowerCase()
     if (filter.length < 4) { // too small
       clearList()

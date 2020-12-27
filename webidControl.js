@@ -2,7 +2,7 @@
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
 import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { wikidataParameters } from './lib/publicData' // dbpediaParameters
+import { wikidataParameters, loadPublicDataThing } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -103,6 +103,11 @@ export function vcardWebIDs (kb, person, urlType) {
     .filter(x => !!x) // remove nulls
 }
 
+export function isOrganization (agent) {
+  const doc = agent.doc()
+  return kb.holds(agent, ns.rdf('type'), ns.vcard('Organization'), doc) ||
+    kb.holds(agent, ns.rdf('type'), ns.schema('Organization'), doc)
+}
 /// ////////////////////////////////////////////////////////////// UI
 
 // Utility function to render another different pane
@@ -191,17 +196,21 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     mainCell.setAttribute('colspan', 3)
     let main
 
-    let profileIsVisible = true
+    var profileIsVisible = true
 
     const rhs = nav.children[2]
     const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
     openButton.style.float = 'right'
     delete openButton.style.backgroundColor
     delete openButton.style.border
-    kb.fetcher.load(persona).then(_resp => {
+    const paneName = isOrganization(person) || isOrganization(persona) ? 'default' : 'profile'
+
+    loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
-        main = renderNamedPane(dom, persona, 'profile', dataBrowserContext)
+        main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
+        console.log('main: ', main)
         main.style.width = '100%'
+        console.log('renderIdControl: main element: ', main)
         // main.style.visibility = 'collapse'
         mainCell.appendChild(main)
       } catch (err) {

@@ -5,6 +5,8 @@ CONSTRUCT
              schema:bogus ?bogus;
              schema:subOrganization  ?subsidiary .
                  ?subsidiary schema:name ?subsidiaryLabel .
+   ?supersidiary schema:subOrganization wd:Q49108 .
+      ?supersidiary schema:name ?supersidiaryLabel .
    wd:Q49108 schema:location ?location .
      ?location  schema:elevation  ?elevation .
      ?location  wdt:P131  ?region .  ?region schema:name ?regionLabel .
@@ -19,7 +21,8 @@ WHERE
     OPTIONAL {    wd:Q49108     wdt:P999 ?bogus; }
     optional {   wd:Q49108 wdt:P18 ?image }
 
-    optional { wd:Q49108         wdt:P355  ?subsidiary . }
+    optional { wd:Q49108       wdt:P355 ?subsidiary . }
+    optional { ?supersidiary   wdt:P355 wd:Q49108. }
 
   optional { wd:Q49108 wdt:P276 ?location .
 
