@@ -170,12 +170,21 @@
    sh:count 1;
   ].
 
-  :WebIdShape a sh:NodeShape; # @@ This is a placeholder - work in progress.
-  # A card may have any number of webids, with property vcard:url and where the type must be vcard:WebId
-  # but it can have other vcard:urls of other types.
+  :WebIdShape a sh:NodeShape;
+  # A card may have any number of hhtp[s] URLs, with property vcard:url and where the type must be given.
+  # so that systems know what they can use the URL for and how to present it.
+  # We add vcard:Homepage vcard:WebId vcard:PublicId as friendly ammendment to https://www.w3.org/TR/vcard-rdf/
+    sh:description """The URL of the subject can be a Homepage on the web,
+    their Solid-compatible WebId, or an RDF Id in open public data.""";
     sh:targetObjectsOf vcard:url;
     sh:property [
-     sh:path vcard:value;    # @@ also need to contrail the type part
+     sh:path rdf:type ;
+     sh:class rdfs:Class ;
+     sh:count 1;
+     sh:in (vcard:Home vcard:Work vcard:Homepage vcard:WebId vcard:PublicId);
+    ];
+    sh:property [
+     sh:path vcard:value;
           sh:pattern "^https?:" ;    # starts with http: or https:
      sh:count 1;
     ].
