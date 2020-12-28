@@ -60,7 +60,7 @@ export const wikidataParameters = {
             NGO:               'http://www.wikidata.org/entity/Q79913',
             CharitableOrganization: 'http://www.wikidata.org/entity/Q708676',
             Insitute: 'http://www.wikidata.org/entity/Q1664720',
-
+  },
   searchByNameQuery: `SELECT ?subject ?name
           WHERE
           {
@@ -88,7 +88,7 @@ WHERE
           #  ?subsidiary rdfs:label ?subsidiaryLabel .
 
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE], fr". }
-}`,}
+}`
 }
 
 /* From an array of bindings with a names for each row,
@@ -222,19 +222,19 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
 }
 
 export async function queryPublicDataConstruct (sparql: string, pubicId: NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
+  console.log('queryPublicDataConstruct: sparql:', sparql)
   const myUrlWithParams = new URL(queryTarget.endpoint);
   myUrlWithParams.searchParams.append("query", sparql);
   const queryURI = myUrlWithParams.href
   console.log(' queryPublicDataConstruct uri: ' + queryURI);
-
-  const options = { credentials: 'omit',
+  const options = { credentials: 'omit', // CORS
     headers: { 'Accept': 'text/turtle'}
-  } // CORS
-  var response
-  response = await kb.fetcher.webOperation('GET', queryURI, options)
+  }
+  const response = await kb.fetcher.webOperation('GET', queryURI, options)
   const text = response.responseText
-  console.log('    Query result  text' + text.slice(0,500) + '...')
-  if (text.length === 0) throw new Error('Wot no text back from query ' + queryURI)
+  const report = text.lenth > 500 ? text.slice(0,200) + ' ... ' + text.slice(-200) : text
+  console.log('    queryPublicDataConstruct result text:' + report)
+  if (text.length === 0) throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI)
   parse(text, kb, pubicId.uri, 'text/turtle')
   return
 }
@@ -261,7 +261,6 @@ export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID:
 export async function getWikidataDetails (kb, solidSubject:NamedNode, publicDataID:NamedNode) {
   const subjRegexp = /wd:Q49108/g
   const sparql = instituteDetailsQuery.replace(subjRegexp, publicDataID)
-  console.log('getWikidataDetails: sparql:', sparql)
   await queryPublicDataConstruct(sparql, publicDataID, wikidataParameters)
   console.log('getWikidataDetails: loaded.', publicDataID)
 }

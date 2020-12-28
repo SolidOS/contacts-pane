@@ -16,6 +16,6 @@ vcard.js : vcard.ttl
 
 lib/autocompletePicker.js: src/autocompletePicker.ts
 				npx tsc src/*.ts --outDir lib
-				
+
 lib/instituteDetailsQuery.js : src/instituteDetailsQuery.sparql
 				(echo 'module.exports = `' ; cat $< ; echo '`') >  $@

@@ -1,25 +1,22 @@
 CONSTRUCT
-{  wd:Q49108 schema:name ?itemLabel;
-             schema:logo ?logo;
-              schema:logo  ?sealImage;
-             schema:bogus ?bogus;
-             schema:subOrganization  ?subsidiary .
-                 ?subsidiary schema:name ?subsidiaryLabel .
+{  wd:Q49108 rdfs:label ?itemLabel;
+   schema:logo ?logo;
+   schema:logo  ?sealImage;
+   schema:subOrganization  ?subsidiary .
+      ?subsidiary rdfs:label ?subsidiaryLabel .
    ?supersidiary schema:subOrganization wd:Q49108 .
-      ?supersidiary schema:name ?supersidiaryLabel .
+      ?supersidiary rdfs:label ?supersidiaryLabel .
    wd:Q49108 schema:location ?location .
-     ?location  schema:elevation  ?elevation .
-     ?location  wdt:P131  ?region .  ?region schema:name ?regionLabel .
-     ?location wdt:P625 ?coordinates .
-    ?location  schema:country  ?country . ?country schema:name ?countryLabel .
+       ?location  schema:elevation  ?elevation .
+       ?location  wdt:P131  ?region .  ?region rdfs:label ?regionLabel .
+       ?location wdt:P625 ?coordinates .
+       ?location  schema:country  ?country . ?country rdfs:label ?countryLabel .
 }
 WHERE
-{
-   wd:Q49108 # rdfs:label ?itemLabel ;
-             wdt:P154 ?logo;
-              wdt:P158  ?sealImage .
-    OPTIONAL {    wd:Q49108     wdt:P999 ?bogus; }
-    optional {   wd:Q49108 wdt:P18 ?image }
+{   # wd:Q49108 # rdfs:label ?itemLabel ;
+    optional {wd:Q49108 wdt:P154 ?logo .}
+    optional {wd:Q49108 wdt:P158  ?sealImage .}
+    optional {wd:Q49108 wdt:P18 ?image .}
 
     optional { wd:Q49108       wdt:P355 ?subsidiary . }
     optional { ?supersidiary   wdt:P355 wd:Q49108. }
@@ -31,7 +28,5 @@ WHERE
   optional { ?location wdt:P625 ?coordinates }
 optional {  ?location  wdt:P17  ?country }
             }
-
   SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en,de,it". }
 }
-#ends
