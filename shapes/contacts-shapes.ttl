@@ -13,6 +13,18 @@
 # @prefix shsh: <http://www.w3.org/ns/shacl-shacl#> .
 @prefix : <#>.
 
+<> rdfs:label "Shape file for VCARD data in Solid";
+  rdfs:comment """The shapes in this file define the way
+  contact information is stored in Solid.  Importantly, this shape,
+  defined in the 2014 Note "vCard Ontology - for describing People and Organizations",
+  allows direct conversion to and from the widley deployed VCARD format,
+  so users should be able import and export and ideally sync their contacts
+  between their Solid pod and other systems.
+
+  Note that VCARD has a URL field with a type which allows us to carry
+  web URIs such as a hompage URI, a public RDF URI in public data such as dbpedia
+  and wikidata, and, critically, a Solid WebID.
+  """.
 
 # see https://www.w3.org/TR/vcard-rdf/
 
