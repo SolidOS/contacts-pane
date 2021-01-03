@@ -1,7 +1,8 @@
 // Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
-import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
+// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
+import { renderAutocompleteControl } from './lib/autocompleetBar'
 import { wikidataParameters, loadPublicDataThing } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
@@ -234,10 +235,11 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     try {
       await addWebIDToContacts(person, webid, options.urlType, kb)
     } catch (err) {
-      creationArea.appendChild(widgets.errorMessageBlock(dom, `Error adding Id ${webid} to ${person}: ${err}`))
+      div.appendChild(widgets.errorMessageBlock(dom, `Error adding Id ${webid} to ${person}: ${err}`))
     }
     await refreshWebIDTable()
   }
+  /*
   async function greenButtonHandler (_event) {
     const webid = await UI.widgets.askName(dom, UI.store, creationArea, UI.ns.vcard('url'), null, WEBID_NOUN)
     if (!webid) {
@@ -274,7 +276,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       await addOneIdAndRefresh(person, webid)
     }
   }
-
+*/
   const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
@@ -296,15 +298,18 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
   table.style.width = '100%'
-  let creationArea, acceptButton, cancelButton
+  // let creationArea, acceptButton, cancelButton
+  let creationArea
   if (options.editable) {
-    creationArea = div.appendChild(dom.createElement('div'))
+    creationArea = div.appendChild(renderAutocompleteControl(dom, person, options, wikidataParameters, addOneIdAndRefresh))
+    /*
     creationArea.style = 'width: 100%;'
     const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))
     UI.widgets.makeDropTarget(plus, droppedURIHandler, null)
     if (options.dbLookup) {
       creationArea.appendChild(widgets.button(dom, SEARCH_ICON, options.idNoun, searchButtonHandler))
     }
+    */
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

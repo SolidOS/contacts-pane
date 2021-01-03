@@ -38,6 +38,7 @@ interface Callback1 {
   (subject: NamedNode, name: string): void;
 }
 
+// The core of the autocomplete UI
 export async function renderAutoComplete (dom: HTMLDocument, options:AutocompleteOptions, // subject:NamedNode, predicate:NamedNode,
   callback: Callback1) {
   function complain (message) {

@@ -14,10 +14,8 @@ module.exports = `
 @prefix : <#>.
 
 
-# Ontology which may be useful
+# Ontology data to drive the classifier
 
-
-# @@
 solid:InterestingOrganization owl:disjointUnionOf  (
 # Airline - a Corpration
 # Consortium - a Corporation or a NGO
@@ -35,12 +33,11 @@ schema:Project # like Solid
 schema:SportsOrganization # a Team
  ) .
 
-
-  :OrganinizationForm a ui:Form; schema:name "Form for editing a role" ;
+  :OrganinizatioCreationForm a ui:Form; schema:name "Form for editing a role" ;
     ui:parts ( :OrgClassifier :homePageURIField  ) .
 
 
- :OrgClassifier a ui:Classifier; ui:label "What sort of organization?";
+ :OrgClassifier a ui:Classifier; ui:label "What sort of organization?"@en;
     ui:category solid:InterestingOrganization .
 
 
