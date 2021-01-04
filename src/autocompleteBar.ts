@@ -20,7 +20,7 @@ const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
 // const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
 const SEARCH_ICON = UI.icons.iconBase + 'noun_704.svg' // @@ will be noun_Search_875351.svg
 
-async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, options, queryParameters: QueryParameters, addOneIdAndRefresh): Promise<HTMLElement> {
+export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, options, queryParameters: QueryParameters, addOneIdAndRefresh): Promise<HTMLElement> {
 
   async function autoCompleteDone (object, _name) {
     const webid = object.uri
@@ -59,7 +59,7 @@ async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, op
   }
 
   async function droppedURIHandler (uris) {
-    for (const webid of uris) { // normally one bit can be more than one
+    for (const webid of uris) { // normally one but can be more than one
       await addOneIdAndRefresh(person, webid)
     }
   }
@@ -67,12 +67,12 @@ async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, op
   // const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
-  var creationArea
+
+  const creationArea = dom.createElement('div')
   if (options.editable) {
 
-    creationArea = dom.createElement('div')
-    creationArea.appendChild(renderAutoComplete(dom, options, autoCompleteDone))
-    creationArea.style = 'width: 100%;'
+    creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone))
+    creationArea.style.width = '100%'
     const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))
     widgets.makeDropTarget(plus, droppedURIHandler, null)
     if (options.dbLookup) {

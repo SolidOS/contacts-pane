@@ -4,7 +4,7 @@ import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
 // import { renderAutoComplete, dbpediaParameters, wikidataParameters } from './lib/autocompletePicker.js'
 import individualFormText from './individualForm'
-import organizationFormText from './organizationForm'
+// import organizationFormText from './organizationForm'
 import VCARD_ONTOLOGY_TEXT from './vcard.js'
 
 const $rdf = UI.rdf
@@ -52,10 +52,10 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   )
   loadTurtleText(kb, individualForm, individualFormText)
 
-  const organizationForm = kb.sym(
-    'https://solid.github.io/solid-panes/contact/organizationForm.ttl#OrganinizationForm'
+  const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
+    'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
   )
-  loadTurtleText(kb, organizationForm, organizationFormText)
+  // loadTurtleText(kb, organizationForm, organizationFormText)
 
   // Background metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
@@ -76,7 +76,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(renderMugshotGallery(dom, subject))
 
-  const form = isOrganization ? organizationForm : individualForm
+  const form = isOrganization ? orgDetailsForm : individualForm
   UI.widgets.appendForm(
     dom,
     div,

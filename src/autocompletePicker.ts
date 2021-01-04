@@ -27,8 +27,6 @@ Autocomplete hapopens in four phases:
   - Optionally waiting for accept button to be pressed
 */
 
-
-
 type AutocompleteOptions = { cancelButton?: HTMLElement,
                              acceptButton?: HTMLElement,
                              class: NamedNode,

@@ -2,7 +2,7 @@
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './lib/autocompleetBar'
+import { renderAutocompleteControl } from './lib/autocompleteBar'
 import { wikidataParameters, loadPublicDataThing } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
@@ -14,10 +14,10 @@ const style = UI.style
 
 const WEBID_NOUN = 'Solid ID'
 const PUBLICID_NOUN = 'In public data'
-const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
+// const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
 const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
 const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
-const SEARCH_ICON = UI.icons.iconBase + 'noun_704.svg' // @@ will be noun_Search_875351.svg
+// const SEARCH_ICON = UI.icons.iconBase + 'noun_704.svg' // @@ will be noun_Search_875351.svg
 const webidPanelBackgroundColor = '#ffe6ff'
 
 /// ///////////////////////// Logic
@@ -298,18 +298,9 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
   table.style.width = '100%'
-  // let creationArea, acceptButton, cancelButton
-  let creationArea
-  if (options.editable) {
-    creationArea = div.appendChild(renderAutocompleteControl(dom, person, options, wikidataParameters, addOneIdAndRefresh))
-    /*
-    creationArea.style = 'width: 100%;'
-    const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))
-    UI.widgets.makeDropTarget(plus, droppedURIHandler, null)
-    if (options.dbLookup) {
-      creationArea.appendChild(widgets.button(dom, SEARCH_ICON, options.idNoun, searchButtonHandler))
-    }
-    */
+
+  if (options.editable) { // test
+    div.appendChild(await renderAutocompleteControl(dom, person, options, wikidataParameters, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()
