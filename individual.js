@@ -2,14 +2,11 @@ import * as UI from 'solid-ui'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
-// import { renderAutoComplete, dbpediaParameters, wikidataParameters } from './lib/autocompletePicker.js'
-import individualFormText from './individualForm'
-// import organizationFormText from './organizationForm'
-import VCARD_ONTOLOGY_TEXT from './vcard.js'
+import textOfForms from './lib/forms'
+import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
-// const utils = UI.utils
 const kb = UI.store
 const style = UI.style
 
@@ -50,14 +47,13 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  loadTurtleText(kb, individualForm, individualFormText)
+  loadTurtleText(kb, individualForm, textOfForms)
 
   const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
   )
-  // loadTurtleText(kb, organizationForm, organizationFormText)
 
-  // Background metadata for this pane we bundle with the JS
+  // Ontology metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
