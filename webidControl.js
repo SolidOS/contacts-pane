@@ -3,7 +3,7 @@
 import * as UI from 'solid-ui'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
 import { renderAutocompleteControl } from './lib/autocompleteBar'
-import { wikidataParameters, loadPublicDataThing } from './lib/publicData' // dbpediaParameters
+import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -135,13 +135,24 @@ export async function renderWebIdControl (person, dataBrowserContext) {
 }
 
 export async function renderPublicIdControl (person, dataBrowserContext) {
+  let orgClass = kb.sym('http://www.wikidata.org/wiki/Q43229')
+  let orgClassId = 'Organization'
+  for (const classId in wikidataClasses) {
+    if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
+      orgClass = kb.sym(wikidataClasses[classId])
+      orgClassId = classId
+      console.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
+    }
+  }
   const options = {
-    longPrompt: `If you know somethings ${PUBLICID_NOUN}, you can do more stuff with it.
+    longPrompt: `If you know the ${PUBLICID_NOUN} of this ${orgClassId}, you can do more stuff with it.
     To record its ${PUBLICID_NOUN}, drag it onto the plus, or click the magnifyinng glass
     to search for it in WikiData.`,
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
-    dbLookup: true
+    dbLookup: true,
+    class: orgClass, // Organization
+    queryParams: wikidataParameters
   }
   return renderIdControl(person, dataBrowserContext, options)
 }
@@ -239,44 +250,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     }
     await refreshWebIDTable()
   }
-  /*
-  async function greenButtonHandler (_event) {
-    const webid = await UI.widgets.askName(dom, UI.store, creationArea, UI.ns.vcard('url'), null, WEBID_NOUN)
-    if (!webid) {
-      return // cancelled by user
-    }
-    return addOneIdAndRefresh(person, webid)
-  }
-  async function searchButtonHandler (_event) {
-    async function autoCompleteDone (object, _name) {
-      const webid = object.uri
-      return addOneIdAndRefresh(person, webid)
-    }
-    // was = dbpediaParameters
-    const queryParams = wikidataParameters
 
-    const classURI = queryParams.class.Insitute
-    if (!classURI) throw new Error('Fatal: public data parms no class for this')
-    acceptButton = widgets.continueButton(dom)
-    cancelButton = widgets.cancelButton(dom)
-
-    const acOptions = {
-      queryParams,
-      class: kb.sym(classURI),
-      acceptButton,
-      cancelButton
-    }
-    creationArea.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
-    creationArea.appendChild(acceptButton)
-    creationArea.appendChild(cancelButton)
-  }
-
-  async function droppedURIHandler (uris) {
-    for (const webid of uris) { // normally one bit can be more than one
-      await addOneIdAndRefresh(person, webid)
-    }
-  }
-*/
   const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)

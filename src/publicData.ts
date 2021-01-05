@@ -37,6 +37,21 @@ export type QueryParameters =
   class: object
 }
 
+// Schema.org seems to suggest NGOs are non-profit and Corporaions are for-profit
+// but doesn't have explicit classes
+export const wikidataClasses = {
+  Corporation: 'http://www.wikidata.org/entity/Q6881511', // Enterprise is for-profit
+  EducationalOrganization: 'http://www.wikidata.org/entity/Q178706', // insitution
+  GovernmentOrganization: 'http://www.wikidata.org/entity/Q327333', // government agency
+  MedicalOrganization: 'http://www.wikidata.org/entity/Q4287745',
+  MusicGroup: 'http://www.wikidata.org/entity/Q32178211', // music organization
+  NGO: 'http://www.wikidata.org/entity/Q163740', // nonprofit organization @@
+  Occupation: 'http://www.wikidata.org/entity/Q28640', // Profession
+  // Organization: 'http://www.wikidata.org/entity/Q43229',
+  Project: 'http://www.wikidata.org/entity/Q170584',
+  SportsOrganization: 'http://www.wikidata.org/entity/Q4438121',
+}
+
 export async function getPreferredLanguages () {
   return [ 'fr', 'en',  'de', 'it'] // @@ testing only -- code me later
 }
@@ -76,7 +91,7 @@ export const wikidataParameters = {
           {
              ?klass wdt:P279* $(class) .
           ?subject wdt:P31 ?klass .
-          ?subject wdt:P18 ?pic ; rdfs:label ?name.
+          ?subject rdfs:label ?name.
           FILTER regex(?name, "$(name)", "i")
 
           # SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
@@ -291,7 +306,7 @@ export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID:
     return getDbpediaDetails(kb, subject, publicDataID)
   } else if (publicDataID.uri.match(/^https?:\/\/www\.wikidata\.org\/entity\/.*/)) {
     const QId = publicDataID.uri.split('/')[4]
-    const dataURI = `https://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
+    const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
     // In fact loading the data URI gives much to much irrelevant data, from wikidata.
     await getWikidataDetails(kb, subject, publicDataID)
     // await getWikidataLocation(kb, subject, publicDataID)  -- should get that in the details query now

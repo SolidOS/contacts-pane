@@ -36,18 +36,18 @@ vcard:note ui:label "notes"@en .
 solid:InterestingOrganization owl:disjointUnionOf  (
 # Airline - a Corpration
 # Consortium - a Corporation or a NGO
- schema:Corporation
- schema:EducationalOrganization
+  schema:Corporation
+  schema:EducationalOrganization
 # FundingScheme - eh?
- schema:GovernmentOrganization
+  schema:GovernmentOrganization
 # LibrarySystem
 # LocalBusiness - Corporation
-# MedicalOrganization - a Corporation or a NGO
- schema:NGO
+  schema:MedicalOrganization
+  schema:NGO
  # NewsMediaOrganization - a Corporation or a NGO
-schema:PerformingGroup # a band
-schema:Project # like Solid
-schema:SportsOrganization # a Team
+  schema:MusicGroup # e.g. a band
+  schema:Project # like Solid
+  schema:SportsOrganization # a Team
  ) .
 
 
@@ -67,11 +67,13 @@ vcard:Individual
 # For org:
 :orgDetailsForm a ui:Form ; dct:title "Contact details for an organozation";
   ui:parts (
-                :fullNameField
-                  :addresses
-                 :eMails
-                 :telephones
-                  :noteField ) .
+    :OrgClassifier
+
+    :fullNameField
+    :addresses
+    :eMails
+    :telephones
+    :noteField ) .
 # For individual:
 :form1
     dct:title "Contact Details for a person" ;
