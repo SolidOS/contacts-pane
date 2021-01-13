@@ -71,6 +71,11 @@ vcard:Individual
           ui:property vcard:organization-name ;
           ui:size "40" .
 
+      :paymentPointerField
+          a ui:SingleLineTextField ;
+          ui:maxLength "128" ;
+          ui#property <http://paymentpointers.org/ns#PaymentPointer> ;
+          ui#size "40" .
 
 :addressesComment
     a ui:Comment ;
