@@ -6,6 +6,7 @@ module.exports = `
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+@prefix pp: <http://paymentpointers.org/ns#>.
 @prefix : <#>.
 
 # Ontology additions or interpretations needed for the form to work well
@@ -36,11 +37,11 @@ vcard:Individual
     dct:title "Contact Details" ;
     a ui:Form ;
     ui:part
-        :fullNameField,   :roleField,   :fullNameFieldC, :addressesComment, :addresses,
+        :fullNameField,   :roleField,   :fullNameFieldC, :paymentPointerField, :addressesComment, :addresses,
         :emailComment, :eMails,
         :telephoneComment, :telephones, :noteComment, :noteField ;
     ui:parts (
-                :fullNameField  :roleField :fullNameFieldC
+                :fullNameField  :roleField :fullNameFieldC :paymentPointerField
                 # :addressesComment
                   :addresses
                 # :emailComment
@@ -64,13 +65,18 @@ vcard:Individual
         ui:property vcard:role ;
         ui:size "40" .
 
-      :fullNameFieldC
-          a ui:SingleLineTextField ;
-          ui:suppressEmptyUneditable true;
-          ui:maxLength "128" ;
-          ui:property vcard:organization-name ;
-          ui:size "40" .
+    :fullNameFieldC
+        a ui:SingleLineTextField ;
+        ui:suppressEmptyUneditable true;
+        ui:maxLength "128" ;
+        ui:property vcard:organization-name ;
+        ui:size "40" .
 
+    :paymentPointerField
+        a ui:SingleLineTextField ;
+        ui:maxLength "128" ;
+        ui:property pp:PaymentPointer ;
+        ui:size "40" .
 
 :addressesComment
     a ui:Comment ;
