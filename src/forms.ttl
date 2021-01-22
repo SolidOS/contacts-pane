@@ -4,10 +4,13 @@
 # share some forms (address etc) and also interact (roles)
 
 # Now hand-edited, was originally made using form editor.
+# Forms documentaion: https://solid.github.io/solid-ui/Documentation/forms-intro.html
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix dct: <http://purl.org/dc/terms/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix prov: <http://www.w3.org/ns/prov#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
 @prefix schema: <http://schema.org/>.
 @prefix solid: <http://www.w3.org/ns/solid/terms#>.
@@ -30,6 +33,18 @@ vcard:note ui:label "notes"@en .
 
 
 
+# Ontology data to drive a top classifier
+
+foaf:Agent owl:disjointUnionOf  (
+  vcard:Individual
+  # @@  schema:robot @@  schem:SoftwareApplication, n0:Agent, n0:Person,
+  prov:SoftwareAgent
+  # vcard:Group     a group of agents is not (currently) an agent itself.
+  # You can't get a decision out of it so  it can't awn a bank account
+  vcard:Organization
+).
+
+
 # Ontology data to drive the classifier
 
 solid:InterestingOrganization owl:disjointUnionOf  (
@@ -49,11 +64,27 @@ solid:InterestingOrganization owl:disjointUnionOf  (
   schema:SportsOrganization # a Team
  ) .
 
-
-
-
-
+#########################################################
 #  The forms themselves
+
+foaf:Agent ui:creationForm :AgentForm .
+
+:AgentForm a ui:Form; schema:name "Form for editing a agent" ;
+  ui:parts ( :AgentClassifier :AgentOptions  ) .
+
+  :AgentClassifier a ui:Classifier; ui:label "What sort of agent?"@en;
+    ui:category foaf:Agent .
+
+:AgentOptions  a ui:Options; ui:dependingon rdf:type;
+   ui:case [ ui:for vcard:Individual; ui:use :form1 ],
+           [ ui:for vcard:Organization; ui:use :orgDetailsForm ],
+           [ ui:for prov:SoftwareAgent; ui:use :robotDetailsForm ] .
+
+# Robots
+
+:robotDetailsForm a ui:Form; ui:parts ( ) . # @@@@
+
+#  Individual-specific form
 
 vcard:Individual
     ui:creationForm :form1 .
@@ -258,7 +289,7 @@ vcard:Individual
 
 ############ organization forms
 
-:OrganinizatioCreationForm a ui:Form; schema:name "Form for editing a role" ;
+:OrganinizatioCreationForm a ui:Form; schema:name "Form for editing contact details of an organization" ;
   ui:parts ( :OrgClassifier :homePageURIField  ) .
 
 

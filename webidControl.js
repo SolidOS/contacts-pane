@@ -14,10 +14,8 @@ const style = UI.style
 
 const WEBID_NOUN = 'Solid ID'
 const PUBLICID_NOUN = 'In public data'
-// const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
 const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
 const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
-// const SEARCH_ICON = UI.icons.iconBase + 'noun_704.svg' // @@ will be noun_Search_875351.svg
 const webidPanelBackgroundColor = '#ffe6ff'
 
 /// ///////////////////////// Logic
@@ -274,7 +272,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   table.style.width = '100%'
 
   if (options.editable) { // test
-    div.appendChild(await renderAutocompleteControl(dom, person, options, wikidataParameters, addOneIdAndRefresh))
+    options.queryParams = options.queryParams || wikidataParameters
+    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

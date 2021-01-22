@@ -1,3 +1,4 @@
+// The Control with decorations
 
 import { icons, ns, style, widgets, store } from 'solid-ui'
 
@@ -16,9 +17,7 @@ const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
 
 const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
-// const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
-// const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
-const SEARCH_ICON = UI.icons.iconBase + 'noun_704.svg' // @@ will be noun_Search_875351.svg
+const SEARCH_ICON = UI.icons.iconBase + 'noun_Search_875351.svg'
 
 export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, options, queryParameters: QueryParameters, addOneIdAndRefresh): Promise<HTMLElement> {
 

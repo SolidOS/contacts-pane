@@ -1,4 +1,4 @@
-/* Create and edit data on Organizations
+/* Create and edit data using public data
 **
 ** organizations conveys many distinct typed of thing.
 **
