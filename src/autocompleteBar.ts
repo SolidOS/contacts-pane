@@ -19,10 +19,12 @@ const AUTOCOMPLETE_ROWS = 12 // 20?
 const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
 const SEARCH_ICON = UI.icons.iconBase + 'noun_Search_875351.svg'
 
-export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedNode, options, queryParameters: QueryParameters, addOneIdAndRefresh): Promise<HTMLElement> {
+export async function renderAutocompleteControl (dom:HTMLDocument,
+   person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {
 
   async function autoCompleteDone (object, _name) {
     const webid = object.uri
+    removeDecorated()
     return addOneIdAndRefresh(person, webid)
   }
 
@@ -33,28 +35,21 @@ export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedN
     }
     return addOneIdAndRefresh(person, webid)
   }
+  function removeDecorated () {
+    creationArea.removeChild(decoratedAutocomplete)
+    decoratedAutocomplete = null
+  }
   async function searchButtonHandler (_event) {
-    async function autoCompleteDone (object, _name) {
-      const webid = object.uri
-      return addOneIdAndRefresh(person, webid)
+    if (decoratedAutocomplete) {
+      creationArea.removeChild(decoratedAutocomplete)
+      decoratedAutocomplete = null
+    } else {
+      decoratedAutocomplete = dom.createElement('div')
+      decoratedAutocomplete.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
+      decoratedAutocomplete.appendChild(acceptButton)
+      decoratedAutocomplete.appendChild(cancelButton)
+      creationArea.appendChild(decoratedAutocomplete)
     }
-    // was = dbpediaParameters
-    const queryParams = wikidataParameters
-
-    const classURI = queryParams.class.Insitute
-    if (!classURI) throw new Error('Fatal: public data parms no class for this')
-    const acceptButton = widgets.continueButton(dom)
-    const cancelButton = widgets.cancelButton(dom)
-
-    const acOptions = {
-      queryParams,
-      class: kb.sym(classURI),
-      acceptButton,
-      cancelButton
-    }
-    creationArea.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
-    creationArea.appendChild(acceptButton)
-    creationArea.appendChild(cancelButton)
   }
 
   async function droppedURIHandler (uris) {
@@ -63,6 +58,18 @@ export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedN
     }
   }
 
+  const queryParams = options.queryParameters || wikidataParameters
+  const acceptButton = widgets.continueButton(dom)
+  const cancelButton = widgets.cancelButton(dom, removeDecorated)
+  const klass = options.class
+  const acOptions = {
+    queryParams,
+    class:klass,
+    acceptButton,
+    cancelButton
+  }
+
+  var decoratedAutocomplete = null
   // const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
@@ -70,7 +77,7 @@ export async function renderAutocompleteControl (dom:HTMLDocument, person:NamedN
   const creationArea = dom.createElement('div')
   if (options.editable) {
 
-    creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone))
+    // creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone)) wait for searchButton
     creationArea.style.width = '100%'
     const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))
     widgets.makeDropTarget(plus, droppedURIHandler, null)

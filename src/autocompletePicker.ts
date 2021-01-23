@@ -13,7 +13,7 @@ const kb = store
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
 
-const autocompleteRowStyle = 'border: 0.2em solid straw;'
+const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
 
 /*
 Autocomplete hapopens in four phases:
@@ -53,10 +53,10 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   }
   function finish (object, name) {
     console.log('Auto complete: finish! '  + object)
-    remove(options.cancelButton)
-    remove(options.acceptButton)
-    remove(div)
-    if (callback) callback(object, name)
+     // remove(options.cancelButton)
+    // remove(options.acceptButton)
+    // remove(div)
+    callback(object, name)
   }
   async function gotIt(object:NamedNode, name:string) {
     if (options.acceptButton) {
@@ -163,6 +163,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         var name = binding.name.value
         row.setAttribute('style', 'padding: 0.3em;')
         row.setAttribute('subject', uri)
+        row.style.color = loadedEnough ? '#040' : '#000' // green means 'you should find it here'
         row.textContent = name
         row.addEventListener('click', async _event => {
           console.log('       click row textContent: ' + row.textContent)
@@ -194,7 +195,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     options.acceptButton.addEventListener('click', acceptButtonHandler, false)
   }
   if (options.cancelButton) {
-    options.cancelButton.addEventListener('click', cancelButtonHandler, false)
+    // options.cancelButton.addEventListener('click', cancelButtonHandler, false)
   }
 
   var candidatesLoaded = false
@@ -213,6 +214,11 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   const searchInputStyle = style.searchInputStyle ||
     'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em' // @
   searchInput.setAttribute('style', searchInputStyle)
+  searchInput.addEventListener('keyup', function (event) {
+    if (e.keyCode === 13) {
+      acceptButtonHandler(event)
+    }
+  }, false);
 
   searchInput.addEventListener('input', function (_event) {
     refreshList() // Active: select thing if just one left

@@ -122,7 +122,6 @@ WHERE
 */
 export function filterByLanguage (bindings, languagePrefs) {
   let uris = {}
-  console.log(' Filter by language: '  + bindings.length)
   bindings.forEach(binding => { // Organize names by their subject
     const uri = binding.subject.value
     uris[uri] = uris[uri] || []
@@ -142,6 +141,7 @@ export function filterByLanguage (bindings, languagePrefs) {
     sortMe.reverse() // best at the top
     slimmed.push(sortMe[0][1])
   } // map u
+  console.log(` Filter by language: ${bindings.length} -> ${slimmed.length}`)
   return slimmed
 }
 
