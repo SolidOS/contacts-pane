@@ -114,43 +114,44 @@ export function renderMugshotGallery (dom, subject) {
   }
 
   // When a set of URIs are dropped on
-  function handleURIsDroppedOnMugshot (uris) {
-    uris.forEach(function (u) {
-      const thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
+  async function handleURIsDroppedOnMugshot (uris) {
+    for (const u of uris) {
+      var thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
       console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
       if (u.startsWith('http') && u.indexOf('#') < 0) {
         // Plain document
         // Take a copy of a photo on the web:
+        if (u.startsWith('http:')) { // because of browser mixed content stuff can't read http:
+          thing = $rdf.sym('https:' + u.slice(5))
+        }
         const options = { withCredentials: false, credentials: 'omit' }
-        kb.fetcher.webOperation('GET', thing.uri, options).then(
-          result => {
-            const contentType = result.headers.get('Content-Type')
-            // let data = result.responseText
-            let pathEnd = thing.uri.split('/').slice(-1)[0] // last segment as putative filename
-            pathEnd = pathEnd.split('?')[0] // chop off any query params
-            result.arrayBuffer().then(function (data) {
-              // read text stream
-              if (!result.ok) {
-                complain('Error downloading ' + thing + ':' + result.status)
-                return
-              }
-              uploadFileToContact(pathEnd, contentType, data)
-            })
-          },
-          err => {
-            complain(
-              `WebOp (fetch) error trying to read picture ${thing} on web: ${err}`
-            )
-          }
-        )
+        try {
+          var result = await kb.fetcher.webOperation('GET', thing.uri, options)
+        } catch (err) {
+          complain(
+            `Gallery: fetch error trying to read picture ${thing} data: ${err}`
+          )
+          handleDroppedThing(thing)
+          return
+        }
+        const contentType = result.headers.get('Content-Type')
+        let pathEnd = thing.uri.split('/').slice(-1)[0] // last segment as putative filename
+        pathEnd = pathEnd.split('?')[0] // chop off any query params
+        const data = await result.arrayBuffer()
+        if (!result.ok) {
+          alert('Cant download, so will link image. ' + thing + ':' + result.status)
+          handleDroppedThing(thing)
+          return
+        }
+        uploadFileToContact(pathEnd, contentType, data)
         return
       } else {
-        console.log(
+        alert(
           'Not a web document URI, cannot copy as picture: ' + thing
         )
       }
       handleDroppedThing(thing)
-    })
+    }
   }
 
   // Drop an image file to set up the mugshot

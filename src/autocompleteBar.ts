@@ -45,6 +45,7 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
       decoratedAutocomplete = null
     } else {
       decoratedAutocomplete = dom.createElement('div')
+      decoratedAutocomplete.setAttribute('style', 'display: flex; flex-flow: wrap;')
       decoratedAutocomplete.appendChild(await renderAutoComplete(dom, acOptions, autoCompleteDone))
       decoratedAutocomplete.appendChild(acceptButton)
       decoratedAutocomplete.appendChild(cancelButton)
@@ -75,6 +76,8 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
   options.editable = kb.updater.editable(person.doc().uri, kb)
 
   const creationArea = dom.createElement('div')
+  creationArea.setAttribute('style', 'display: flex; flex-flow: wrap;')
+
   if (options.editable) {
 
     // creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone)) wait for searchButton

@@ -9,7 +9,7 @@ import * as instituteDetailsQuery from '../lib/instituteDetailsQuery.js'
 
 const kb = store
 
-export const AUTOCOMPLETE_LIMIT = 100 // How many to get from server
+export const AUTOCOMPLETE_LIMIT = 3000 // How many to get from server
 
 const subjectRegexp = /\$\(subject\)/g
 
@@ -87,15 +87,12 @@ export const wikidataParameters = {
             Insitute: 'http://www.wikidata.org/entity/Q1664720',
   },
   searchByNameQuery: `SELECT ?subject ?name
-          WHERE
-          {
-             ?klass wdt:P279* $(class) .
-          ?subject wdt:P31 ?klass .
-          ?subject rdfs:label ?name.
-          FILTER regex(?name, "$(name)", "i")
-
-          # SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
-          } LIMIT $(limit) `, // was SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
+  WHERE {
+    ?klass wdt:P279* $(class) .
+    ?subject wdt:P31 ?klass .
+    ?subject rdfs:label ?name.
+    FILTER regex(?name, "$(name)", "i")
+  } LIMIT $(limit) `, // was SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
 
   insitituteDetailsQuery: `CONSTRUCT
 {  wd:Q49108 schema:name ?itemLabel;
@@ -274,10 +271,10 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
   response = await kb.fetcher.webOperation('GET', queryURI, options)
   //complain('Error querying db of organizations: ' + err)
   const text = response.responseText
-  console.log('    Query result  text' + text.slice(0,500) + '...')
+  // console.log('    Query result  text' + text.slice(0,100) + '...')
   if (text.length === 0) throw new Error('Wot no text back from query ' + queryURI)
   const json = JSON.parse(text)
-  console.log('    Query result JSON' + JSON.stringify(json, null, 4).slice(0,500) + '...')
+  console.log('    Query result JSON' + JSON.stringify(json, null, 4).slice(0,100) + '...')
   const bindings = json.results.bindings
   return bindings
 }

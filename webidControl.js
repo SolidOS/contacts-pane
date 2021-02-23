@@ -213,7 +213,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     openButton.style.float = 'right'
     delete openButton.style.backgroundColor
     delete openButton.style.border
-    const paneName = isOrganization(person) || isOrganization(persona) ? 'default' : 'profile'
+    const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
     loadPublicDataThing(kb, person, persona).then(_resp => {
       try {

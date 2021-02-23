@@ -11,7 +11,9 @@ import { queryPublicDataByName, filterByLanguage, wikidataParameters,
 const kb = store
 
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-const AUTOCOMPLETE_ROWS = 12 // 20?
+const AUTOCOMPLETE_ROWS = 20 // 20?
+const AUTOCOMPLETE_ROWS_STRETCH = 40
+const AUTOCOMPLETE_DEBOUNCE_MS = 300
 
 const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
 
@@ -111,6 +113,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         pick = row.getAttribute('subject')
         pickedName = row.textContent
         ;(row as any).style.display = ''
+        ;(row as any).style.color = 'blue' // @@ chose color
       } else {
         ;(row as any).style.display = 'none'
       }
@@ -126,16 +129,30 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
       table.removeChild(table.lastChild)
     }
   }
+
+  async function inputEventHHandler(_event) {
+    if (runningTimeout) {
+      clearTimeout(runningTimeout)
+    }
+    setTimeout(refreshList, AUTOCOMPLETE_DEBOUNCE_MS)
+  }
+
   async function refreshList() {
+    if (inputEventHandlerLock) {
+      console.log (`Ignoring "${searchInput.value}" because of lock `)
+      return
+    }
+    inputEventHandlerLock = true
     var languagePrefs = await getPreferredLanguages()
     const filter = searchInput.value.trim().toLowerCase()
-    if (filter.length < 4) { // too small
+    if (filter.length < AUTOCOMPLETE_THRESHOLD) { // too small
       clearList()
       candidatesLoaded = false
-      return
+      numberOfRows = AUTOCOMPLETE_ROWS
     } else {
-      if (candidatesLoaded && lastFilter && filter.startsWith(lastFilter)) {
+      if (allDisplayed && lastFilter && filter.startsWith(lastFilter)) {
           thinOut(filter) // reversible?
+          inputEventHandlerLock = false
           return
       }
       var bindings
@@ -144,10 +161,10 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         // bindings = await queryDbpedia(sparql)
       } catch (err) {
         complain('Error querying db of organizations: ' + err)
+        inputEventHandlerLock = false
         return
       }
       candidatesLoaded = true
-      console.log(`  ${bindings.length} results from db of organizations.`)
       const loadedEnough = bindings.length < AUTOCOMPLETE_LIMIT
       if (loadedEnough) {
         lastFilter = filter
@@ -156,14 +173,19 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
       }
       clearList()
       const slimmed = filterByLanguage(bindings, languagePrefs)
-      slimmed.forEach(binding => {
+      if (loadedEnough && slimmed.length <= AUTOCOMPLETE_ROWS_STRETCH) {
+        numberOfRows = slimmed.length // stretch if it means we get all items
+      }
+      allDisplayed = loadedEnough && slimmed.length <= numberOfRows
+      console.log(` Filter:"${filter}" bindings: ${bindings.length}, slimmed to ${slimmed.length}; rows: ${numberOfRows}, Enough? ${loadedEnough}, All displayed? ${allDisplayed}`)
+      slimmed.slice(0,numberOfRows).forEach(binding => {
         const row = table.appendChild(dom.createElement('tr'))
         style.setStyle(row, 'autocompleteRowStyle')
         var uri = binding.subject.value
         var name = binding.name.value
         row.setAttribute('style', 'padding: 0.3em;')
         row.setAttribute('subject', uri)
-        row.style.color = loadedEnough ? '#040' : '#000' // green means 'you should find it here'
+        row.style.color = allDisplayed ? '#080' : '#000' // green means 'you should find it here'
         row.textContent = name
         row.addEventListener('click', async _event => {
           console.log('       click row textContent: ' + row.textContent)
@@ -172,6 +194,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         })
       })
     }
+    inputEventHandlerLock = false
   } // refreshList
 
 
@@ -198,9 +221,12 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     // options.cancelButton.addEventListener('click', cancelButtonHandler, false)
   }
 
-  var candidatesLoaded = false
+  let candidatesLoaded = false
+  let runningTimeout = null
+  let inputEventHandlerLock = false
+  let allDisplayed = false
   var lastFilter = null
-  const numberOfRows = AUTOCOMPLETE_ROWS
+  var numberOfRows = AUTOCOMPLETE_ROWS
   var div = dom.createElement('div')
   var foundName = null // once found accepted string must match this
   var foundObject = null
@@ -215,14 +241,12 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em' // @
   searchInput.setAttribute('style', searchInputStyle)
   searchInput.addEventListener('keyup', function (event) {
-    if (e.keyCode === 13) {
+    if (event.keyCode === 13) {
       acceptButtonHandler(event)
     }
   }, false);
 
-  searchInput.addEventListener('input', function (_event) {
-    refreshList() // Active: select thing if just one left
-  })
+  searchInput.addEventListener('input', inputEventHHandler)
   return div
 } // renderAutoComplete
 

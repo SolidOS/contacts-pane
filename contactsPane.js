@@ -92,7 +92,6 @@ export default {
 
     // Async part of render. Maybe API will later allow render to be async
     async function asyncRender () {
-      const updater = kb.updater
       UI.aclControl.preventBrowserDropEvents(dom)
 
       const t = kb.findTypeURIs(subject)
@@ -202,25 +201,23 @@ export default {
               dom,
               cardMain,
               'contact',
-              function () {
+              async function () {
                 const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-                // function warn (message) { return UI.widgets.errorMessageBlock(dom, message, 'straw') }
-                alert('Conatiner to delete is ' + container)
+                // alert('Conatiner to delete is ' + container)
                 const pname = kb.any(person, ns.vcard('fn'))
-
                 if (
                   confirm(
                     'Delete contact ' + pname + ' completely?? ' + container
                   )
                 ) {
                   console.log('Deleting a contact ' + pname)
-                  deleteThing(person)
-                  //  - delete the references to it in group files and save them background
+                  await loadAllGroups() // need to await for all groups to be loaded in case they have a link tto this person
+                  await deleteThingAndDoc(person)
+                  //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
-                  deleteRecursive(kb, container).then(_res => {
-                    refreshNames() // Doesn't work
-                    cardMain.innerHTML = 'Contact Data Deleted.'
-                  })
+                  await deleteRecursive(kb, container)
+                  refreshNames() // "Doesn't work" -- maybe does now with waiting for async
+                  cardMain.innerHTML = 'Contact Data Deleted.'
                 }
               }
             )
@@ -291,6 +288,11 @@ export default {
           } // for each row
         }
 
+        async function loadAllGroups () {
+          const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
+          await kb.fetcher.load(gs)
+        }
+
         function groupsInOrder () {
           let sortMe = []
           if (options.foreignGroup) {
@@ -342,51 +344,19 @@ export default {
         // beware of other dta picked up from other places being smushed
         // together and then deleted.
 
-        function deleteThing (x) {
-          console.log('deleteThing: ' + x)
+        async function deleteThingAndDoc (x) {
+          console.log('deleteThingAndDoc: ' + x)
           const ds = kb
             .statementsMatching(x)
             .concat(kb.statementsMatching(undefined, undefined, x))
-          const targets = {}
-          ds.forEach(function (st) {
-            targets[st.why.uri] = st
-          })
-          const agenda = [] // sets of statements of same document to delete
-          for (const target in targets) {
-            agenda.push(
-              ds.filter(function (st) {
-                return st.why.uri === target
-              })
-            )
-            console.log(
-              '   Deleting ' +
-                agenda[agenda.length - 1].length +
-                ' triples from ' +
-                target
-            )
+          try {
+            await kb.updater.updateMany(ds)
+            console.log('Deleting resoure ' + x.doc())
+            await kb.fetcher.delete(x.doc())
+            console.log('Delete thing ' + x + ': complete.')
+          } catch (err) {
+            complain('Error deleting thing ' + x + ': ' + err)
           }
-          function nextOne () {
-            if (agenda.length > 0) {
-              updater.update(agenda.shift(), [], function (uri, ok, body) {
-                if (!ok) {
-                  complain('Error deleting all trace of: ' + x + ': ' + body)
-                  return
-                }
-                nextOne()
-              })
-            } else {
-              console.log('Deleting resoure ' + x.doc())
-              kb.fetcher
-                .delete(x.doc())
-                .then(function () {
-                  console.log('Delete thing ' + x + ': complete.')
-                })
-                .catch(function (e) {
-                  complain('Error deleting thing ' + x + ': ' + e)
-                })
-            }
-          }
-          nextOne()
         }
 
         //  For deleting an addressbook sub-folder eg person - use with care!
@@ -590,8 +560,8 @@ export default {
               dom,
               groupRow,
               'group ' + name,
-              function () {
-                deleteThing(group)
+              async function () {
+                await deleteThingAndDoc(group)
                 syncGroupTable()
               }
             )
