@@ -13,6 +13,7 @@ module.exports = `
 @prefix schema: <http://schema.org/>.
 @prefix solid: <http://www.w3.org/ns/solid/terms#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+@prefix pp: <http://paymentpointers.org/ns#>.
 @prefix : <#>.
 
 # Ontology additions or interpretations needed for the form to work well
@@ -79,7 +80,9 @@ vcard:Individual
     dct:title "Contact Details for a person" ;
     a ui:Form ;
     ui:part
+
         :fullNameField,   :roleField,   :orgNameField,
+        :paymentPointerField,
          # :addressesComment,
          :addresses,
       #  :emailComment,
@@ -90,6 +93,7 @@ vcard:Individual
          :noteField ;
     ui:parts (
                 :fullNameField  :roleField :orgNameField
+                 :paymentPointerField
                 # :addressesComment
                   :addresses
                 # :emailComment
@@ -113,6 +117,7 @@ vcard:Individual
         ui:property vcard:role ;
         ui:size "40" .
 
+
       :orgNameField
           a ui:SingleLineTextField ;
           ui:suppressEmptyUneditable true;
@@ -120,6 +125,12 @@ vcard:Individual
           ui:property vcard:organization-name ;
           ui:size "40" .
 
+
+    :paymentPointerField
+        a ui:SingleLineTextField ;
+        ui:maxLength "128" ;
+        ui:property pp:PaymentPointer ;
+        ui:size "40" .
 
 :addressesComment
     a ui:Comment ;
