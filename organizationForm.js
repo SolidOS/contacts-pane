@@ -1,5 +1,5 @@
 module.exports = `
-#  Form to record episodes in a life f a person
+#  Form to record episodes in the life of a person
 #
 #
 
