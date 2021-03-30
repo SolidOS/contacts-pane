@@ -17,7 +17,7 @@ module.exports = `
 # Ontology data to drive the classifier
 
 solid:InterestingOrganization owl:disjointUnionOf  (
-# Airline - a Corpration
+# Airline - a Corporation
 # Consortium - a Corporation or a NGO
  schema:Corporation
  schema:EducationalOrganization
@@ -33,7 +33,7 @@ schema:Project # like Solid
 schema:SportsOrganization # a Team
  ) .
 
-  :OrganinizatioCreationForm a ui:Form; schema:name "Form for editing a role" ;
+  :OrganizationCreationForm a ui:Form; schema:name "Form for editing a role" ;
     ui:parts ( :OrgClassifier :homePageURIField  ) .
 
 
@@ -43,7 +43,7 @@ schema:SportsOrganization # a Team
 
   :instituteNameField
       a ui:SingleLineTextField ;
-      ui:label "Intitute Name";
+      ui:label "Institute Name";
       ui:maxLength "200" ;
       ui:property schema:name ;
       ui:size "80" .

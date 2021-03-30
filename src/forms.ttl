@@ -40,7 +40,7 @@ foaf:Agent owl:disjointUnionOf  (
   # @@  schema:robot @@  schem:SoftwareApplication, n0:Agent, n0:Person,
   prov:SoftwareAgent
   # vcard:Group     a group of agents is not (currently) an agent itself.
-  # You can't get a decision out of it so  it can't awn a bank account
+  # You can't get a decision out of it so it can't own a bank account
   vcard:Organization
 ).
 

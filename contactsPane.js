@@ -203,7 +203,7 @@ export default {
               'contact',
               async function () {
                 const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-                // alert('Conatiner to delete is ' + container)
+                // alert('Container to delete is ' + container)
                 const pname = kb.any(person, ns.vcard('fn'))
                 if (
                   confirm(
@@ -211,7 +211,7 @@ export default {
                   )
                 ) {
                   console.log('Deleting a contact ' + pname)
-                  await loadAllGroups() // need to await for all groups to be loaded in case they have a link tto this person
+                  await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
                   await deleteThingAndDoc(person)
                   //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
@@ -341,7 +341,7 @@ export default {
 
         // In a LDP work, deletes the whole document describing a thing
         // plus patch out ALL mentiosn of it!    Use with care!
-        // beware of other dta picked up from other places being smushed
+        // beware of other data picked up from other places being smushed
         // together and then deleted.
 
         async function deleteThingAndDoc (x) {

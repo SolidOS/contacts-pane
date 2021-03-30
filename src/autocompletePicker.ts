@@ -1,6 +1,6 @@
 /* Create and edit data using public data
 **
-** organizations conveys many distinct typed of thing.
+** organization conveys many distinct types of thing.
 **
 */
 import { icons, ns, style, widgets, store } from 'solid-ui'
@@ -18,15 +18,15 @@ const AUTOCOMPLETE_DEBOUNCE_MS = 300
 const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
 
 /*
-Autocomplete hapopens in four phases:
-  - The saerch string is too small to bother
-  - The search string is big enough, and we have not loaded the arrray
-  - The search string is big enough, and we have loaded arrray up to the limit
-      Display them and wait for more user input
-  - The search string is big enough, and we have loaded arrray NOT to the limit
-     so in that case we have got all matching ones.   No more fetches
-     if user gets more precise, wait for them to select one - or reduce to a single
-  - Optionally waiting for accept button to be pressed
+Autocomplete happens in four phases:
+  1. The search string is too small to bother
+  2. The search string is big enough, and we have not loaded the array
+  3. The search string is big enough, and we have loaded array up to the limit
+       Display them and wait for more user input
+  4. The search string is big enough, and we have loaded array NOT to the limit
+     but including all matches.   No more fetches.
+     If user gets more precise, wait for them to select one - or reduce to a single
+  5. Optionally waiting for accept button to be pressed
 */
 
 type AutocompleteOptions = { cancelButton?: HTMLElement,
@@ -118,7 +118,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         ;(row as any).style.display = 'none'
       }
     }
-    if (hits == 1) { // Maybe require green confirmation button clicked?
+    if (hits == 1) { // Maybe require green confirmation button be clicked?
       console.log(`  auto complete elimination:  "${filter}" -> "${pickedName}"`)
       gotIt(kb.sym(pick), pickedName) // uri, name
     }
@@ -200,8 +200,8 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 
 /* sparqlForSearch
 *
-* name eg "mass"
-* theType eg <http://umbel.org/umbel/rc/EducationalOrganization>
+* name -- e.g., "mass"
+* theType -- e.g., <http://umbel.org/umbel/rc/EducationalOrganization>
 */
   function sparqlForSearch (name:string, theType:NamedNode):string {
     let clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp

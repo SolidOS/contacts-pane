@@ -1,8 +1,8 @@
 module.exports = `
-# This turtle file defined the forms usied in the contacts management
+# This turtle file defined the forms used in the contacts management
 #
-#  Indivduals and orgs are in one file as they both
-# share some forms (address etc) and also interact (roles)
+# Individuals and orgs are in one file as they share some
+# forms (address, etc.) and interact with each other (roles)
 
 # Now hand-edited, was originally made using form editor.
 
@@ -259,7 +259,7 @@ vcard:Individual
 
 ############ organization forms
 
-:OrganinizatioCreationForm a ui:Form; schema:name "Form for editing a role" ;
+:OrganizationCreationForm a ui:Form; schema:name "Form for editing a role" ;
   ui:parts ( :OrgClassifier :homePageURIField  ) .
 
 
@@ -269,7 +269,7 @@ vcard:Individual
 
 :instituteNameField
     a ui:SingleLineTextField ;
-    ui:label "Intitute Name";
+    ui:label "Institute Name";
     ui:maxLength "200" ;
     ui:property schema:name ;
     ui:size "80" .
@@ -277,7 +277,7 @@ vcard:Individual
  :homePageURIField a ui:NamedNodeURIField;
     ui:property  schema:url . # @@ ??
 
-  :initituteTypeField a ui:Classifier;
+  :instituteTypeField a ui:Classifier;
   ui:label "What sort of organization";
   ui:category solid:InterestingOrganization .
 `
