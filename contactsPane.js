@@ -23,6 +23,7 @@ import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
 // const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
+const style = UI.style
 
 export default {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
@@ -91,7 +92,6 @@ export default {
 
     // Async part of render. Maybe API will later allow render to be async
     async function asyncRender () {
-      const updater = kb.updater
       UI.aclControl.preventBrowserDropEvents(dom)
 
       const t = kb.findTypeURIs(subject)
@@ -201,25 +201,23 @@ export default {
               dom,
               cardMain,
               'contact',
-              function () {
+              async function () {
                 const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-                // function warn (message) { return UI.widgets.errorMessageBlock(dom, message, 'straw') }
-                alert('Conatiner to delete is ' + container)
+                // alert('Container to delete is ' + container)
                 const pname = kb.any(person, ns.vcard('fn'))
-
                 if (
                   confirm(
                     'Delete contact ' + pname + ' completely?? ' + container
                   )
                 ) {
                   console.log('Deleting a contact ' + pname)
-                  deleteThing(person)
-                  //  - delete the references to it in group files and save them background
+                  await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
+                  await deleteThingAndDoc(person)
+                  //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
-                  deleteRecursive(kb, container).then(_res => {
-                    refreshNames() // Doesn't work
-                    cardMain.innerHTML = 'Contact Data Deleted.'
-                  })
+                  await deleteRecursive(kb, container)
+                  refreshNames() // "Doesn't work" -- maybe does now with waiting for async
+                  cardMain.innerHTML = 'Contact Data Deleted.'
                 }
               }
             )
@@ -290,6 +288,11 @@ export default {
           } // for each row
         }
 
+        async function loadAllGroups () {
+          const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
+          await kb.fetcher.load(gs)
+        }
+
         function groupsInOrder () {
           let sortMe = []
           if (options.foreignGroup) {
@@ -338,54 +341,22 @@ export default {
 
         // In a LDP work, deletes the whole document describing a thing
         // plus patch out ALL mentiosn of it!    Use with care!
-        // beware of other dta picked up from other places being smushed
+        // beware of other data picked up from other places being smushed
         // together and then deleted.
 
-        function deleteThing (x) {
-          console.log('deleteThing: ' + x)
+        async function deleteThingAndDoc (x) {
+          console.log('deleteThingAndDoc: ' + x)
           const ds = kb
             .statementsMatching(x)
             .concat(kb.statementsMatching(undefined, undefined, x))
-          const targets = {}
-          ds.forEach(function (st) {
-            targets[st.why.uri] = st
-          })
-          const agenda = [] // sets of statements of same document to delete
-          for (const target in targets) {
-            agenda.push(
-              ds.filter(function (st) {
-                return st.why.uri === target
-              })
-            )
-            console.log(
-              '   Deleting ' +
-                agenda[agenda.length - 1].length +
-                ' triples from ' +
-                target
-            )
+          try {
+            await kb.updater.updateMany(ds)
+            console.log('Deleting resoure ' + x.doc())
+            await kb.fetcher.delete(x.doc())
+            console.log('Delete thing ' + x + ': complete.')
+          } catch (err) {
+            complain('Error deleting thing ' + x + ': ' + err)
           }
-          function nextOne () {
-            if (agenda.length > 0) {
-              updater.update(agenda.shift(), [], function (uri, ok, body) {
-                if (!ok) {
-                  complain('Error deleting all trace of: ' + x + ': ' + body)
-                  return
-                }
-                nextOne()
-              })
-            } else {
-              console.log('Deleting resoure ' + x.doc())
-              kb.fetcher
-                .delete(x.doc())
-                .then(function () {
-                  console.log('Delete thing ' + x + ': complete.')
-                })
-                .catch(function (e) {
-                  complain('Error deleting thing ' + x + ': ' + e)
-                })
-            }
-          }
-          nextOne()
         }
 
         //  For deleting an addressbook sub-folder eg person - use with care!
@@ -589,8 +560,8 @@ export default {
               dom,
               groupRow,
               'group ' + name,
-              function () {
-                deleteThing(group)
+              async function () {
+                await deleteThingAndDoc(group)
                 syncGroupTable()
               }
             )
@@ -640,7 +611,7 @@ export default {
             }))
         } // newGroupClickHandler
 
-        async function newContactClickHandler (_event) {
+        async function craeteNewCard (klass) {
           cardMain.innerHTML = ''
           const ourBook = findBookFromGroups(book)
           try {
@@ -655,14 +626,14 @@ export default {
           console.log('Name index loaded async' + nameEmailIndex)
 
           const name = await UI.widgets
-            .askName(dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Individual'), 'person')
+            .askName(dom, kb, cardMain, UI.ns.foaf('name'), klass) // @@ was, 'person'
 
           if (!name) return // cancelled by user
           cardMain.innerHTML = 'indexing...'
           book = findBookFromGroups(book)
           let person
           try {
-            person = await saveNewContact(book, name, selectedGroups)
+            person = await saveNewContact(book, name, selectedGroups, klass)
           } catch (err) {
             const msg = "Error: can't save new contact: " + err
             console.log(msg)
@@ -721,10 +692,8 @@ export default {
         // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
         const searchInput = cardHeader.appendChild(dom.createElement('input'))
         searchInput.setAttribute('type', 'text')
-        searchInput.setAttribute(
-          'style',
+        searchInput.style = style.searchInputStyle ||
           'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
-        )
 
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
@@ -802,21 +771,33 @@ export default {
         const newContactButton = dom.createElement('button')
         const container = dom.createElement('div')
         newContactButton.setAttribute('type', 'button')
-
         if (!me) newContactButton.setAttribute('disabled', 'true')
-
         UI.authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newContactButton.removeAttribute('disabled')
           }
         })
-
         container.appendChild(newContactButton)
         newContactButton.innerHTML = 'New Contact' // + IndividualClassLabel
         peopleFooter.appendChild(container)
+        newContactButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Individual')), false)
 
-        newContactButton.addEventListener('click', newContactClickHandler, false)
+        // New Organization button
+        const newOrganizationButton = dom.createElement('button')
+        const container2 = dom.createElement('div')
+        newOrganizationButton.setAttribute('type', 'button')
+        if (!me) newOrganizationButton.setAttribute('disabled', 'true')
+        UI.authn.checkUser().then(webId => {
+          if (webId) {
+            me = webId
+            newOrganizationButton.removeAttribute('disabled')
+          }
+        })
+        container2.appendChild(newOrganizationButton)
+        newOrganizationButton.innerHTML = 'New Organization' // + IndividualClassLabel
+        peopleFooter.appendChild(container2)
+        newOrganizationButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Organization')), false)
 
         // New Group button
         if (book) {
@@ -864,9 +845,10 @@ export default {
 
       if (
         t[ns.vcard('Individual').uri] ||
-        t[ns.vcard('Organization').uri] ||
         t[ns.foaf('Person').uri] ||
-        t[ns.schema('Person').uri]
+        t[ns.schema('Person').uri] ||
+        t[ns.vcard('Organization').uri] ||
+        t[ns.schema('Organization').uri]
       ) {
         renderIndividual(dom, div, subject, dataBrowserContext).then(() => console.log('(individual rendered)'))
 

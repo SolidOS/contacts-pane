@@ -1,0 +1,58 @@
+#  Form to record episodes in the life of a person
+#
+#
+
+@prefix : <#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix schema: <http://schema.org/>.
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
+@prefix ui: <http://www.w3.org/ns/ui#>.
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+@prefix : <#>.
+
+
+# Ontology data to drive the classifier
+
+solid:InterestingOrganization owl:disjointUnionOf  (
+# Airline - a Corporation
+# Consortium - a Corporation or a NGO
+ schema:Corporation
+ schema:EducationalOrganization
+# FundingScheme - eh?
+ schema:GovernmentOrganization
+# LibrarySystem
+# LocalBusiness - Corporation
+# MedicalOrganization - a Corporation or a NGO
+ schema:NGO
+ # NewsMediaOrganization - a Corporation or a NGO
+schema:PerformingGroup # a band
+schema:Project # like Solid
+schema:SportsOrganization # a Team
+ ) .
+
+  :OrganizationCreationForm a ui:Form; schema:name "Form for editing a role" ;
+    ui:parts ( :OrgClassifier :homePageURIField  ) .
+
+
+ :OrgClassifier a ui:Classifier; ui:label "What sort of organization?"@en;
+    ui:category solid:InterestingOrganization .
+
+
+  :instituteNameField
+      a ui:SingleLineTextField ;
+      ui:label "Intitute Name";
+      ui:maxLength "200" ;
+      ui:property schema:name ;
+      ui:size "80" .
+
+   :homePageURIField a ui:NamedNodeURIField;
+      ui:property  schema:url . # @@ ??
+
+    :initituteTypeField a ui:Classifier;
+    ui:label "What sort of organization";
+    ui:category solid:InterestingOrganization .
+
+
+# ends

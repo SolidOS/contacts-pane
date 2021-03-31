@@ -1,14 +1,22 @@
 import * as UI from 'solid-ui'
 import { renderMugshotGallery } from './mugshotGallery'
-import { renderWedidControl } from './webidControl'
+import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
-import individualFormText from './individualForm'
-import VCARD_ONTOLOGY_TEXT from './vcard.js'
+import textOfForms from './lib/forms'
+import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
-// const utils = UI.utils
 const kb = UI.store
+const style = UI.style
+
+export function loadTurtleText (kb, thing, text) {
+  const doc = thing.doc()
+  if (!kb.holds(undefined, undefined, undefined, doc)) {
+    // If not loaded already
+    $rdf.parse(text, kb, doc.uri, 'text/turtle') // Load  directly
+  }
+}
 
 // Render Individual card
 
@@ -31,35 +39,21 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     }
   }
 
-  function setPaneStyle () {
-    const types = kb.findTypeURIs(subject)
-    let mystyle = 'padding: 0.5em 1.5em 1em 1.5em; '
-    let backgroundColor = null
-    for (const uri in types) {
-      backgroundColor = kb.anyValue(
-        kb.sym(uri),
-        ns.solid('profileHighlightColor')
-      )
-      if (backgroundColor) break
-    }
-    // allow the parent element to define background by default
-    backgroundColor = backgroundColor || 'transparent'
-    mystyle += 'background-color: ' + backgroundColor + '; '
-    div.setAttribute('style', mystyle)
-  }
-
   /// ///////////////////////////
+  const t = kb.findTypeURIs(subject)
+  const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
+  const editable = kb.updater.editable(subject.doc().uri, kb)
 
-  // Background metadata for this pane we bundle with the JS
   const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  const individualFormDoc = individualForm.doc()
-  if (!kb.holds(undefined, undefined, undefined, individualFormDoc)) {
-    // If not loaded already
-    // var individualFormText = require('./individualForm.js')
-    $rdf.parse(individualFormText, kb, individualFormDoc.uri, 'text/turtle') // Load form directly
-  }
+  loadTurtleText(kb, individualForm, textOfForms)
+
+  const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
+    'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
+  )
+
+  // Ontology metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
   if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
@@ -72,18 +66,19 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     complain('Error: Failed to load contact card: ' + err)
   } // end of try catch on load
 
-  setPaneStyle()
+  div.style = style.paneDivStyle || 'padding: 0.5em 1.5em 1em 1.5em;'
 
   UI.authn.checkUser() // kick off async operation @@@ use async version
 
   div.appendChild(renderMugshotGallery(dom, subject))
 
+  const form = isOrganization ? orgDetailsForm : individualForm
   UI.widgets.appendForm(
     dom,
     div,
     {},
     subject,
-    individualForm,
+    form,
     subject.doc(),
     complainIfBad
   )
@@ -94,9 +89,28 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   spacer()
 
+  // Auto complete searches in a table
+  // Prefer the fom below renderPublicIdControl
+  /*
+  if (isOrganization) {
+    const publicDataTable = div.appendChild(dom.createElement('table'))
+    async function publicDataSearchRow (name) {
+      async function autoCompleteDone (object, _name) {
+        right.innerHTML = ''
+        right.appendchild(UI.widgets.personTR(dom, object))
+      }
+      const row = dom.createElement('tr')
+      const left = row.appendChild(dom.createElement('td'))
+      left.textContent = name
+      const right = row.appendChild(dom.createElement('td'))
+      right.appendChild(await renderAutoComplete(dom, subject, ns.owl('sameAs'), autoCompleteDone))
+      return row
+    }
+    publicDataTable.appendChild(await publicDataSearchRow('dbpedia'))
+  }
+*/
   // Allow to attach documents etc to the contact card
 
-  const editable = kb.updater.editable(subject.doc().uri, kb)
   UI.widgets.attachmentList(dom, subject, div, {
     modify: editable
     // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
@@ -105,7 +119,10 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   spacer()
 
-  div.appendChild(await renderWedidControl(subject, dataBrowserContext))
-
+  if (isOrganization) {
+    div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
+  } else {
+    div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
+  }
   // div.appendChild(dom.createElement('hr'))
 } // renderIndividual

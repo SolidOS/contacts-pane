@@ -1,10 +1,17 @@
 module.exports = `
-# Now hand-edited
+# This turtle file defined the forms used in the contacts management
+#
+# Individuals and orgs are in one file as they share some
+# forms (address, etc.) and interact with each other (roles)
+
+# Now hand-edited, was originally made using form editor.
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix dct: <http://purl.org/dc/terms/>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
+@prefix schema: <http://schema.org/>.
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
 @prefix pp: <http://paymentpointers.org/ns#>.
 @prefix : <#>.
@@ -23,6 +30,31 @@ vcard:hasEmail ui:label "email"@en .
 vcard:hasTelephone ui:label "phone"@en .
 vcard:note ui:label "notes"@en .
 
+
+
+# Ontology data to drive the classifier
+
+solid:InterestingOrganization owl:disjointUnionOf  (
+# Airline - a Corpration
+# Consortium - a Corporation or a NGO
+  schema:Corporation
+  schema:EducationalOrganization
+# FundingScheme - eh?
+  schema:GovernmentOrganization
+# LibrarySystem
+# LocalBusiness - Corporation
+  schema:MedicalOrganization
+  schema:NGO
+ # NewsMediaOrganization - a Corporation or a NGO
+  schema:MusicGroup # e.g. a band
+  schema:Project # like Solid
+  schema:SportsOrganization # a Team
+ ) .
+
+
+
+
+
 #  The forms themselves
 
 vcard:Individual
@@ -33,15 +65,35 @@ vcard:Individual
 # This is fixed by adding the ui:label to the properties above, so let's try
 # removing the little micro-headings
 
+# For org:
+:orgDetailsForm a ui:Form ; dct:title "Contact details for an organozation";
+  ui:parts (
+    :OrgClassifier
+
+    :fullNameField
+    :addresses
+    :eMails
+    :telephones
+    :noteField ) .
+# For individual:
 :form1
-    dct:title "Contact Details" ;
+    dct:title "Contact Details for a person" ;
     a ui:Form ;
     ui:part
-        :fullNameField,   :roleField,   :fullNameFieldC, :paymentPointerField, :addressesComment, :addresses,
-        :emailComment, :eMails,
-        :telephoneComment, :telephones, :noteComment, :noteField ;
+
+        :fullNameField,   :roleField,   :orgNameField,
+        :paymentPointerField,
+         # :addressesComment,
+         :addresses,
+      #  :emailComment,
+         :eMails,
+#        :telephoneComment,
+         :telephones,
+#         :noteComment,
+         :noteField ;
     ui:parts (
-                :fullNameField  :roleField :fullNameFieldC :paymentPointerField
+                :fullNameField  :roleField :orgNameField
+                 :paymentPointerField
                 # :addressesComment
                   :addresses
                 # :emailComment
@@ -65,12 +117,14 @@ vcard:Individual
         ui:property vcard:role ;
         ui:size "40" .
 
-    :fullNameFieldC
-        a ui:SingleLineTextField ;
-        ui:suppressEmptyUneditable true;
-        ui:maxLength "128" ;
-        ui:property vcard:organization-name ;
-        ui:size "40" .
+
+      :orgNameField
+          a ui:SingleLineTextField ;
+          ui:suppressEmptyUneditable true;
+          ui:maxLength "128" ;
+          ui:property vcard:organization-name ;
+          ui:size "40" .
+
 
     :paymentPointerField
         a ui:SingleLineTextField ;
@@ -212,4 +266,29 @@ vcard:Individual
     ui:suppressEmptyUneditable true;
 
     ui:property vcard:note .
+
+
+############ organization forms
+
+:OrganizationCreationForm a ui:Form; schema:name "Form for editing a role" ;
+  ui:parts ( :OrgClassifier :homePageURIField  ) .
+
+
+:OrgClassifier a ui:Classifier; ui:label "What sort of organization?"@en;
+  ui:category solid:InterestingOrganization .
+
+
+:instituteNameField
+    a ui:SingleLineTextField ;
+    ui:label "Institute Name";
+    ui:maxLength "200" ;
+    ui:property schema:name ;
+    ui:size "80" .
+
+ :homePageURIField a ui:NamedNodeURIField;
+    ui:property  schema:url . # @@ ??
+
+  :instituteTypeField a ui:Classifier;
+  ui:label "What sort of organization";
+  ui:category solid:InterestingOrganization .
 `

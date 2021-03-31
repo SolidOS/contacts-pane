@@ -1,9 +1,19 @@
-# Now hand-edited
+# This turtle file defined the forms usied in the contacts management
+#
+#  Indivduals and orgs are in one file as they both
+# share some forms (address etc) and also interact (roles)
+
+# Now hand-edited, was originally made using form editor.
+# Forms documentaion: https://solid.github.io/solid-ui/Documentation/forms-intro.html
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix dct: <http://purl.org/dc/terms/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix prov: <http://www.w3.org/ns/prov#>.
 @prefix ui: <http://www.w3.org/ns/ui#>.
+@prefix schema: <http://schema.org/>.
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
 @prefix : <#>.
 
@@ -21,7 +31,60 @@ vcard:hasEmail ui:label "email"@en .
 vcard:hasTelephone ui:label "phone"@en .
 vcard:note ui:label "notes"@en .
 
+
+
+# Ontology data to drive a top classifier
+
+foaf:Agent owl:disjointUnionOf  (
+  vcard:Individual
+  # @@  schema:robot @@  schem:SoftwareApplication, n0:Agent, n0:Person,
+  prov:SoftwareAgent
+  # vcard:Group     a group of agents is not (currently) an agent itself.
+  # You can't get a decision out of it so it can't own a bank account
+  vcard:Organization
+).
+
+
+# Ontology data to drive the classifier
+
+solid:InterestingOrganization owl:disjointUnionOf  (
+# Airline - a Corpration
+# Consortium - a Corporation or a NGO
+  schema:Corporation
+  schema:EducationalOrganization
+# FundingScheme - eh?
+  schema:GovernmentOrganization
+# LibrarySystem
+# LocalBusiness - Corporation
+  schema:MedicalOrganization
+  schema:NGO
+ # NewsMediaOrganization - a Corporation or a NGO
+  schema:MusicGroup # e.g. a band
+  schema:Project # like Solid
+  schema:SportsOrganization # a Team
+ ) .
+
+#########################################################
 #  The forms themselves
+
+foaf:Agent ui:creationForm :AgentForm .
+
+:AgentForm a ui:Form; schema:name "Form for editing a agent" ;
+  ui:parts ( :AgentClassifier :AgentOptions  ) .
+
+  :AgentClassifier a ui:Classifier; ui:label "What sort of agent?"@en;
+    ui:category foaf:Agent .
+
+:AgentOptions  a ui:Options; ui:dependingon rdf:type;
+   ui:case [ ui:for vcard:Individual; ui:use :form1 ],
+           [ ui:for vcard:Organization; ui:use :orgDetailsForm ],
+           [ ui:for prov:SoftwareAgent; ui:use :robotDetailsForm ] .
+
+# Robots
+
+:robotDetailsForm a ui:Form; ui:parts ( ) . # @@@@
+
+#  Individual-specific form
 
 vcard:Individual
     ui:creationForm :form1 .
@@ -31,15 +94,32 @@ vcard:Individual
 # This is fixed by adding the ui:label to the properties above, so let's try
 # removing the little micro-headings
 
+# For org:
+:orgDetailsForm a ui:Form ; dct:title "Contact details for an organozation";
+  ui:parts (
+    :OrgClassifier
+
+    :fullNameField
+    :addresses
+    :eMails
+    :telephones
+    :noteField ) .
+# For individual:
 :form1
-    dct:title "Contact Details" ;
+    dct:title "Contact Details for a person" ;
     a ui:Form ;
     ui:part
-        :fullNameField,   :roleField,   :fullNameFieldC, :addressesComment, :addresses,
-        :emailComment, :eMails,
-        :telephoneComment, :telephones, :noteComment, :noteField ;
+        :fullNameField,   :roleField,   :orgNameField,
+         # :addressesComment,
+         :addresses,
+      #  :emailComment,
+         :eMails,
+#        :telephoneComment,
+         :telephones,
+#         :noteComment,
+         :noteField ;
     ui:parts (
-                :fullNameField  :roleField :fullNameFieldC
+                :fullNameField  :roleField :orgNameField
                 # :addressesComment
                   :addresses
                 # :emailComment
@@ -63,7 +143,7 @@ vcard:Individual
         ui:property vcard:role ;
         ui:size "40" .
 
-      :fullNameFieldC
+      :orgNameField
           a ui:SingleLineTextField ;
           ui:suppressEmptyUneditable true;
           ui:maxLength "128" ;
@@ -205,3 +285,28 @@ vcard:Individual
     ui:suppressEmptyUneditable true;
 
     ui:property vcard:note .
+
+
+############ organization forms
+
+:OrganinizatioCreationForm a ui:Form; schema:name "Form for editing contact details of an organization" ;
+  ui:parts ( :OrgClassifier :homePageURIField  ) .
+
+
+:OrgClassifier a ui:Classifier; ui:label "What sort of organization?"@en;
+  ui:category solid:InterestingOrganization .
+
+
+:instituteNameField
+    a ui:SingleLineTextField ;
+    ui:label "Intitute Name";
+    ui:maxLength "200" ;
+    ui:property schema:name ;
+    ui:size "80" .
+
+ :homePageURIField a ui:NamedNodeURIField;
+    ui:property  schema:url . # @@ ??
+
+  :initituteTypeField a ui:Classifier;
+  ui:label "What sort of organization";
+  ui:category solid:InterestingOrganization .
