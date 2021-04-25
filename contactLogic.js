@@ -10,9 +10,12 @@ const updater = kb.updater
 
 /** Perform updates on more than one document   @@ Move to rdflib!
 */
-export async function updateMany (deletions, insertions) {
+export async function updateMany (deletions, insertions = []) {
   const docs = deletions.concat(insertions).map(st => st.why)
-  const uniqueDocs = Array.from(new Set(docs))
+  const uniqueDocs = []
+  docs.forEach(doc => {
+    if (!uniqueDocs.find(uniqueDoc => uniqueDoc.equals(doc))) uniqueDocs.push(doc)
+  })
   const updates = uniqueDocs.map(doc =>
     kb.updater.update(deletions.filter(st => st.why.sameTerm(doc)),
       insertions.filter(st => st.why.sameTerm(doc))))
