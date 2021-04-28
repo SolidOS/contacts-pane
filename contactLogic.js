@@ -1,6 +1,7 @@
 // Logic for solid contacts
 
 import * as UI from 'solid-ui'
+import { getPersonas } from './webidControl'
 
 const ns = UI.ns
 const $rdf = UI.rdf
@@ -146,6 +147,16 @@ export async function addPersonToGroup (thing, group) {
     $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
+  // find person webIDs
+  const webIDs = getPersonas(kb, thing).map(webid => webid.value)
+  const addToGroups = []
+  webIDs.forEach(webid => {
+    // if not exists
+    if (!(kb.statementsMatching(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()).length)) {
+      addToGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
+    }
+  })
+  await updateMany([], addToGroups) // TODO updateer.update
   try {
     await updater.update([], ins)
   } catch (e) {

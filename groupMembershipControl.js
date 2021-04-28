@@ -1,6 +1,8 @@
 
 // Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
+import { updateMany } from './contactLogic'
+import { getPersonas, removeWebIDsFromGroup } from './webidControl'
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -11,10 +13,9 @@ const kb = UI.store
 // const style = UI.style
 
 // Groups the person is a member of
-
 export async function renderGroupMemberships (person, context) {
   // Remove a person from a group
-  function removeFromGroup (thing, group) {
+  async function removeFromGroup (thing, group) {
     const pname = kb.any(thing, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
     const groups = kb.each(null, ns.vcard('hasMember'), thing)
@@ -34,13 +35,17 @@ export async function renderGroupMemberships (person, context) {
         if (!ok) {
           const message = 'Error removing member from group ' + group + ': ' + err
           groupList.parentNode.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-          return
         }
-        console.log('Removed ' + pname + ' from group ' + gname)
-        syncGroupList()
       })
+      // remove webids from group
+      const webIDs = getPersonas(kb, thing)
+      const delWebIDs = await removeWebIDsFromGroup(webIDs, group, kb)
+      await updateMany(delWebIDs) // TODO updater.update
+      console.log('Removed ' + pname + ' from group ' + gname)
+      syncGroupList()
     }
   }
+
   function newRowForGroup (group) {
     const options = {
       deleteFunction: function () {

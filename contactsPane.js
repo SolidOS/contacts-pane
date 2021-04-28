@@ -18,7 +18,8 @@ import * as UI from 'solid-ui'
 import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
-import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
+import { saveNewContact, saveNewGroup, addPersonToGroup, updateMany } from './contactLogic'
+import { getPersonas, removeWebIDsFromGroup } from './webidControl'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -212,9 +213,22 @@ export default {
                 ) {
                   console.log('Deleting a contact ' + pname)
                   await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-                  await deleteThingAndDoc(person)
+                  // load people.ttl
+                  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+                  await kb.fetcher.load(nameEmailIndex)
+
+                  // remove personas from groups
+                  const webIDs = getPersonas(kb, person)
+                  let removeFromGroups = []
+                  const groups = kb.each(null, ns.vcard('hasMember'), person)
+                  groups.forEach(async group => {
+                    removeFromGroups = removeFromGroups.concat(await removeWebIDsFromGroup(webIDs, group, kb))
+                  })
+                  await updateMany(removeFromGroups)
+
                   //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
+                  await deleteThingAndDoc(person)
                   await deleteRecursive(kb, container)
                   refreshNames() // "Doesn't work" -- maybe does now with waiting for async
                   cardMain.innerHTML = 'Contact Data Deleted.'
@@ -409,12 +423,14 @@ export default {
           }
 
           let cards = []
-          for (const u in selectedGroups) {
-            if (selectedGroups[u]) {
-              const a = kb.each(kb.sym(u), ns.vcard('hasMember'))
+          const groups = Object.keys(selectedGroups).map(groupURI => kb.sym(groupURI))
+          groups.forEach(group => {
+            if (selectedGroups[group.value]) {
+              const a = kb.each(group, ns.vcard('hasMember'), null, group.doc()) // cards and webIDs
+                .filter(card => kb.any(card, ns.vcard('fn'), null, group.doc())) // select cards
               cards = cards.concat(a)
             }
-          }
+          })
           cards.sort(compareForSort) // @@ sort by name not UID later
           for (let k = 0; k < cards.length - 1;) {
             if (cards[k].uri === cards[k + 1].uri) {
