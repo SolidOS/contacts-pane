@@ -149,16 +149,14 @@ export async function addPersonToGroup (thing, group) {
   ]
   // find person webIDs
   const webIDs = getPersonas(kb, thing).map(webid => webid.value)
-  const addToGroups = []
   webIDs.forEach(webid => {
-    // if not exists
-    if (!(kb.statementsMatching(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()).length)) {
-      addToGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
-    }
+    ins.push($rdf.st(thing, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
-  await updateMany([], addToGroups) // TODO updateer.update
   try {
     await updater.update([], ins)
+    // to allow refresh of card groupList
+    kb.fetcher.unload(group.doc())
+    kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }

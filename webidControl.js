@@ -5,7 +5,6 @@ import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
 import { renderAutocompleteControl } from './lib/autocompleteBar'
 import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
-const URL = require('url')
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -22,23 +21,6 @@ const webidPanelBackgroundColor = '#ffe6ff'
 
 /// ///////////////////////// Logic
 
-export async function removeWebIDsFromGroup (arrayWebIDs, group, kb) {
-  const groupCards = kb.each(null, ns.vcard('fn'), null, group.doc()) // ??? may filter not thing
-    .filter(card => !card.equals(group)) // filter not group
-  await kb.fetcher.load(groupCards) // all cards must be loaded
-
-  let del = []
-  arrayWebIDs.forEach(webid => {
-    let existWebid = 0
-    groupCards.forEach(card => {
-      const cardWebIDs = getPersonas(kb, card).map(webid => webid.value)
-      if (cardWebIDs.includes(webid.value)) existWebid = existWebid + 1
-    })
-    if (existWebid === 1) { del = del.concat($rdf.st(group, ns.vcard('hasMember'), webid, group.doc())) }
-  })
-  return del
-}
-
 export async function addWebIDToContacts (person, webid, urlType, kb) {
   /*
   if (!webid.startsWith('https:')) { /// @@ well we will have other protcols like DID
@@ -49,9 +31,10 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     }
   }
   */
+
   // check this is a url
   try {
-    const myURL = new URL(webid)
+    const url = new URL(webid)
   } catch (error) {
     throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)
   }
@@ -64,20 +47,12 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
     $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
   ]
-  await kb.updater.update([], insertables)
-
-  // add webID to person groups
   const groups = kb.each(null, ns.vcard('hasMember'), person)
-  const addToGroups = []
   groups.forEach(group => {
-    addToGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
-    // if not exists
-    if (!(kb.statementsMatching(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()).length)) {
-      addToGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
-    }
+    insertables.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
   try {
-    await updateMany([], addToGroups)
+    await updateMany([], insertables)
   } catch (err) { throw new Error(`Could not create webId ${WEBID_NOUN}: ${webid}.`) }
 }
 
@@ -100,10 +75,10 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
   await kb.updater.update(deletables, [])
 
   // remove webIDs from groups
-  const groups = kb.each(null, ns.vcard('hasMember'), kb.sym(webid))
-  let removeFromGroups = []
-  groups.forEach(async group => {
-    removeFromGroups = removeFromGroups.push(await removeWebIDsFromGroup([kb.sym(webid)], group, kb))
+  const groups = kb.each(null, ns.vcard('hasMember'), person)
+  const removeFromGroups = []
+  groups.forEach(group => {
+    removeFromGroups.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
   await updateMany(removeFromGroups)
 }

@@ -1,10 +1,8 @@
 
 // Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
-import { updateMany } from './contactLogic'
-import { getPersonas, removeWebIDsFromGroup } from './webidControl'
 
-const $rdf = UI.rdf
+// const $rdf = UI.rdf
 const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets
@@ -27,21 +25,19 @@ export async function renderGroupMemberships (person, context) {
     }
     const message = 'Remove ' + pname + ' from group ' + gname + '?'
     if (confirm(message)) {
-      const del = [
-        $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
-        $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
-      ]
+      const del = kb
+        .statementsMatching(person, undefined, undefined, group.doc())
+        .concat(kb.statementsMatching(undefined, undefined, person, group.doc()))
       kb.updater.update(del, [], function (uri, ok, err) {
         if (!ok) {
           const message = 'Error removing member from group ' + group + ': ' + err
           groupList.parentNode.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
         }
       })
-      // remove webids from group
-      const webIDs = getPersonas(kb, thing)
-      const delWebIDs = await removeWebIDsFromGroup(webIDs, group, kb)
-      await updateMany(delWebIDs) // TODO updater.update
       console.log('Removed ' + pname + ' from group ' + gname)
+      // to allow refresh of card groupList
+      kb.fetcher.unload(group.doc())
+      kb.fetcher.load(group.doc())
       syncGroupList()
     }
   }
@@ -59,11 +55,28 @@ export async function renderGroupMemberships (person, context) {
 
   function syncGroupList () {
     const groups = kb.each(null, ns.vcard('hasMember'), person)
+
     utils.syncTableToArray(groupList, groups, newRowForGroup)
+  }
+
+  async function loadGroupsFromBook (book = undefined) {
+    if (!book) {
+      book = kb.any(undefined, ns.vcard('includesGroup'))
+      if (!book) {
+        throw new Error('findBookFromGroups: Cant find address book which this group is part of')
+      }
+    }
+    const groupIndex = kb.any(book, ns.vcard('groupIndex'))
+    const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
+    await kb.fetcher.load(gs)
   }
 
   const { dom } = context
   const groupList = dom.createElement('table')
+
+  // find book any group and load all groups
+  await loadGroupsFromBook()
+
   groupList.refresh = syncGroupList
   syncGroupList()
   return groupList

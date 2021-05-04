@@ -18,8 +18,7 @@ import * as UI from 'solid-ui'
 import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
-import { saveNewContact, saveNewGroup, addPersonToGroup, updateMany } from './contactLogic'
-import { getPersonas, removeWebIDsFromGroup } from './webidControl'
+import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -216,15 +215,6 @@ export default {
                   // load people.ttl
                   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
                   await kb.fetcher.load(nameEmailIndex)
-
-                  // remove personas from groups
-                  const webIDs = getPersonas(kb, person)
-                  let removeFromGroups = []
-                  const groups = kb.each(null, ns.vcard('hasMember'), person)
-                  groups.forEach(async group => {
-                    removeFromGroups = removeFromGroups.concat(await removeWebIDsFromGroup(webIDs, group, kb))
-                  })
-                  await updateMany(removeFromGroups)
 
                   //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
@@ -426,8 +416,7 @@ export default {
           const groups = Object.keys(selectedGroups).map(groupURI => kb.sym(groupURI))
           groups.forEach(group => {
             if (selectedGroups[group.value]) {
-              const a = kb.each(group, ns.vcard('hasMember'), null, group.doc()) // cards and webIDs
-                .filter(card => kb.any(card, ns.vcard('fn'), null, group.doc())) // select cards
+              const a = kb.each(group, ns.vcard('hasMember'), null, group.doc())
               cards = cards.concat(a)
             }
           })
