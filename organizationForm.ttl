@@ -12,6 +12,7 @@
 @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
 @prefix : <#>.
 
+ vcard:Organization ui:creationForm :OrganizationCreationForm  .
 
 # Ontology data to drive the classifier
 
@@ -32,7 +33,7 @@ schema:Project # like Solid
 schema:SportsOrganization # a Team
  ) .
 
-  :OrganizationCreationForm a ui:Form; schema:name "Form for editing a role" ;
+  :OrganizationCreationForm a ui:Form; schema:name "Form for editing an Organization" ;
     ui:parts ( :OrgClassifier :homePageURIField  ) .
 
 
