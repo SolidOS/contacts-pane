@@ -57,7 +57,7 @@
     sh:count 1;
   ] .
 
-################################## VCARDS
+################################## Individuals
 
 :IndividualShape
 	a sh:NodeShape ;
@@ -144,6 +144,11 @@
     sh:maxCount 1;
 	]  ;
 	sh:property [
+		sh:path owl:sameAs; # Other IDs we have found for this person
+    # But see also webids store as vcard:URI type vcard WebId
+    sh:dataType vcard:Individual;
+	] ;
+	sh:property [
 		sh:path vcard:inAddressBook; # Must be the same book
     a sh:BackwardLink;  # Must be stored at least in the book
     sh:maxCount 1;
@@ -218,6 +223,7 @@
 
 :GroupShape a sh:NodeShape;
   sh:targetClass vcard:Group;
+
   sh:property [
     sh:path vcard:fn ;
     sh:datatype xsd:string;
@@ -226,7 +232,22 @@
 
   sh:property [
     sh:path vcard:member;
-
+    sh:dataType vcard:Individual;
+    sh:description """When we know the WebId of an agent, then this MUST
+    be used as object of this triple,   Otherwise the ACL system will not
+    be abe to use the group to give the person access.
+    The main local identifier of the Individual in the address book must
+    must be MUST be linked indirectly
+    using owl:sameAs in the GroupMemberLocalId shape.
+     Any further identifiers we have for that person can be linked using owl:samAs
+     but in the main address card."""
   ].
 
+:GroupMemberLocalId a sh:NodeShape;
+    sh:targetObjectsOf vcard:member;
+    sh:property [
+       sh:path owl:sameAs;
+       sh:count 1;
+       sh:dataType vcard:Individual
+    ].
 # ends
