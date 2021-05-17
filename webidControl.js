@@ -2,9 +2,6 @@
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
 import { updateMany } from './contactLogic'
-// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './lib/autocompleteBar'
-import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -12,6 +9,9 @@ const widgets = UI.widgets
 const utils = UI.utils
 const kb = UI.store
 const style = UI.style
+
+const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
+const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
 
 const WEBID_NOUN = 'Solid ID'
 const PUBLICID_NOUN = 'In public data'
@@ -242,7 +242,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     delete openButton.style.border
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
-    loadPublicDataThing(kb, person, persona).then(_resp => {
+    widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
         console.log('main: ', main)
@@ -300,7 +300,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   if (options.editable) { // test
     options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

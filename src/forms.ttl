@@ -52,6 +52,7 @@ solid:InterestingOrganization owl:disjointUnionOf  (
 # Consortium - a Corporation or a NGO
   schema:Corporation
   schema:EducationalOrganization
+  schema:ResearchOrganization
 # FundingScheme - eh?
   schema:GovernmentOrganization
 # LibrarySystem
