@@ -1,15 +1,16 @@
 {
   "name": "contacts-pane",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
-    "build": "npm run build-lib",
-    "build-lib": "npx eslint *.js && make",
+    "build": "npm run clean && npm run build-lib",
+    "clean": "rm -rf lib",
+    "build-lib": "mkdir lib && npx eslint *.js && make",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
     "test": "npm run lint",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm test && npm run build",
     "postpublish": "git push origin master --follow-tags"
   },
   "repository": {
