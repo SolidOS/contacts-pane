@@ -4,7 +4,8 @@
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
-    "build-lib": "npx eslint *.js && make && npx tsc src/*.ts --outDir lib",
+    "build": "npm run build-lib",
+    "build-lib": "npx eslint *.js && make",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
     "test": "npm run lint",
@@ -36,8 +37,8 @@
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
     "pane-registry": "^2.3.5",
-    "rdflib": "^2.1.7",
-    "solid-ui": "^2.3.9"
+    "rdflib": "^2.2.2",
+    "solid-ui": "^2.4.2"
   },
   "devDependencies": {
     "eslint": "^7.18.0",
