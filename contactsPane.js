@@ -212,9 +212,13 @@ export default {
                 ) {
                   console.log('Deleting a contact ' + pname)
                   await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-                  await deleteThingAndDoc(person)
+                  // load people.ttl
+                  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+                  await kb.fetcher.load(nameEmailIndex)
+
                   //  - delete the references to it in group files and save them back
                   //   - delete the reference in people.ttl and save it back
+                  await deleteThingAndDoc(person)
                   await deleteRecursive(kb, container)
                   refreshNames() // "Doesn't work" -- maybe does now with waiting for async
                   cardMain.innerHTML = 'Contact Data Deleted.'
@@ -409,12 +413,13 @@ export default {
           }
 
           let cards = []
-          for (const u in selectedGroups) {
-            if (selectedGroups[u]) {
-              const a = kb.each(kb.sym(u), ns.vcard('hasMember'))
+          const groups = Object.keys(selectedGroups).map(groupURI => kb.sym(groupURI))
+          groups.forEach(group => {
+            if (selectedGroups[group.value]) {
+              const a = kb.each(group, ns.vcard('hasMember'), null, group.doc())
               cards = cards.concat(a)
             }
-          }
+          })
           cards.sort(compareForSort) // @@ sort by name not UID later
           for (let k = 0; k < cards.length - 1;) {
             if (cards[k].uri === cards[k + 1].uri) {

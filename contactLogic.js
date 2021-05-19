@@ -1,6 +1,7 @@
 // Logic for solid contacts
 
 import * as UI from 'solid-ui'
+import { getPersonas } from './webidControl'
 
 const ns = UI.ns
 const $rdf = UI.rdf
@@ -146,8 +147,16 @@ export async function addPersonToGroup (thing, group) {
     $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
+  // find person webIDs
+  const webIDs = getPersonas(kb, thing).map(webid => webid.value)
+  webIDs.forEach(webid => {
+    ins.push($rdf.st(thing, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+  })
   try {
     await updater.update([], ins)
+    // to allow refresh of card groupList
+    kb.fetcher.unload(group.doc())
+    kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }
