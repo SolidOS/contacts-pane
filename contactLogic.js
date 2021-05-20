@@ -60,7 +60,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   }
 
   try {
-    await updateMany([], agenda) // @@ in future, updater.updateMany
+    await updater.updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
     console.log("Error: can't update " + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
