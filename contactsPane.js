@@ -18,7 +18,7 @@ import * as UI from 'solid-ui'
 import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
-import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
+import { updateMany, saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -33,6 +33,8 @@ export default {
   // Does the subject deserve an contact pane?
   label: function (subject, context) {
     const t = context.session.store.findTypeURIs(subject)
+    console.log('alain t')
+    console.log(t)
     if (t[ns.vcard('Individual').uri]) return 'Contact'
     if (t[ns.vcard('Organization').uri]) return 'contact'
     if (t[ns.foaf('Person').uri]) return 'Person'
@@ -95,6 +97,10 @@ export default {
       UI.aclControl.preventBrowserDropEvents(dom)
 
       const t = kb.findTypeURIs(subject)
+      console.log('alain t2')
+      console.log(t)
+      // console.log(context.session.store.findTypeURIs(subject))
+      console.log(UI.store.findTypeURIs(subject))
 
       let me = UI.authn.currentUser()
 
@@ -354,7 +360,7 @@ export default {
             .statementsMatching(x)
             .concat(kb.statementsMatching(undefined, undefined, x))
           try {
-            await kb.updater.updateMany(ds)
+            await updateMany(ds)
             console.log('Deleting resoure ' + x.doc())
             await kb.fetcher.delete(x.doc())
             console.log('Delete thing ' + x + ': complete.')
@@ -584,7 +590,7 @@ export default {
           cardMain.innerHTML = ''
           const groupIndex = kb.any(book, ns.vcard('groupIndex'))
           try {
-            await fetch.load(groupIndex)
+            await kb.fetcher.load(groupIndex)
           } catch (e) {
             console.log('Error: Group index  NOT loaded:' + e + '\n')
           }

@@ -29,6 +29,7 @@ export async function updateMany (deletions, insertions = []) {
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups, klass) {
+  await kb.fetcher.load(book.doc()) // alain
   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
   const uuid = utils.genUuid()
@@ -60,7 +61,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   }
 
   try {
-    await updater.updateMany([], agenda) // @@ in future, updater.updateMany
+    await updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
     console.log("Error: can't update " + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
@@ -78,6 +79,7 @@ export function sanitizeToAlpha (name) { // https://mathiasbynens.be/notes/es6-u
  * @returns group
 */
 export async function saveNewGroup (book, name) {
+  await kb.fetcher.load(book.doc()) // alain
   const gix = kb.any(book, ns.vcard('groupIndex'))
 
   const gname = sanitizeToAlpha(name)
@@ -155,8 +157,8 @@ export async function addPersonToGroup (thing, group) {
   try {
     await updater.update([], ins)
     // to allow refresh of card groupList
-    kb.fetcher.unload(group.doc())
-    kb.fetcher.load(group.doc())
+    await kb.fetcher.unload(group.doc())
+    await kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }
