@@ -1,6 +1,10 @@
-// Render a control to record the webids we have for this agent
+/// Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
+// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
+import { renderAutocompleteControl } from './lib/autocompleteBar'
+import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
+import { updateMany } from './contactLogic'
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -9,8 +13,8 @@ const utils = UI.utils
 const kb = UI.store
 const style = UI.style
 
-const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
-const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
+// const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
+// const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
 
 const WEBID_NOUN = 'Solid ID'
 const PUBLICID_NOUN = 'In public data'
@@ -30,6 +34,15 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     }
   }
   */
+
+  // check this is a url
+  try {
+    const _url = new URL(webid)
+  } catch (error) {
+    throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)
+  }
+
+  // create a person's webID
   console.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
   const vcardURLThing = kb.bnode()
   const insertables = [
@@ -37,11 +50,19 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
     $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
   ]
-  await kb.updater.update([], insertables)
+  const groups = kb.each(null, ns.vcard('hasMember'), person)
+  groups.forEach(group => {
+    insertables.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+  })
+  try {
+    await updateMany([], insertables)
+  } catch (err) { throw new Error(`Could not create webId ${WEBID_NOUN}: ${webid}.`) }
 }
 
 export async function removeWebIDFromContacts (person, webid, urlType, kb) {
   console.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
+
+  // remove webID from card
   const existing = kb.each(person, ns.vcard('url'), null, person.doc())
     .filter(urlObject => kb.holds(urlObject, ns.rdf('type'), urlType, person.doc()))
     .filter(urlObject => kb.holds(urlObject, ns.vcard('value'), webid, person.doc()))
@@ -55,6 +76,14 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
     $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
   ]
   await kb.updater.update(deletables, [])
+
+  // remove webIDs from groups
+  const groups = kb.each(null, ns.vcard('hasMember'), person)
+  const removeFromGroups = []
+  groups.forEach(group => {
+    removeFromGroups.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+  })
+  await updateMany(removeFromGroups)
 }
 
 // Trace things the same as this - other IDs for same thing
@@ -86,6 +115,7 @@ export function getSameAs (kb, thing, doc) { // Should this recurse?
   return Array.from(found).map(uri => kb.sym(uri)) // return as array of nodes
 }
 
+// find person webIDs
 export function getPersonas (kb, person) {
   const lits = vcardWebIDs(kb, person).concat(getSameAs(kb, person, person.doc()))
   const strings = new Set(lits.map(lit => lit.value)) // remove dups
@@ -216,7 +246,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     delete openButton.style.border
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
-    widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
+    // widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
+    loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
         console.log('main: ', main)
@@ -279,7 +310,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   if (options.editable) { // test
     // acOptions.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, acOptions, addOneIdAndRefresh))
+    div.appendChild(await renderAutocompleteControl(dom, person, options, acOptions, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

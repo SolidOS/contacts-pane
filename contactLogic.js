@@ -1,6 +1,7 @@
 // Logic for solid contacts
 
 import * as UI from 'solid-ui'
+import { getPersonas } from './webidControl'
 
 const ns = UI.ns
 const $rdf = UI.rdf
@@ -10,9 +11,12 @@ const updater = kb.updater
 
 /** Perform updates on more than one document   @@ Move to rdflib!
 */
-export async function updateMany (deletions, insertions) {
+export async function updateMany (deletions, insertions = []) {
   const docs = deletions.concat(insertions).map(st => st.why)
-  const uniqueDocs = Array.from(new Set(docs))
+  const uniqueDocs = []
+  docs.forEach(doc => {
+    if (!uniqueDocs.find(uniqueDoc => uniqueDoc.equals(doc))) uniqueDocs.push(doc)
+  })
   const updates = uniqueDocs.map(doc =>
     kb.updater.update(deletions.filter(st => st.why.sameTerm(doc)),
       insertions.filter(st => st.why.sameTerm(doc))))
@@ -25,6 +29,7 @@ export async function updateMany (deletions, insertions) {
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups, klass) {
+  await kb.fetcher.load(book.doc()) // alain
   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
   const uuid = utils.genUuid()
@@ -74,6 +79,7 @@ export function sanitizeToAlpha (name) { // https://mathiasbynens.be/notes/es6-u
  * @returns group
 */
 export async function saveNewGroup (book, name) {
+  await kb.fetcher.load(book.doc()) // alain
   const gix = kb.any(book, ns.vcard('groupIndex'))
 
   const gname = sanitizeToAlpha(name)
@@ -143,8 +149,16 @@ export async function addPersonToGroup (thing, group) {
     $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
+  // find person webIDs
+  const webIDs = getPersonas(kb, thing).map(webid => webid.value)
+  webIDs.forEach(webid => {
+    ins.push($rdf.st(thing, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+  })
   try {
     await updater.update([], ins)
+    // to allow refresh of card groupList
+    await kb.fetcher.unload(group.doc())
+    await kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }
