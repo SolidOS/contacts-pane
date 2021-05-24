@@ -116,7 +116,7 @@ export function renderMugshotGallery (dom, subject) {
   // When a set of URIs are dropped on
   async function handleURIsDroppedOnMugshot (uris) {
     for (const u of uris) {
-      var thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
+      let thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
       console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
       if (u.startsWith('http') && u.indexOf('#') < 0) {
         // Plain document
@@ -125,8 +125,9 @@ export function renderMugshotGallery (dom, subject) {
           thing = $rdf.sym('https:' + u.slice(5))
         }
         const options = { withCredentials: false, credentials: 'omit' }
+        let result
         try {
-          var result = await kb.fetcher.webOperation('GET', thing.uri, options)
+          result = await kb.fetcher.webOperation('GET', thing.uri, options)
         } catch (err) {
           complain(
             `Gallery: fetch error trying to read picture ${thing} data: ${err}`
