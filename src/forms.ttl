@@ -166,7 +166,7 @@ vcard:Individual
 
 :oneAddress
     a ui:Group ;
-    ui:parts ( :id1409437207443 :id1409437292400 :id1409437421996 :id1409437467649 :id1409437569420 :id1409437646712 ).
+    ui:parts ( :id1409437207443 :id1409437292400 :id1409437421996 :id1409437467649 :id1409437569420 ). # id1409437646712
 
 :id1409437207443
     a ui:SingleLineTextField ;
@@ -184,7 +184,7 @@ vcard:Individual
     a ui:SingleLineTextField ;
     ui:maxLength "25" ;
     ui:property vcard:postal-code ;
-    ui:size "25" .
+    ui:size "40" .# same as others for neatness
 
 :id1409437467649
     a ui:SingleLineTextField ;
@@ -197,11 +197,6 @@ vcard:Individual
     ui:maxLength "128" ;
     ui:property vcard:country-name ;
     ui:size "40" .
-
-:id1409437646712
-    a ui:Classifier ;
-    ui:from rdf:Class ;
-    ui:property rdf:type .
 
 
 ##############################
