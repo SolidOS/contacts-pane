@@ -141,6 +141,7 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
       orgClassId = classId
       console.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
+    if (!orgClass) return widgets.errorMessageBlock(new Error('Cant find WD class to match any type of ' + person))
   }
   const options = {
     longPrompt: `If you know the ${PUBLICID_NOUN} of this ${orgClassId}, you can do more stuff with it.
@@ -149,7 +150,7 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
     dbLookup: true,
-    class: orgClass, // Organization
+    // targetClass: orgClass, // Organization
     queryParams: wikidataParameters
   }
   return renderIdControl(person, dataBrowserContext, options)
@@ -206,7 +207,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     mainCell.setAttribute('colspan', 3)
     let main
 
-    var profileIsVisible = true
+    let profileIsVisible = true
 
     const rhs = nav.children[2]
     const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
@@ -271,9 +272,14 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   const table = div.appendChild(dom.createElement('table'))
   table.style.width = '100%'
 
+  const acOptions = {
+    targetClass: kb.sym('http://www.wikidata.org/entity/Q43229'), // ns.schema('Organization'),
+    queryParams: options.queryParams || wikidataParameters
+  }
+
   if (options.editable) { // test
-    options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    // acOptions.queryParams = options.queryParams || wikidataParameters
+    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, acOptions, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()
