@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "2.4.9",
+  "version": "2.5.0",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
@@ -38,8 +38,8 @@
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
     "pane-registry": "^2.3.5",
-    "rdflib": "^2.2.2",
-    "solid-ui": "^2.4.2"
+    "rdflib": "^2.2.3",
+    "solid-ui": "^2.4.3"
   },
   "devDependencies": {
     "eslint": "^7.18.0",
