@@ -7,7 +7,7 @@ const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets
 const utils = UI.utils
-const kb = UI.store
+// const kb = UI.store
 // const style = UI.style
 
 // Groups the person is a member of
@@ -73,10 +73,6 @@ export async function renderGroupMemberships (person, context) {
 
   const { dom } = context
   const kb = context.session.store
-  console.log('alain group membership') // alain
-  console.log(context.session.store.match().map(st => st.why))
-  console.log(UI.store.match().map(st => st.why))
-
   const groupList = dom.createElement('table')
 
   // find book any group and load all groups

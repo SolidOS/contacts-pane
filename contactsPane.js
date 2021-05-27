@@ -78,14 +78,6 @@ export default {
 
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
-    console.log('alain group contactsPane') // alain
-    // console.log(Object.keys(dataBrowserContext.session))
-    const item1 = new Set(dataBrowserContext.session.store.match().map(st => st.why.value))
-    console.log(item1)
-    const item2 = new Set(UI.store.match().map(st => st.why.value))
-    console.log(item2)
-    // console.log(dataBrowserContext.session.store.match().map(st => st.why))
-    // console.log(UI.store.match().map(st => st.why))
     const div = dom.createElement('div')
     const me = UI.authn.currentUser() // If already logged on
 
@@ -94,7 +86,7 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     asyncRender().then(
-      () => console.log('contctsPane Rendered ' + subject),
+      () => console.log('contactsPane Rendered ' + subject),
       err => complain('' + err))
     return div
 
