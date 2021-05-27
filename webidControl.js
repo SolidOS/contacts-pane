@@ -299,6 +299,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   table.style.width = '100%'
 
   if (options.editable) { // test
+    options.manualURIEntry = true // introduced in solid-ui 2.4.2
     options.queryParams = options.queryParams || wikidataParameters
     div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }

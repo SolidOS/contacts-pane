@@ -41,6 +41,14 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   /// ///////////////////////////
   const t = kb.findTypeURIs(subject)
+
+  console.log('alain individual') // alain
+  // console.log(Object.keys(dataBrowserContext.session))
+  const item1 = new Set(dataBrowserContext.session.store.match().map(st => st.why.value))
+  console.log(item1)
+  const item2 = new Set(UI.store.match().map(st => st.why.value))
+  console.log(item2)
+
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)
 

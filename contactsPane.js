@@ -78,6 +78,14 @@ export default {
 
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
+    console.log('alain group contactsPane') // alain
+    // console.log(Object.keys(dataBrowserContext.session))
+    const item1 = new Set(dataBrowserContext.session.store.match().map(st => st.why.value))
+    console.log(item1)
+    const item2 = new Set(UI.store.match().map(st => st.why.value))
+    console.log(item2)
+    // console.log(dataBrowserContext.session.store.match().map(st => st.why))
+    // console.log(UI.store.match().map(st => st.why))
     const div = dom.createElement('div')
     const me = UI.authn.currentUser() // If already logged on
 
@@ -584,7 +592,7 @@ export default {
           cardMain.innerHTML = ''
           const groupIndex = kb.any(book, ns.vcard('groupIndex'))
           try {
-            await fetch.load(groupIndex)
+            await kb.fetcher.load(groupIndex)
           } catch (e) {
             console.log('Error: Group index  NOT loaded:' + e + '\n')
           }
