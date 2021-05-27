@@ -86,7 +86,7 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     asyncRender().then(
-      () => console.log('contctsPane Rendered ' + subject),
+      () => console.log('contactsPane Rendered ' + subject),
       err => complain('' + err))
     return div
 
@@ -584,7 +584,7 @@ export default {
           cardMain.innerHTML = ''
           const groupIndex = kb.any(book, ns.vcard('groupIndex'))
           try {
-            await fetch.load(groupIndex)
+            await kb.fetcher.load(groupIndex)
           } catch (e) {
             console.log('Error: Group index  NOT loaded:' + e + '\n')
           }

@@ -2,6 +2,9 @@
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
 import { updateMany } from './contactLogic'
+// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
+import { renderAutocompleteControl } from './lib/autocompleteBar'
+// import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf
 const ns = UI.ns
@@ -243,6 +246,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
     widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
+    // loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
         console.log('main: ', main)
@@ -299,8 +303,10 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   table.style.width = '100%'
 
   if (options.editable) { // test
+    options.manualURIEntry = true // introduced in solid-ui 2.4.2
     options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    // div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

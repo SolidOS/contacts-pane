@@ -7,7 +7,7 @@ const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets
 const utils = UI.utils
-const kb = UI.store
+// const kb = UI.store
 // const style = UI.style
 
 // Groups the person is a member of
@@ -37,7 +37,7 @@ export async function renderGroupMemberships (person, context) {
       console.log('Removed ' + pname + ' from group ' + gname)
       // to allow refresh of card groupList
       kb.fetcher.unload(group.doc())
-      kb.fetcher.load(group.doc())
+      await kb.fetcher.load(group.doc())
       syncGroupList()
     }
   }
@@ -59,7 +59,7 @@ export async function renderGroupMemberships (person, context) {
     utils.syncTableToArray(groupList, groups, newRowForGroup)
   }
 
-  async function loadGroupsFromBook (book = undefined) {
+  async function loadGroupsFromBook (book = null) {
     if (!book) {
       book = kb.any(undefined, ns.vcard('includesGroup'))
       if (!book) {
@@ -72,6 +72,7 @@ export async function renderGroupMemberships (person, context) {
   }
 
   const { dom } = context
+  const kb = context.session.store
   const groupList = dom.createElement('table')
 
   // find book any group and load all groups

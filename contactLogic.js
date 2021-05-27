@@ -29,6 +29,7 @@ export async function updateMany (deletions, insertions = []) {
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups, klass) {
+  await kb.fetcher.load(book.doc())
   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
   const uuid = utils.genUuid()
@@ -78,6 +79,7 @@ export function sanitizeToAlpha (name) { // https://mathiasbynens.be/notes/es6-u
  * @returns group
 */
 export async function saveNewGroup (book, name) {
+  await kb.fetcher.load(book.doc())
   const gix = kb.any(book, ns.vcard('groupIndex'))
 
   const gname = sanitizeToAlpha(name)
@@ -156,7 +158,7 @@ export async function addPersonToGroup (thing, group) {
     await updater.update([], ins)
     // to allow refresh of card groupList
     kb.fetcher.unload(group.doc())
-    kb.fetcher.load(group.doc())
+    await kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }
