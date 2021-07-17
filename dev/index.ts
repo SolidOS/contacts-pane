@@ -50,8 +50,4 @@ fetcher.load(webIdToShow).then(() => {
   })
 
 })
-/*
-fetcher.load(addressBookToShow ).then(() => {
-  const app = pane.render(sym(addressBookToShow), context);
-  document.getElementById("app").replaceWith(app)
-}) */
+
