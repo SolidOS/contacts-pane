@@ -46,6 +46,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.14.0",
     "babel-loader": "^8.2.2",
     "chat-pane": "^2.4.10",
     "eslint": "^7.28.0",
