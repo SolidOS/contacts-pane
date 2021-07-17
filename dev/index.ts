@@ -2,6 +2,7 @@ import { sym } from 'rdflib';
 import { default as pane } from "../contactsPane";
 import { context, fetcher } from './context';
 import { authn, widgets } from 'solid-ui';
+import { Feature } from 'rdflib/lib/factories/factory-types';
 
 const {
   currentSession,
@@ -40,8 +41,17 @@ trackSession((session) => {
 });
 
 // Needs to be the uri of the addressBook
+const webIdToShow = "https://sstratsianis.solidcommunity.net/profile/card#me"
 const addressBookToShow = "https://sstratsianis.solidcommunity.net/private/Friends/index.ttl#this"
+fetcher.load(webIdToShow).then(() => {
+  fetcher.load(addressBookToShow).then(() => {
+    const app = pane.render(sym(addressBookToShow), context);
+    document.getElementById("app").replaceWith(app)
+  })
+
+})
+/*
 fetcher.load(addressBookToShow ).then(() => {
   const app = pane.render(sym(addressBookToShow), context);
   document.getElementById("app").replaceWith(app)
-})
+}) */
