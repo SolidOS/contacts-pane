@@ -1,0 +1,47 @@
+import { sym } from 'rdflib';
+import { default as pane } from "../contactsPane";
+import { context, fetcher } from './context';
+import { authn, widgets } from 'solid-ui';
+
+const {
+  currentSession,
+  popupLogin,
+  logout,
+  trackSession
+} = authn.solidAuthClient;
+
+const loginButton = widgets.button(
+  document,
+  undefined,
+  "Login",
+  async function () {
+    const session = await currentSession();
+    const popupUri = "https://solidcommunity.net/common/popup.html";
+    if (!session) {
+      await popupLogin({ popupUri });
+    }
+  }
+);
+
+const logoutButton = widgets.button(document, undefined, "Logout", () => 
+  logout()
+);
+
+const loginBanner = document.getElementById("loginBanner");
+
+trackSession((session) => {
+  if (!session) {
+    loginBanner.innerHTML = "";
+    loginBanner.appendChild(loginButton);
+  } else {
+    loginBanner.innerHTML = `Logged in as ${session.webId}`;
+    loginBanner.appendChild(logoutButton);
+  }
+});
+
+// Needs to be the uri of the addressBook
+const addressBookToShow = "https://sstratsianis.solidcommunity.net/private/Friends/index.ttl#this"
+fetcher.load(addressBookToShow ).then(() => {
+  const app = pane.render(sym(addressBookToShow), context);
+  document.getElementById("app").replaceWith(app)
+})
