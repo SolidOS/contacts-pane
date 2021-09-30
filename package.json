@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "2.5.4-alpha-d9bd19aa",
+  "version": "2.5.4-beta",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
@@ -39,7 +39,7 @@
   "dependencies": {
     "pane-registry": "^2.4.2",
     "rdflib": "^2.2.7",
-    "solid-ui": "^2.4.9-alpha-d9bd19aa"
+    "solid-ui": "^2.4.9-beta"
   },
   "devDependencies": {
     "eslint": "^7.28.0",
