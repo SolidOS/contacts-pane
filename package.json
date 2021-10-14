@@ -39,7 +39,7 @@
   "dependencies": {
     "pane-registry": "^2.4.2",
     "rdflib": "^2.2.7",
-    "solid-ui": "^2.4.9"
+    "solid-ui": "^2.4.10"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
