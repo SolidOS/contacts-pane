@@ -28,7 +28,9 @@ async function finishLogin() {
 // const webIdToShow = "https://angelo.veltens.org/profile/card#me";
 const webIdToShow = "https://testingsolidos.solidcommunity.net/profile/card#me";
 // const webIdToShow = "https://timbl.inrupt.net/profile/card#me";
-const addressBookToShow = "https://sstratsianis.solidcommunity.net/private/Friends/index.ttl#this"
+// const addressBookToShow = "https://sstratsianis.solidcommunity.net/private/Friends/index.ttl#this"
+const addressBookToShow = "https://timbl.com/timbl/Public/Test/Contacts/index.ttl#this";
+
 
 finishLogin().then(() => { fetcher.load(webIdToShow).then(() => {
   fetcher.load(addressBookToShow).then(() => {
