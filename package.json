@@ -38,7 +38,7 @@
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
     "pane-registry": "^2.4.3",
-    "rdflib": "^2.2.10",
+    "rdflib": "^2.2.15-bbf45639",
     "solid-ui": "^2.4.11"
   },
   "devDependencies": {
