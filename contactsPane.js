@@ -15,7 +15,6 @@ to change its state according to an ontology, comment on it, etc.
 /* global alert, confirm */
 
 import * as UI from 'solid-ui'
-import { authn, solidLogicSingleton } from 'solid-logic'
 import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
@@ -64,7 +63,7 @@ export default {
 
     //  Reproduction: Spawn a new instance of this app
     function newAddressBookButton (thisAddressBook) {
-      return UI.login.newAppInstance(
+      return UI.authn.newAppInstance(
         dom,
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
         function (ws, newBase) {
@@ -80,7 +79,7 @@ export default {
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
     const div = dom.createElement('div')
-    const me = authn.currentUser() // If already logged on
+    const me = UI.authn.currentUser() // If already logged on
 
     UI.aclControl.preventBrowserDropEvents(dom) // protect drag and drop
 
@@ -97,7 +96,7 @@ export default {
 
       const t = kb.findTypeURIs(subject)
 
-      let me = authn.currentUser()
+      let me = UI.authn.currentUser()
 
       const context = {
         target: subject,
@@ -778,7 +777,7 @@ export default {
         const container = dom.createElement('div')
         newContactButton.setAttribute('type', 'button')
         if (!me) newContactButton.setAttribute('disabled', 'true')
-        authn.checkUser().then(webId => {
+        UI.authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newContactButton.removeAttribute('disabled')
@@ -794,7 +793,7 @@ export default {
         const container2 = dom.createElement('div')
         newOrganizationButton.setAttribute('type', 'button')
         if (!me) newOrganizationButton.setAttribute('disabled', 'true')
-        authn.checkUser().then(webId => {
+        UI.authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newOrganizationButton.removeAttribute('disabled')
@@ -861,7 +860,7 @@ export default {
         //          Render a Group instance
       } else if (t[ns.vcard('Group').uri]) {
         // If we have a main address book, then render this group as a guest group within it
-        UI.login
+        UI.authn
           .findAppInstances(context, ns.vcard('AddressBook'))
           .then(function (context) {
             const addressBooks = context.instances
@@ -889,23 +888,12 @@ export default {
         )
       }
 
-      me = authn.currentUser()
+      me = UI.authn.currentUser()
       if (!me) {
         console.log(
           '(You do not have your Web Id set. Sign in or sign up to make changes.)'
         )
-        try {
-          const renderContext = await UI.login.loggedInContext(context)
-          // load profile
-          me = renderContext.me
-          console.log('Logged in as ' + me)
-          renderContext.publicProfile = await solidLogicSingleton.loadProfile(me)
-          // load preferences
-          renderContext.preferencesFile = await solidLogicSingleton.loadPreferences(me)
-        } catch (err) {
-          div.appendChild(UI.widgets.errorMessageBlock(err))
-        }
-        /* UI.authn.logInLoadProfile(context).then(
+        UI.authn.logInLoadProfile(context).then(
           context => {
             console.log('Logged in as ' + context.me)
             me = context.me
@@ -913,7 +901,7 @@ export default {
           err => {
             div.appendChild(UI.widgets.errorMessageBlock(err))
           }
-        ) */
+        )
       } else {
         // console.log("(Your webid is "+ me +")")
       }
