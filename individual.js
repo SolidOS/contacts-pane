@@ -1,4 +1,5 @@
 import * as UI from 'solid-ui'
+import { store, authn } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
@@ -7,7 +8,6 @@ import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
-const kb = UI.store
 const style = UI.style
 
 export function loadTurtleText (kb, thing, text) {
@@ -40,35 +40,35 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   }
 
   /// ///////////////////////////
-  const t = kb.findTypeURIs(subject)
+  const t = store.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
-  const editable = kb.updater.editable(subject.doc().uri, kb)
+  const editable = store.updater.editable(subject.doc().uri, store)
 
-  const individualForm = kb.sym(
+  const individualForm = store.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  loadTurtleText(kb, individualForm, textOfForms)
+  loadTurtleText(store, individualForm, textOfForms)
 
-  const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
+  const orgDetailsForm = store.sym( // orgDetailsForm organizationForm
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
   )
 
   // Ontology metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
-  if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
+  if (!store.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
-    $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
+    $rdf.parse(VCARD_ONTOLOGY_TEXT, store, vcardOnt.uri, 'text/turtle') // Load ontology directly
   }
 
   try {
-    await kb.fetcher.load(subject.doc())
+    await store.fetcher.load(subject.doc())
   } catch (err) {
     complain('Error: Failed to load contact card: ' + err)
   } // end of try catch on load
 
   div.style = style.paneDivStyle || 'padding: 0.5em 1.5em 1em 1.5em;'
 
-  UI.authn.checkUser() // kick off async operation @@@ use async version
+  authn.checkUser() // kick off async operation @@@ use async version
 
   div.appendChild(renderMugshotGallery(dom, subject))
 

@@ -1,6 +1,7 @@
 // Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
+import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
 import { renderAutocompleteControl } from './lib/autocompleteBar'
@@ -10,7 +11,6 @@ const $rdf = UI.rdf
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils
-const kb = UI.store
 const style = UI.style
 
 const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
@@ -134,8 +134,8 @@ export function vcardWebIDs (kb, person, urlType) {
 
 export function isOrganization (agent) {
   const doc = agent.doc()
-  return kb.holds(agent, ns.rdf('type'), ns.vcard('Organization'), doc) ||
-    kb.holds(agent, ns.rdf('type'), ns.schema('Organization'), doc)
+  return store.holds(agent, ns.rdf('type'), ns.vcard('Organization'), doc) ||
+    store.holds(agent, ns.rdf('type'), ns.schema('Organization'), doc)
 }
 /// ////////////////////////////////////////////////////////////// UI
 
@@ -163,11 +163,11 @@ export async function renderWebIdControl (person, dataBrowserContext) {
 }
 
 export async function renderPublicIdControl (person, dataBrowserContext) {
-  let orgClass = kb.sym('http://www.wikidata.org/wiki/Q43229')
+  let orgClass = store.sym('http://www.wikidata.org/wiki/Q43229')
   let orgClassId = 'Organization'
   for (const classId in wikidataClasses) {
-    if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
-      orgClass = kb.sym(wikidataClasses[classId])
+    if (store.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
+      orgClass = store.sym(wikidataClasses[classId])
       orgClassId = classId
       console.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
@@ -266,14 +266,14 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   } // renderPersona
 
   async function refreshWebIDTable () {
-    const personas = getPersonas(kb, person)
+    const personas = getPersonas(store, person)
     console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
     prompt.style.display = personas.length ? 'none' : ''
-    utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
+    utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, store))
   }
   async function addOneIdAndRefresh (person, webid) {
     try {
-      await addWebIDToContacts(person, webid, options.urlType, kb)
+      await addWebIDToContacts(person, webid, options.urlType, store)
     } catch (err) {
       div.appendChild(widgets.errorMessageBlock(dom, `Error adding Id ${webid} to ${person}: ${err}`))
     }
@@ -282,11 +282,11 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   const { dom } = dataBrowserContext
   options = options || {}
-  options.editable = kb.updater.editable(person.doc().uri, kb)
+  options.editable = store.updater.editable(person.doc().uri, store)
   const div = dom.createElement('div')
   div.style = 'border-radius:0.3em; border: 0.1em solid #888;' // padding: 0.8em;
 
-  if (getPersonas(kb, person).length === 0 && !options.editable) {
+  if (getPersonas(store, person).length === 0 && !options.editable) {
     div.style.display = 'none'
     return div // No point listing an empty list you can't change
   }
