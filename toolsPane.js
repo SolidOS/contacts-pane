@@ -3,6 +3,7 @@
 /* global confirm, $rdf */
 
 import * as UI from 'solid-ui'
+import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup } from './contactLogic'
 export function toolsPane (
   selectAllGroups,
@@ -13,7 +14,6 @@ export function toolsPane (
   me
 ) {
   const dom = dataBrowserContext.dom
-  const kb = UI.store
   const ns = UI.ns
   const VCARD = ns.vcard
 
@@ -59,7 +59,7 @@ export function toolsPane (
         book.dir(),
         dataBrowserContext,
         'book',
-        kb,
+        store,
         function (ok, body) {
           if (!ok) box.innerHTML = 'ACL control box Failed: ' + body
         }
@@ -68,7 +68,7 @@ export function toolsPane (
 
     //
     try {
-      await UI.authn.registrationControl(context, book, ns.vcard('AddressBook'))
+      await UI.login.registrationControl(context, book, ns.vcard('AddressBook'))
     } catch (e) {
       UI.widgets.complain(context, 'registrationControl: ' + e)
     }
@@ -82,9 +82,9 @@ export function toolsPane (
     }
 
     function stats () {
-      const totalCards = kb.each(undefined, VCARD('inAddressBook'), book).length
+      const totalCards = store.each(undefined, VCARD('inAddressBook'), book).length
       log('' + totalCards + ' cards loaded. ')
-      const groups = kb.each(book, VCARD('includesGroup'))
+      const groups = store.each(book, VCARD('includesGroup'))
       log('' + groups.length + ' total groups. ')
       const gg = []
       for (const g in selectedGroups) {
@@ -95,9 +95,9 @@ export function toolsPane (
 
     async function loadIndexHandler (_event) {
       loadIndexButton.setAttribute('style', 'background-color: #ffc;')
-      const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+      const nameEmailIndex = store.any(book, ns.vcard('nameEmailIndex'))
       try {
-        await kb.fetcher.load(nameEmailIndex)
+        await store.fetcher.load(nameEmailIndex)
       } catch (e) {
         loadIndexButton.setAttribute('style', 'background-color: #fcc;')
         log('Error: People index has NOT been loaded' + e + '\n')
@@ -135,8 +135,8 @@ export function toolsPane (
       }
 
       for (let i = 0; i < gg.length; i++) {
-        const g = kb.sym(gg[i])
-        const a = kb.each(g, ns.vcard('hasMember'))
+        const g = store.sym(gg[i])
+        const a = store.each(g, ns.vcard('hasMember'))
         log(UI.utils.label(g) + ': ' + a.length + ' members')
         for (let j = 0; j < a.length; j++) {
           const card = a[j]
@@ -157,10 +157,10 @@ export function toolsPane (
       const stats = {} // global god context
 
       stats.book = book
-      stats.nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+      stats.nameEmailIndex = store.any(book, ns.vcard('nameEmailIndex'))
       log('Loading name index...')
 
-      UI.store.fetcher.nowOrWhenFetched(
+      store.fetcher.nowOrWhenFetched(
         stats.nameEmailIndex,
         undefined,
         function (_ok, _message) {
@@ -235,8 +235,8 @@ export function toolsPane (
           } // erase one
   */
           //   Check actual records to see which are exact matches - slow
-          stats.nameDupLog = kb.sym(book.dir().uri + 'dedup-nameDupLog.ttl')
-          stats.exactDupLog = kb.sym(book.dir().uri + 'dedup-exactDupLog.ttl')
+          stats.nameDupLog = store.sym(book.dir().uri + 'dedup-nameDupLog.ttl')
+          stats.exactDupLog = store.sym(book.dir().uri + 'dedup-exactDupLog.ttl')
           /*
           function checkOne (card) {
             return new Promise(function (resolve, reject) {
@@ -322,7 +322,7 @@ export function toolsPane (
 
           function checkOneNameless (card) {
             return new Promise(function (resolve) {
-              kb.fetcher
+              store.fetcher
                 .load(card)
                 .then(function (_xhr) {
                   log(' Nameless check ' + card)
@@ -331,7 +331,7 @@ export function toolsPane (
                   exclude[ns.dc('created').uri] = true
                   exclude[ns.dc('modified').uri] = true
                   function filtered (x) {
-                    return kb
+                    return store
                       .statementsMatching(null, null, null, x.doc())
                       .filter(function (st) {
                         return !exclude[st.predicate.uri]
@@ -350,14 +350,14 @@ export function toolsPane (
                   // Cheat: serialize and compare
                   // var cardText = $rdf.serialize(card.doc(), kb, card.doc().uri, 'text/turtle')
                   // var otherText = $rdf.serialize(other.doc(), kb, other.doc().uri, 'text/turtle')
-                  const cardText = new $rdf.Serializer(kb)
+                  const cardText = new $rdf.Serializer(store)
                     .setBase(card.doc().uri)
                     .statementsToN3(desc)
                   const other = stats.nameLessIndex[cardText]
                   if (other) {
                     log('  Matches with ' + other)
-                    const cardGroups = kb.each(null, ns.vcard('hasMember'), card)
-                    const otherGroups = kb.each(null, ns.vcard('hasMember'), other)
+                    const cardGroups = store.each(null, ns.vcard('hasMember'), card)
+                    const otherGroups = store.each(null, ns.vcard('hasMember'), other)
                     for (let j = 0; j < cardGroups.length; j++) {
                       let found = false
                       for (let k = 0; k < otherGroups.length; k++) {
@@ -431,7 +431,7 @@ export function toolsPane (
               for (let i = 0; i < stats.uniques.length; i++) {
                 stats.uniquesSet[stats.uniques[i].uri] = true
               }
-              stats.groupMembers = kb
+              stats.groupMembers = store
                 .statementsMatching(null, ns.vcard('hasMember'))
                 .map(st => st.object)
               log('  Naive group members ' + stats.groupMembers.length)
@@ -472,13 +472,13 @@ export function toolsPane (
 
           function scanForDuplicates () {
             return new Promise(function (resolve) {
-              stats.cards = kb.each(undefined, VCARD('inAddressBook'), stats.book)
+              stats.cards = store.each(undefined, VCARD('inAddressBook'), stats.book)
               log('' + stats.cards.length + ' total cards')
 
               let c, card, name
               for (c = 0; c < stats.cards.length; c++) {
                 card = stats.cards[c]
-                name = kb.anyValue(card, ns.vcard('fn'))
+                name = store.anyValue(card, ns.vcard('fn'))
                 if (!name) {
                   stats.nameless.push(card)
                   continue
@@ -532,18 +532,18 @@ export function toolsPane (
 
             return Promise.resolve()
               .then(() => {
-                cleanPeople = kb.sym(stats.book.dir().uri + 'clean-people.ttl')
+                cleanPeople = store.sym(stats.book.dir().uri + 'clean-people.ttl')
                 let sts = []
                 for (let i = 0; i < stats.uniques.length; i++) {
                   sts = sts.concat(
-                    kb.connectedStatements(stats.uniques[i], stats.nameEmailIndex)
+                    store.connectedStatements(stats.uniques[i], stats.nameEmailIndex)
                   )
                 }
-                const sz = new $rdf.Serializer(kb).setBase(stats.nameEmailIndex.uri)
+                const sz = new $rdf.Serializer(store).setBase(stats.nameEmailIndex.uri)
                 log('Serializing index of uniques...')
                 const data = sz.statementsToN3(sts)
 
-                return kb.fetcher.webOperation('PUT', cleanPeople, {
+                return store.fetcher.webOperation('PUT', cleanPeople, {
                   data: data,
                   contentType: 'text/turtle'
                 })
@@ -563,18 +563,18 @@ export function toolsPane (
             return Promise.resolve()
               .then(() => {
                 const s = g.uri.replace('/Group/', '/NewGroup/')
-                cleanGroup = kb.sym(s)
+                cleanGroup = store.sym(s)
                 let sts = []
                 for (let i = 0; i < stats.uniques.length; i++) {
                   sts = sts.concat(
-                    kb.connectedStatements(stats.uniques[i], g.doc())
+                    store.connectedStatements(stats.uniques[i], g.doc())
                   )
                 }
-                const sz = new $rdf.Serializer(kb).setBase(g.uri)
+                const sz = new $rdf.Serializer(store).setBase(g.uri)
                 log('   Regenerating group of uniques...' + cleanGroup)
                 const data = sz.statementsToN3(sts)
 
-                return kb.fetcher.webOperation('PUT', cleanGroup, { data })
+                return store.fetcher.webOperation('PUT', cleanGroup, { data })
               })
               .then(() => {
                 log('     Done uniques group ' + cleanGroup)
@@ -595,9 +595,9 @@ export function toolsPane (
             if (stats.book) {
               const books = [stats.book]
               books.forEach(function (book) {
-                const gs = book ? kb.each(book, ns.vcard('includesGroup')) : []
+                const gs = book ? store.each(book, ns.vcard('includesGroup')) : []
                 const gs2 = gs.map(function (g) {
-                  return [book, kb.any(g, ns.vcard('fn')), g]
+                  return [book, store.any(g, ns.vcard('fn')), g]
                 })
                 groups = groups.concat(gs2)
               })
@@ -609,7 +609,7 @@ export function toolsPane (
 
           stats.groupObjects = groups.map(gstr => gstr[2])
           log('Loading ' + stats.groupObjects.length + ' groups... ')
-          kb.fetcher
+          store.fetcher
             .load(stats.groupObjects)
             .then(scanForDuplicates)
             .then(checkGroupMembers)
@@ -647,34 +647,34 @@ export function toolsPane (
     }
 
     async function getGroupless (book) {
-      const groupIndex = kb.any(book, ns.vcard('groupIndex'))
-      const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+      const groupIndex = store.any(book, ns.vcard('groupIndex'))
+      const nameEmailIndex = store.any(book, ns.vcard('nameEmailIndex'))
       try {
-        await kb.fetcher.load([nameEmailIndex, groupIndex])
-        const groups = kb.each(book, ns.vcard('includesGroup'))
-        await kb.fetcher.load(groups)
+        await store.fetcher.load([nameEmailIndex, groupIndex])
+        const groups = store.each(book, ns.vcard('includesGroup'))
+        await store.fetcher.load(groups)
       } catch (e) {
         complain('Error loading stuff:' + e)
       }
 
       const reverseIndex = {}
       const groupless = []
-      const groups = kb.each(book, VCARD('includesGroup'))
+      const groups = store.each(book, VCARD('includesGroup'))
 
       log('' + groups.length + ' total groups. ')
 
       for (let i = 0; i < groups.length; i++) {
         const g = groups[i]
-        const a = kb.each(g, ns.vcard('hasMember'))
+        const a = store.each(g, ns.vcard('hasMember'))
         log(UI.utils.label(g) + ': ' + a.length + ' members')
         for (let j = 0; j < a.length; j++) {
-          kb.allAliases(a[j]).forEach(function (y) {
+          store.allAliases(a[j]).forEach(function (y) {
             reverseIndex[y.uri] = g
           })
         }
       }
 
-      const cards = kb.each(undefined, VCARD('inAddressBook'), book)
+      const cards = store.each(undefined, VCARD('inAddressBook'), book)
       log('' + cards.length + ' total cards')
       for (let c = 0; c < cards.length; c++) {
         if (!reverseIndex[cards[c].uri]) {
@@ -697,9 +697,9 @@ export function toolsPane (
           return
         }
 
-        const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+        const nameEmailIndex = store.any(book, ns.vcard('nameEmailIndex'))
         try {
-          await kb.fetcher.load(nameEmailIndex)
+          await store.fetcher.load(nameEmailIndex)
         } catch (e) {
           complain(e)
         }
