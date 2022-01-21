@@ -894,7 +894,7 @@ export default {
         console.log(
           '(You do not have your Web Id set. Sign in or sign up to make changes.)'
         )
-        UI.authn.logInLoadProfile(context).then(
+        UI.login.logInLoadProfile(context).then(
           context => {
             console.log('Logged in as ' + context.me)
             me = context.me
