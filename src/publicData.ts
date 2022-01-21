@@ -2,12 +2,10 @@
 *
 * including filtering resut by natural language etc
 */
-import { NamedNode, Store, st, Literal, parse } from 'rdflib'
-
-import { icons, ns, style, widgets, store } from 'solid-ui'
+import { Literal, NamedNode, parse } from 'rdflib'
+import { store } from 'solid-logic'
+import { ns } from 'solid-ui'
 import * as instituteDetailsQuery from '../lib/instituteDetailsQuery.js'
-
-const kb = store
 
 export const AUTOCOMPLETE_LIMIT = 3000 // How many to get from server
 
@@ -228,7 +226,7 @@ export async function queryESCODataByName (filter: string, theClass:NamedNode, q
     headers: { 'Accept': 'application/json'}
   } // CORS
   var response
-  response = await kb.fetcher.webOperation('GET', queryURI, options)
+  response = await store.fetcher.webOperation('GET', queryURI, options)
   //complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   console.log('    Query result  text' + text.slice(0,500) + '...')
@@ -268,7 +266,7 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
     headers: { 'Accept': 'application/json'}
   } // CORS
   var response
-  response = await kb.fetcher.webOperation('GET', queryURI, options)
+  response = await store.fetcher.webOperation('GET', queryURI, options)
   //complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   // console.log('    Query result  text' + text.slice(0,100) + '...')
@@ -288,12 +286,12 @@ export async function queryPublicDataConstruct (sparql: string, pubicId: NamedNo
   const options = { credentials: 'omit', // CORS
     headers: { 'Accept': 'text/turtle'}
   }
-  const response = await kb.fetcher.webOperation('GET', queryURI, options)
+  const response = await store.fetcher.webOperation('GET', queryURI, options)
   const text = response.responseText
   const report = text.lenth > 500 ? text.slice(0,200) + ' ... ' + text.slice(-200) : text
   console.log('    queryPublicDataConstruct result text:' + report)
   if (text.length === 0) throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI)
-  parse(text, kb, pubicId.uri, 'text/turtle')
+  parse(text, store, pubicId.uri, 'text/turtle')
   return
 }
 

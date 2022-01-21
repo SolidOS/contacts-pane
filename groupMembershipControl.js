@@ -7,7 +7,6 @@ const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets
 const utils = UI.utils
-// const kb = UI.store
 // const style = UI.style
 
 // Groups the person is a member of
