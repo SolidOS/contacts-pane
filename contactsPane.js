@@ -14,12 +14,12 @@ to change its state according to an ontology, comment on it, etc.
 */
 /* global alert, confirm */
 
+import { authn } from 'solid-logic'
 import * as UI from 'solid-ui'
-import { authn, solidLogicSingleton } from 'solid-logic'
-import { toolsPane } from './toolsPane'
-import { mintNewAddressBook } from './mintNewAddressBook'
+import { addPersonToGroup, saveNewContact, saveNewGroup } from './contactLogic'
 import { renderIndividual } from './individual'
-import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
+import { mintNewAddressBook } from './mintNewAddressBook'
+import { toolsPane } from './toolsPane'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -894,18 +894,7 @@ export default {
         console.log(
           '(You do not have your Web Id set. Sign in or sign up to make changes.)'
         )
-        try {
-          const renderContext = await UI.login.loggedInContext(context)
-          // load profile
-          me = renderContext.me
-          console.log('Logged in as ' + me)
-          renderContext.publicProfile = await solidLogicSingleton.loadProfile(me)
-          // load preferences
-          renderContext.preferencesFile = await solidLogicSingleton.loadPreferences(me)
-        } catch (err) {
-          div.appendChild(UI.widgets.errorMessageBlock(err))
-        }
-        /* UI.authn.logInLoadProfile(context).then(
+        UI.authn.logInLoadProfile(context).then(
           context => {
             console.log('Logged in as ' + context.me)
             me = context.me
@@ -913,7 +902,7 @@ export default {
           err => {
             div.appendChild(UI.widgets.errorMessageBlock(err))
           }
-        ) */
+        )
       } else {
         // console.log("(Your webid is "+ me +")")
       }
