@@ -1,5 +1,5 @@
+import { aclLogic } from 'solid-logic'
 import * as UI from 'solid-ui'
-import { solidLogicSingleton, aclLogic } from 'solid-logic'
 
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
@@ -13,23 +13,7 @@ const $rdf = UI.rdf
 
 export function mintNewAddressBook (dataBrowserContext, context) {
   return new Promise(function (resolve, reject) {
-    async function loadPreference (context) {
-      let loggedInContext
-      try {
-        loggedInContext = await UI.login.loggedInContext(context)
-        // load profile
-        loggedInContext.publicProfile = await solidLogicSingleton.loadProfile(loggedInContext.me)
-        // load preferences
-        loggedInContext.preferencesFile = await solidLogicSingleton.loadPreferences(loggedInContext.me)
-      } catch (err) {
-        const error = `Could not login and load profile and preferences: ${err}`
-        console.log(error)
-        context.div.appendChild(UI.widgets.errorMessageBlock(error))
-      }
-      return loggedInContext
-    }
-
-    loadPreference(context).then(
+    UI.authn.logInLoadProfile(context).then(
       context => {
         // 20180713
         console.log('Logged in as ' + context.me)
