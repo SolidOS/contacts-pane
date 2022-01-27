@@ -1,10 +1,10 @@
 import * as UI from 'solid-ui'
+import { store } from 'solid-logic'
 import * as mime from 'mime-types'
 
 const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
-const kb = UI.store
 
 /*  Mugshot Gallery
 *
@@ -23,9 +23,9 @@ export function renderMugshotGallery (dom, subject) {
     ]
     try {
       if (remove) {
-        await kb.updater.update(link, [])
+        await store.updater.update(link, [])
       } else {
-        await kb.updater.update([], link)
+        await store.updater.update([], link)
       }
     } catch (err) {
       const msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
@@ -35,16 +35,16 @@ export function renderMugshotGallery (dom, subject) {
   }
 
   function handleDroppedThing (thing) {
-    kb.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
+    store.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
       if (!ok) {
         console.log('Error looking up dropped thing ' + thing + ': ' + mess)
       } else {
-        const types = kb.findTypeURIs(thing)
+        const types = store.findTypeURIs(thing)
         for (const ty in types) {
           console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
         }
         console.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
-        kb.add(subject, ns.wf('attachment'), thing, subject.doc())
+        store.add(subject, ns.wf('attachment'), thing, subject.doc())
         // @@ refresh UI
       }
     })
@@ -70,8 +70,8 @@ export function renderMugshotGallery (dom, subject) {
     let n, pic
     for (n = 0; ; n++) {
       // Check filename is not used or invent new one
-      pic = kb.sym(subject.dir().uri + filename)
-      if (!kb.holds(subject, ns.vcard('hasPhoto'), pic)) {
+      pic = store.sym(subject.dir().uri + filename)
+      if (!store.holds(subject, ns.vcard('hasPhoto'), pic)) {
         break
       }
       filename = prefix + n + '.' + extension
@@ -84,7 +84,7 @@ export function renderMugshotGallery (dom, subject) {
         ' to ' +
         pic
     )
-    kb.fetcher
+    store.fetcher
       .webOperation('PUT', pic.uri, {
         data: data,
         contentType: contentType
@@ -95,8 +95,8 @@ export function renderMugshotGallery (dom, subject) {
           return
         }
         console.log(' Upload: put OK: ' + pic)
-        kb.add(subject, predicate, pic, subject.doc())
-        kb.fetcher
+        store.add(subject, predicate, pic, subject.doc())
+        store.fetcher
           .putBack(subject.doc(), { contentType: 'text/turtle' })
           .then(
             function (_response) {
@@ -126,7 +126,7 @@ export function renderMugshotGallery (dom, subject) {
         }
         const options = { withCredentials: false, credentials: 'omit' }
         try {
-          var result = await kb.fetcher.webOperation('GET', thing.uri, options)
+          var result = await store.fetcher.webOperation('GET', thing.uri, options)
         } catch (err) {
           complain(
             `Gallery: fetch error trying to read picture ${thing} data: ${err}`
@@ -205,7 +205,7 @@ export function renderMugshotGallery (dom, subject) {
   }
 
   function syncMugshots () {
-    let images = kb.each(subject, ns.vcard('hasPhoto')) // Priviledge vcard ones
+    let images = store.each(subject, ns.vcard('hasPhoto')) // Priviledge vcard ones
     images.sort() // arbitrary consistency
     images = images.slice(0, 5) // max number for the space
     if (images.length === 0) {
@@ -220,7 +220,7 @@ export function renderMugshotGallery (dom, subject) {
 
   // Good URI for a Camera picture
   function getImageDoc () {
-    const imageDoc = kb.sym(
+    const imageDoc = store.sym(
       subject.dir().uri + 'Image_' + Date.now() + '.png'
     )
     return imageDoc
@@ -240,7 +240,7 @@ export function renderMugshotGallery (dom, subject) {
       'Drag here to delete'
     )
     async function droppedURIHandler (uris) {
-      const images = kb
+      const images = store
         .each(subject, ns.vcard('hasPhoto'))
         .map(x => x.uri)
       for (const uri of uris) {
@@ -250,10 +250,10 @@ export function renderMugshotGallery (dom, subject) {
         }
         if (confirm(`Permanently DELETE image ${uri} completely?`)) {
           console.log('Unlinking image file ' + uri)
-          await linkToPicture(subject, kb.sym(uri), true)
+          await linkToPicture(subject, store.sym(uri), true)
           try {
             console.log('Deleting image file ' + uri)
-            await kb.fetcher.webOperation('DELETE', uri)
+            await store.fetcher.webOperation('DELETE', uri)
           } catch (err) {
             alert('Unable to delete picture! ' + err)
           }
@@ -273,7 +273,7 @@ export function renderMugshotGallery (dom, subject) {
     const right = row.appendChild(dom.createElement('td'))
 
     left.appendChild(
-      UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)
+      UI.media.cameraButton(dom, store, getImageDoc, tookPicture)
     ) // 20190812
     try {
       middle.appendChild(
@@ -288,7 +288,7 @@ export function renderMugshotGallery (dom, subject) {
 
   // Body of renderMugshotGallery
 
-  const editable = kb.updater.editable(subject.doc().uri, kb)
+  const editable = store.updater.editable(subject.doc().uri, store)
   const galleryDiv = dom.createElement('div')
   const mugshotDiv = galleryDiv.appendChild(dom.createElement('div'))
   const placeholder = elementForImage()
