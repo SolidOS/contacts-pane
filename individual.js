@@ -1,5 +1,5 @@
 import * as UI from 'solid-ui'
-import { store, authn } from 'solid-logic'
+import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
@@ -8,6 +8,7 @@ import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
+const kb = store
 const style = UI.style
 
 export function loadTurtleText (kb, thing, text) {
@@ -40,28 +41,28 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   }
 
   /// ///////////////////////////
-  const t = store.findTypeURIs(subject)
+  const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
-  const editable = store.updater.editable(subject.doc().uri, store)
+  const editable = kb.updater.editable(subject.doc().uri, kb)
 
-  const individualForm = store.sym(
+  const individualForm = kb.sym(
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
   )
-  loadTurtleText(store, individualForm, textOfForms)
+  loadTurtleText(kb, individualForm, textOfForms)
 
-  const orgDetailsForm = store.sym( // orgDetailsForm organizationForm
+  const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
     'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
   )
 
   // Ontology metadata for this pane we bundle with the JS
   const vcardOnt = UI.ns.vcard('Type').doc()
-  if (!store.holds(undefined, undefined, undefined, vcardOnt)) {
+  if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
     // If not loaded already
-    $rdf.parse(VCARD_ONTOLOGY_TEXT, store, vcardOnt.uri, 'text/turtle') // Load ontology directly
+    $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
   }
 
   try {
-    await store.fetcher.load(subject.doc())
+    await kb.fetcher.load(subject.doc())
   } catch (err) {
     complain('Error: Failed to load contact card: ' + err)
   } // end of try catch on load

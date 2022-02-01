@@ -7,7 +7,8 @@ import { getPersonas } from './webidControl'
 const ns = UI.ns
 const $rdf = UI.rdf
 const utils = UI.utils
-const updater = store.updater
+const kb = store
+const updater = kb.updater
 
 /** Perform updates on more than one document   @@ Move to rdflib!
 */
@@ -18,7 +19,7 @@ export async function updateMany (deletions, insertions = []) {
     if (!uniqueDocs.find(uniqueDoc => uniqueDoc.equals(doc))) uniqueDocs.push(doc)
   })
   const updates = uniqueDocs.map(doc =>
-    store.updater.update(deletions.filter(st => st.why.sameTerm(doc)),
+    kb.updater.update(deletions.filter(st => st.why.sameTerm(doc)),
       insertions.filter(st => st.why.sameTerm(doc))))
   return Promise.all(updates)
 }
@@ -29,11 +30,11 @@ export async function updateMany (deletions, insertions = []) {
 * @returns {NamedNode} the person
 */
 export async function saveNewContact (book, name, selectedGroups, klass) {
-  await store.fetcher.load(book.doc())
-  const nameEmailIndex = store.any(book, ns.vcard('nameEmailIndex'))
+  await kb.fetcher.load(book.doc())
+  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
 
   const uuid = utils.genUuid()
-  const person = store.sym(
+  const person = kb.sym(
     book.dir().uri + 'Person/' + uuid + '/index.ttl#this'
   )
   const doc = person.doc()
@@ -52,7 +53,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   ]
 
   for (const gu in selectedGroups) {
-    const g = store.sym(gu)
+    const g = kb.sym(gu)
     const gd = g.doc()
     agenda.push(
       $rdf.st(g, ns.vcard('hasMember'), person, gd),
@@ -79,19 +80,19 @@ export function sanitizeToAlpha (name) { // https://mathiasbynens.be/notes/es6-u
  * @returns group
 */
 export async function saveNewGroup (book, name) {
-  await store.fetcher.load(book.doc())
-  const gix = store.any(book, ns.vcard('groupIndex'))
+  await kb.fetcher.load(book.doc())
+  const gix = kb.any(book, ns.vcard('groupIndex'))
 
   const gname = sanitizeToAlpha(name)
-  const group = store.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
+  const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
   const doc = group.doc()
   console.log(' New group will be: ' + group + '\n')
   try {
-    await store.fetcher.load(gix)
+    await kb.fetcher.load(gix)
   } catch (err) {
     throw new Error('Error loading group index!' + gix.uri + ': ' + err)
   }
-  if (store.holds(book, ns.vcard('includesGroup'), group, gix)) {
+  if (kb.holds(book, ns.vcard('includesGroup'), group, gix)) {
     return group // Already exists
   }
   const insertTriples = [
@@ -121,12 +122,12 @@ export async function saveNewGroup (book, name) {
 export async function addPersonToGroup (thing, group) {
   const toBeFetched = [thing.doc(), group.doc()]
   try {
-    await store.fetcher.load(toBeFetched)
+    await kb.fetcher.load(toBeFetched)
   } catch (e) {
     throw new Error('addPersonToGroup: ' + e)
   }
 
-  const types = store.findTypeURIs(thing)
+  const types = kb.findTypeURIs(thing)
   for (const ty in types) {
     console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
   }
@@ -134,10 +135,10 @@ export async function addPersonToGroup (thing, group) {
      ns.vcard('Organization').uri in types)) {
     return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
   }
-  const pname = store.any(thing, ns.vcard('fn'))
-  const gname = store.any(group, ns.vcard('fn'))
+  const pname = kb.any(thing, ns.vcard('fn'))
+  const gname = kb.any(group, ns.vcard('fn'))
   if (!pname) { return alert('No vcard name known for ' + thing) }
-  const already = store.holds(group, ns.vcard('hasMember'), thing, group.doc())
+  const already = kb.holds(group, ns.vcard('hasMember'), thing, group.doc())
   if (already) {
     return alert(
       'ALREADY added ' + pname + ' to group ' + gname
@@ -150,15 +151,15 @@ export async function addPersonToGroup (thing, group) {
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
   // find person webIDs
-  const webIDs = getPersonas(store, thing).map(webid => webid.value)
+  const webIDs = getPersonas(kb, thing).map(webid => webid.value)
   webIDs.forEach(webid => {
-    ins.push($rdf.st(thing, ns.owl('sameAs'), store.sym(webid), group.doc()))
+    ins.push($rdf.st(thing, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
   try {
     await updater.update([], ins)
     // to allow refresh of card groupList
-    store.fetcher.unload(group.doc())
-    await store.fetcher.load(group.doc())
+    kb.fetcher.unload(group.doc())
+    await kb.fetcher.load(group.doc())
   } catch (e) {
     throw new Error(`Error adding ${pname} to group ${gname}:` + e)
   }

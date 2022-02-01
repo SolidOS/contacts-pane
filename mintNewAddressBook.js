@@ -1,5 +1,5 @@
-import { aclLogic } from 'solid-logic'
 import * as UI from 'solid-ui'
+import { setACLUserPublic } from 'solid-logic'
 
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
@@ -121,8 +121,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
               return reject(new Error('Error writing new file ' + task.to))
             }
 
-            aclLogic
-              .setACLUserPublic(dest, me, aclOptions)
+            setACLUserPublic(dest, me, aclOptions)
               .then(() => doNextTask())
               .catch(err => {
                 const message =

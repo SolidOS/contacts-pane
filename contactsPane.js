@@ -14,9 +14,10 @@ to change its state according to an ontology, comment on it, etc.
 */
 /* global alert, confirm */
 
-import { authn } from 'solid-logic'
+import { authn, addPersonToGroup, saveNewContact, saveNewGroup } from 'solid-logic'
 import * as UI from 'solid-ui'
-import { addPersonToGroup, saveNewContact, saveNewGroup } from './contactLogic'
+import { toolsPane } from './toolsPane'
+import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { toolsPane } from './toolsPane'
