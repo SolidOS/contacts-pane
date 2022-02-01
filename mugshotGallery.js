@@ -128,7 +128,7 @@ export function renderMugshotGallery (dom, subject) {
         const options = { withCredentials: false, credentials: 'omit' }
         let result
         try {
-          var result = await kb.fetcher.webOperation('GET', thing.uri, options)
+          result = await kb.fetcher.webOperation('GET', thing.uri, options)
         } catch (err) {
           complain(
             `Gallery: fetch error trying to read picture ${thing} data: ${err}`
