@@ -13,7 +13,7 @@ const $rdf = UI.rdf
 
 export function mintNewAddressBook (dataBrowserContext, context) {
   return new Promise(function (resolve, reject) {
-    UI.login.logInLoadProfile(context).then(
+    UI.login.ensureLoadedProfile(context).then(
       context => {
         // 20180713
         console.log('Logged in as ' + context.me)
