@@ -65,6 +65,3 @@ typings/
 
 # JetBrains based IDEs, such as WebStorm
 .idea
-
-# Visual Studio Code
-.history/
