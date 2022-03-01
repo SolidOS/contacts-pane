@@ -1,4 +1,5 @@
 import * as UI from 'solid-ui'
+import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl.js'
@@ -7,7 +8,7 @@ import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 
 const $rdf = UI.rdf
 const ns = UI.ns
-const kb = UI.store
+const kb = store
 const style = UI.style
 
 export function loadTurtleText (kb, thing, text) {
@@ -68,7 +69,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.style = style.paneDivStyle || 'padding: 0.5em 1.5em 1em 1.5em;'
 
-  UI.authn.checkUser() // kick off async operation @@@ use async version
+  authn.checkUser() // kick off async operation @@@ use async version
 
   div.appendChild(renderMugshotGallery(dom, subject))
 

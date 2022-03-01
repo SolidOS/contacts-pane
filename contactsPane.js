@@ -14,11 +14,12 @@ to change its state according to an ontology, comment on it, etc.
 */
 /* global alert, confirm */
 
+import { authn } from 'solid-logic'
+import { addPersonToGroup, saveNewContact, saveNewGroup } from './contactLogic'
 import * as UI from 'solid-ui'
-import { toolsPane } from './toolsPane'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
-import { saveNewContact, saveNewGroup, addPersonToGroup } from './contactLogic'
+import { toolsPane } from './toolsPane'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -63,7 +64,7 @@ export default {
 
     //  Reproduction: Spawn a new instance of this app
     function newAddressBookButton (thisAddressBook) {
-      return UI.authn.newAppInstance(
+      return UI.login.newAppInstance(
         dom,
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
         function (ws, newBase) {
@@ -79,7 +80,7 @@ export default {
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
     const div = dom.createElement('div')
-    const me = UI.authn.currentUser() // If already logged on
+    const me = authn.currentUser() // If already logged on
 
     UI.aclControl.preventBrowserDropEvents(dom) // protect drag and drop
 
@@ -96,7 +97,7 @@ export default {
 
       const t = kb.findTypeURIs(subject)
 
-      let me = UI.authn.currentUser()
+      let me = authn.currentUser()
 
       const context = {
         target: subject,
@@ -777,7 +778,7 @@ export default {
         const container = dom.createElement('div')
         newContactButton.setAttribute('type', 'button')
         if (!me) newContactButton.setAttribute('disabled', 'true')
-        UI.authn.checkUser().then(webId => {
+        authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newContactButton.removeAttribute('disabled')
@@ -793,7 +794,7 @@ export default {
         const container2 = dom.createElement('div')
         newOrganizationButton.setAttribute('type', 'button')
         if (!me) newOrganizationButton.setAttribute('disabled', 'true')
-        UI.authn.checkUser().then(webId => {
+        authn.checkUser().then(webId => {
           if (webId) {
             me = webId
             newOrganizationButton.removeAttribute('disabled')
@@ -860,7 +861,7 @@ export default {
         //          Render a Group instance
       } else if (t[ns.vcard('Group').uri]) {
         // If we have a main address book, then render this group as a guest group within it
-        UI.authn
+        UI.login
           .findAppInstances(context, ns.vcard('AddressBook'))
           .then(function (context) {
             const addressBooks = context.instances
@@ -888,12 +889,12 @@ export default {
         )
       }
 
-      me = UI.authn.currentUser()
+      me = authn.currentUser()
       if (!me) {
         console.log(
           '(You do not have your Web Id set. Sign in or sign up to make changes.)'
         )
-        UI.authn.logInLoadProfile(context).then(
+        UI.login.ensureLoadedProfile(context).then(
           context => {
             console.log('Logged in as ' + context.me)
             me = context.me

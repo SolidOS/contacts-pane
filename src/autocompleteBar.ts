@@ -1,13 +1,11 @@
 // The Control with decorations
 
-import { icons, ns, style, widgets, store } from 'solid-ui'
-
-import * as UI from 'solid-ui'
+import { NamedNode } from 'rdflib'
+import { store } from 'solid-logic'
+import { ns, widgets, icons } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
+import { wikidataParameters } from './publicData'
 
-import { NamedNode, Store, st } from 'rdflib'
-import { queryPublicDataByName, filterByLanguage, wikidataParameters,
-  AUTOCOMPLETE_LIMIT, QueryParameters, getPreferredLanguages } from './publicData'
 
 const WEBID_NOUN = 'Solid ID'
 
@@ -16,8 +14,8 @@ const kb = store
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
 
-const GREEN_PLUS = UI.icons.iconBase + 'noun_34653_green.svg'
-const SEARCH_ICON = UI.icons.iconBase + 'noun_Search_875351.svg'
+const GREEN_PLUS = icons.iconBase + 'noun_34653_green.svg'
+const SEARCH_ICON = icons.iconBase + 'noun_Search_875351.svg'
 
 export async function renderAutocompleteControl (dom:HTMLDocument,
    person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {

@@ -1,15 +1,9 @@
 /* Form field for doing autocompleete
  */
-import { icons, ns, style, widgets, store } from 'solid-ui'
-
+import { BlankNode, NamedNode, st, Variable } from 'rdflib'
+import { store } from 'solid-logic'
+import { ns, style, widgets } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
-
-import { NamedNode, BlankNode, Variable, Store, st } from 'rdflib'
-import { queryPublicDataByName, filterByLanguage, wikidataParameters,
-  AUTOCOMPLETE_LIMIT, QueryParameters, getPreferredLanguages } from './publicData'
-
-
-const kb = store
 
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 12 // 20?
