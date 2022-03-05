@@ -703,8 +703,7 @@ export default {
         searchInput.setAttribute('type', 'text')
         searchInput.setAttribute('placeholder', 'Search Contacts...')
         searchInput.setAttribute('style', 'border: 1px solid #CCC; box-shadow: 0 1px 1px #ddd inset, 0 1px 0 #FFF; border-radius: 0.3em; line-height: 1.5; font-weight: 400; color: #212529; text-align: left; font-size: 1rem; background-color: #fff; width: 60%;')
-        //searchInput.style = style.searchInputStyle || 'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
-
+  
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
         })

@@ -19,6 +19,7 @@ export function toolsPane (
   const VCARD = ns.vcard
 
   const pane = dom.createElement('div')
+  pane.classList.add("pane")
   const table = pane.appendChild(dom.createElement('table'))
   table.setAttribute(
     'style',
@@ -54,6 +55,7 @@ export function toolsPane (
 
   // Body of main pane function
   async function main () {
+    box.classList.add('box')
     box.appendChild(
       UI.aclControl.ACLControlBox5(
         book.dir(),
@@ -142,8 +144,6 @@ export function toolsPane (
     // ///////////////////////////////////////////////////////////////////////////
     //
     //      DUPLICATES CHECK
-    
-
     const checkDups = (_event) => {
       const stats = {} // global god context
 
@@ -619,7 +619,7 @@ export function toolsPane (
             })
         }
       )
-    }
+     }
 
     const checkDuplicatesButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true}))
     checkDuplicatesButton.setAttribute('style', 'margin: 0.5em;')
