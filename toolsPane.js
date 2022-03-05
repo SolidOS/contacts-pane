@@ -18,8 +18,8 @@ export function toolsPane (
   const ns = UI.ns
   const VCARD = ns.vcard
 
-  const buttonStyle = 'font-size: 100%; margin: 0.8em; padding:0.5em;'
   const pane = dom.createElement('div')
+  pane.classList.add('pane')
   const table = pane.appendChild(dom.createElement('table'))
   table.setAttribute(
     'style',
@@ -55,6 +55,7 @@ export function toolsPane (
 
   // Body of main pane function
   async function main () {
+    box.classList.add('box')
     box.appendChild(
       UI.aclControl.ACLControlBox5(
         book.dir(),
@@ -94,7 +95,7 @@ export function toolsPane (
       log('' + gg.length + ' selected groups. ')
     }
 
-    async function loadIndexHandler (_event) {
+    const loadIndexHandler = async (_event) => {
       loadIndexButton.setAttribute('style', 'background-color: #ffc;')
       const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       try {
@@ -106,21 +107,13 @@ export function toolsPane (
       loadIndexButton.setAttribute('style', 'background-color: #cfc;')
       log(' People index has been loaded\n')
     } // loadIndexHandler
-    const loadIndexButton = pane.appendChild(dom.createElement('button'))
-    loadIndexButton.textContent = 'Load main index'
-    loadIndexButton.style.cssText = buttonStyle
-    loadIndexButton.addEventListener('click', loadIndexHandler)
+    const loadIndexButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Load Main Index', loadIndexHandler, { needsBorder: true }))
+    loadIndexButton.setAttribute('style', 'margin: 0.5em;')
 
-    const statButton = pane.appendChild(dom.createElement('button'))
-    statButton.textContent = 'Statistics'
-    statButton.style.cssText = buttonStyle
-    statButton.addEventListener('click', stats)
+    const statButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Statistics', stats, { needsBorder: true }))
+    statButton.setAttribute('style', 'margin: 0.5em;')
 
-    const checkAccessButton = pane.appendChild(dom.createElement('button'))
-    checkAccessButton.textContent =
-      'Check individual card access of selected groups'
-    checkAccessButton.style.cssText = buttonStyle
-    async function checkAcces (_event) {
+    const checkAccess = async (_event) => {
       function doCard (card) {
         UI.widgets.fixIndividualCardACL(card, log, function (ok, message) {
           if (ok) {
@@ -146,15 +139,12 @@ export function toolsPane (
         }
       }
     }
-    checkAccessButton.addEventListener('click', checkAcces)
-
+    const checkAccessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Check individual card access of selected groups', checkAccess, { needsBorder: true }))
+    checkAccessButton.setAttribute('style', 'margin: 0.5em;')
     // ///////////////////////////////////////////////////////////////////////////
     //
     //      DUPLICATES CHECK
-    const checkDuplicates = pane.appendChild(dom.createElement('button'))
-    checkDuplicates.textContent = 'Find duplicate cards'
-    checkDuplicates.style.cssText = buttonStyle
-    checkDuplicates.addEventListener('click', function (_event) {
+    const checkDups = (_event) => {
       const stats = {} // global god context
 
       stats.book = book
@@ -629,8 +619,10 @@ export function toolsPane (
             })
         }
       )
-    })
+    }
 
+    const checkDuplicatesButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true }))
+    checkDuplicatesButton.setAttribute('style', 'margin: 0.5em;')
     async function fixGroupless (book) {
       const groupless = await getGroupless(book)
       if (groupless.length === 0) {
@@ -687,10 +679,7 @@ export function toolsPane (
       return groupless
     }
 
-    const checkGroupless = pane.appendChild(dom.createElement('button'))
-    checkGroupless.style.cssText = buttonStyle
-    checkGroupless.textContent = 'Find individuals with no group'
-    checkGroupless.addEventListener('click', function (_event) {
+    const checkGrouplessClickHandler = (_event) => {
       log('Loading groups...')
       selectAllGroups(selectedGroups, groupsMainTable, async function (ok, message) {
         if (!ok) {
@@ -708,12 +697,12 @@ export function toolsPane (
         getGroupless(book)
         log('Groupless list finished..')
       }) // select all groups then
-    })
-
-    const fixGrouplessButton = pane.appendChild(dom.createElement('button'))
-    fixGrouplessButton.style.cssText = buttonStyle
-    fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
-    fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
+    }
+    const checkGrouplessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Individuals With No Group', checkGrouplessClickHandler, { needsBorder: true }))
+    checkGrouplessButton.setAttribute('style', 'margin: 0.5em;')
+    const fixGrouplessClickHandler = (_event) => fixGroupless(book)
+    const fixGrouplessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Put all individuals with no group in a new group', fixGrouplessClickHandler, { needsBorder: true }))
+    fixGrouplessButton.setAttribute('style', 'margin: 0.5em;')
   } // main
   main()
   return pane
