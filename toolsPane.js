@@ -19,7 +19,7 @@ export function toolsPane (
   const VCARD = ns.vcard
 
   const pane = dom.createElement('div')
-  pane.classList.add("pane")
+  pane.classList.add('pane')
   const table = pane.appendChild(dom.createElement('table'))
   table.setAttribute(
     'style',
@@ -107,12 +107,12 @@ export function toolsPane (
       loadIndexButton.setAttribute('style', 'background-color: #cfc;')
       log(' People index has been loaded\n')
     } // loadIndexHandler
-    const loadIndexButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Load Main Index', loadIndexHandler, { needsBorder: true}))
+    const loadIndexButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Load Main Index', loadIndexHandler, { needsBorder: true }))
     loadIndexButton.setAttribute('style', 'margin: 0.5em;')
 
-    const statButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Statistics', stats, { needsBorder: true}))
+    const statButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Statistics', stats, { needsBorder: true }))
     statButton.setAttribute('style', 'margin: 0.5em;')
-    
+
     const checkAccess = async (_event) => {
       function doCard (card) {
         UI.widgets.fixIndividualCardACL(card, log, function (ok, message) {
@@ -139,7 +139,7 @@ export function toolsPane (
         }
       }
     }
-    const checkAccessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Check individual card access of selected groups', checkAccess, { needsBorder: true}))
+    const checkAccessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Check individual card access of selected groups', checkAccess, { needsBorder: true }))
     checkAccessButton.setAttribute('style', 'margin: 0.5em;')
     // ///////////////////////////////////////////////////////////////////////////
     //
@@ -619,9 +619,9 @@ export function toolsPane (
             })
         }
       )
-     }
+    }
 
-    const checkDuplicatesButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true}))
+    const checkDuplicatesButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true }))
     checkDuplicatesButton.setAttribute('style', 'margin: 0.5em;')
     async function fixGroupless (book) {
       const groupless = await getGroupless(book)
@@ -679,7 +679,7 @@ export function toolsPane (
       return groupless
     }
 
-   const checkGrouplessClickHandler = (_event) => {
+    const checkGrouplessClickHandler = (_event) => {
       log('Loading groups...')
       selectAllGroups(selectedGroups, groupsMainTable, async function (ok, message) {
         if (!ok) {

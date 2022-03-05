@@ -703,7 +703,7 @@ export default {
         searchInput.setAttribute('type', 'text')
         searchInput.setAttribute('placeholder', 'Search Contacts...')
         searchInput.setAttribute('style', 'border: 1px solid #CCC; box-shadow: 0 1px 1px #ddd inset, 0 1px 0 #FFF; border-radius: 0.3em; line-height: 1.5; font-weight: 400; color: #212529; text-align: left; font-size: 1rem; background-color: #fff; width: 60%;')
-  
+
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
         })
@@ -759,7 +759,7 @@ export default {
           const allGroupsButton = UI.widgets.button(dom, undefined, 'All', allGroupsClickHandler)
           allGroupsButton.setAttribute('style', 'padding: 0.5em; float: right; ')
           const allGroups = groupsHeader.appendChild(allGroupsButton)
-    
+
           kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
             if (!ok) return console.log('Cannot load group index: ' + body)
             syncGroupTable()
@@ -830,7 +830,7 @@ export default {
           const toolsButton = cardFooter.appendChild(UI.widgets.button(dom, undefined, 'Tools', toolsClickHandler))
           toolsButton.setAttribute('style', 'margin: 0.5em;')
         } // if book
-        
+
         cardFooter.appendChild(newAddressBookButton(book))
 
         // })
