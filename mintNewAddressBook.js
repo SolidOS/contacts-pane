@@ -1,4 +1,5 @@
-const UI = require('solid-ui')
+import * as UI from 'solid-ui'
+import { setACLUserPublic } from 'solid-logic'
 
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
@@ -12,7 +13,7 @@ const $rdf = UI.rdf
 
 export function mintNewAddressBook (dataBrowserContext, context) {
   return new Promise(function (resolve, reject) {
-    UI.authn.logInLoadProfile(context).then(
+    UI.login.ensureLoadedProfile(context).then(
       context => {
         // 20180713
         console.log('Logged in as ' + context.me)
@@ -120,8 +121,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
               return reject(new Error('Error writing new file ' + task.to))
             }
 
-            UI.authn
-              .setACLUserPublic(dest, me, aclOptions)
+            setACLUserPublic(dest, me, aclOptions)
               .then(() => doNextTask())
               .catch(err => {
                 const message =
