@@ -430,7 +430,8 @@ export default {
           }
 
           peopleHeader.textContent =
-            cards.length > 5 ? '' + cards.length + ' contacts' : 'contact'
+            cards.length > 5 ? '' + cards.length + ' Contacts' : 'Contact'
+          peopleHeader.setAttribute('style', 'font-weight: bold;')
 
           function renderNameInGroupList (person) {
             const personRow = dom.createElement('tr')
@@ -616,7 +617,7 @@ export default {
             }))
         } // newGroupClickHandler
 
-        async function craeteNewCard (klass) {
+        async function createNewCard (klass) {
           cardMain.innerHTML = ''
           const ourBook = findBookFromGroups(book)
           try {
@@ -697,8 +698,9 @@ export default {
         // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
         const searchInput = cardHeader.appendChild(dom.createElement('input'))
         searchInput.setAttribute('type', 'text')
-        searchInput.style = style.searchInputStyle ||
-          'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
+        searchInput.setAttribute('placeholder', 'Search Contacts...')
+        searchInput.setAttribute('style', 'border: 1px solid #CCC; box-shadow: 0 1px 1px #ddd inset, 0 1px 0 #FFF; border-radius: 0.3em; line-height: 1.5; font-weight: 400; color: #212529; text-align: left; font-size: 1rem; background-color: #fff; width: 60%;')
+        //searchInput.style = style.searchInputStyle || 'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
 
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
@@ -708,17 +710,17 @@ export default {
         cardMain.setAttribute('style', 'margin: 0;') // fill space available
         const dataCellStyle = 'padding: 0.1em;'
 
-        groupsHeader.textContent = 'groups'
+        groupsHeader.textContent = 'Groups'
         groupsHeader.setAttribute(
           'style',
-          'min-width: 10em; padding-bottom 0.2em;'
+          'min-width: 10em; padding-bottom 0.2em; font-weight: bold;'
         )
 
         function setGroupListVisibility (visible) {
           const vis = visible ? '' : 'display: none;'
           groupsHeader.setAttribute(
             'style',
-            'min-width: 10em; padding-bottom 0.2em;' + vis
+            'min-width: 10em; padding-bottom 0.2em; font-weight: bold;' + vis
           )
           const hfstyle = 'padding: 0.1em;'
           groupsMain.setAttribute('style', hfstyle + vis)
@@ -730,11 +732,7 @@ export default {
           selectedGroups[options.foreignGroup.uri] = true
         }
         if (book) {
-          const allGroups = groupsHeader.appendChild(dom.createElement('button'))
-          allGroups.textContent = 'All'
-          const style = 'margin-left: 1em; font-size: 100%;'
-          allGroups.setAttribute('style', style)
-          allGroups.addEventListener('click', function (_event) {
+          const allGroupsClickHandler = function (_event) {
             allGroups.state = allGroups.state ? 0 : 1
             peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
             if (allGroups.state) {
@@ -755,7 +753,9 @@ export default {
               selectedGroups = {}
               refreshGroupsSelected()
             }
-          }) // on button click
+          }
+          const allGroups = groupsHeader.appendChild(UI.widgets.button(dom, undefined, 'All', allGroupsClickHandler))
+    
           kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
             if (!ok) return console.log('Cannot load group index: ' + body)
             syncGroupTable()
@@ -773,9 +773,10 @@ export default {
         peopleMain.setAttribute('style', 'overflow:scroll;')
 
         // New Contact button
-        const newContactButton = dom.createElement('button')
+        const newContactClickHandler = async _event => createNewCard(ns.vcard('Individual'))
+        const newContactButton = UI.widgets.button(dom, undefined, 'New Contact', newContactClickHandler)
+        newContactButton.setAttribute('style', 'margin: 0.5em;')
         const container = dom.createElement('div')
-        newContactButton.setAttribute('type', 'button')
         if (!me) newContactButton.setAttribute('disabled', 'true')
         UI.authn.checkUser().then(webId => {
           if (webId) {
@@ -784,14 +785,13 @@ export default {
           }
         })
         container.appendChild(newContactButton)
-        newContactButton.innerHTML = 'New Contact' // + IndividualClassLabel
         peopleFooter.appendChild(container)
-        newContactButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Individual')), false)
 
         // New Organization button
-        const newOrganizationButton = dom.createElement('button')
+        const newOrganizationClickHandler = async _event => createNewCard(ns.vcard('Organization'))
+        const newOrganizationButton = UI.widgets.button(dom, undefined, 'New Organization', newOrganizationClickHandler)
+        newOrganizationButton.setAttribute('style', 'margin: 0.5em;')
         const container2 = dom.createElement('div')
-        newOrganizationButton.setAttribute('type', 'button')
         if (!me) newOrganizationButton.setAttribute('disabled', 'true')
         UI.authn.checkUser().then(webId => {
           if (webId) {
@@ -800,27 +800,17 @@ export default {
           }
         })
         container2.appendChild(newOrganizationButton)
-        newOrganizationButton.innerHTML = 'New Organization' // + IndividualClassLabel
         peopleFooter.appendChild(container2)
-        newOrganizationButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Organization')), false)
 
         // New Group button
         if (book) {
           const newGroupButton = groupsFooter.appendChild(
-            dom.createElement('button')
+            UI.widgets.button(dom, undefined, 'New Group', newGroupClickHandler)
           )
-          newGroupButton.setAttribute('type', 'button')
-          newGroupButton.innerHTML = 'New Group' // + IndividualClassLabel
-          newGroupButton.addEventListener(
-            'click', newGroupClickHandler,
-            false
-          )
+          newGroupButton.setAttribute('style', 'margin: 0.5em;')
 
           // Tools button
-          const toolsButton = cardFooter.appendChild(dom.createElement('button'))
-          toolsButton.setAttribute('type', 'button')
-          toolsButton.innerHTML = 'Tools'
-          toolsButton.addEventListener('click', function (_event) {
+          const toolsClickHandler = (_event) => {
             cardMain.innerHTML = ''
             cardMain.appendChild(
               toolsPane(
@@ -832,9 +822,11 @@ export default {
                 me
               )
             )
-          })
+          }
+          const toolsButton = cardFooter.appendChild(UI.widgets.button(dom, undefined, 'Tools', toolsClickHandler))
+          toolsButton.setAttribute('style', 'margin: 0.5em;')
         } // if book
-
+        
         cardFooter.appendChild(newAddressBookButton(book))
 
         // })
