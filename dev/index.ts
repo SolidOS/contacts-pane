@@ -2,11 +2,12 @@ import { sym } from "rdflib";
 import { default as pane } from "../contactsPane";
 import { context, fetcher } from "./context";
 import { authn } from "solid-ui";
+import { loginStatusBox } from "solid-ui/lib/login/login";
 
 const loginBanner = document.getElementById("loginBanner");
 const webId = document.getElementById("webId");
 
-loginBanner.appendChild(authn.loginStatusBox(document, null, {}));
+loginBanner.appendChild(loginStatusBox(document, null, {}));
 
 async function finishLogin() {
   await authn.authSession.handleIncomingRedirect();
