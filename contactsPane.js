@@ -695,6 +695,8 @@ export default {
         const peopleFooter = bookFooter.appendChild(dom.createElement('td'))
         const cardFooter = bookFooter.appendChild(dom.createElement('td'))
 
+        // Putting it above on style doesn't work
+        bookTable.setAttribute('style', 'border-spacing: 3rem 0;')
         cardHeader.appendChild(dom.createElement('div')) // searchDiv
         // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
         const searchInput = cardHeader.appendChild(dom.createElement('input'))
@@ -755,7 +757,9 @@ export default {
               refreshGroupsSelected()
             }
           }
-          const allGroups = groupsHeader.appendChild(UI.widgets.button(dom, undefined, 'All', allGroupsClickHandler))
+          const allGroupsButton = UI.widgets.button(dom, undefined, 'All', allGroupsClickHandler)
+          allGroupsButton.setAttribute('style', 'padding: 0.5em; float: right; ')
+          const allGroups = groupsHeader.appendChild(allGroupsButton)
     
           kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
             if (!ok) return console.log('Cannot load group index: ' + body)

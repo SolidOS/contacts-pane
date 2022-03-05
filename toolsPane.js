@@ -18,7 +18,6 @@ export function toolsPane (
   const ns = UI.ns
   const VCARD = ns.vcard
 
-  const buttonStyle = 'font-size: 100%; margin: 0.8em; padding:0.5em;'
   const pane = dom.createElement('div')
   const table = pane.appendChild(dom.createElement('table'))
   table.setAttribute(
@@ -107,8 +106,10 @@ export function toolsPane (
       log(' People index has been loaded\n')
     } // loadIndexHandler
     const loadIndexButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Load Main Index', loadIndexHandler, { needsBorder: true}))
+    loadIndexButton.setAttribute('style', 'margin: 0.5em;')
 
     const statButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Statistics', stats, { needsBorder: true}))
+    statButton.setAttribute('style', 'margin: 0.5em;')
     
     const checkAccess = async (_event) => {
       function doCard (card) {
@@ -137,7 +138,7 @@ export function toolsPane (
       }
     }
     const checkAccessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Check individual card access of selected groups', checkAccess, { needsBorder: true}))
-
+    checkAccessButton.setAttribute('style', 'margin: 0.5em;')
     // ///////////////////////////////////////////////////////////////////////////
     //
     //      DUPLICATES CHECK
@@ -620,8 +621,8 @@ export function toolsPane (
       )
     }
 
-    const checkDuplicates = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true}))
-
+    const checkDuplicatesButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Duplicate Cards', checkDups, { needsBorder: true}))
+    checkDuplicatesButton.setAttribute('style', 'margin: 0.5em;')
     async function fixGroupless (book) {
       const groupless = await getGroupless(book)
       if (groupless.length === 0) {
@@ -697,11 +698,11 @@ export function toolsPane (
         log('Groupless list finished..')
       }) // select all groups then
     }
-    const checkGroupless = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Individuals With No Group', checkGrouplessClickHandler, { needsBorder: true }))
-    
+    const checkGrouplessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Find Individuals With No Group', checkGrouplessClickHandler, { needsBorder: true }))
+    checkGrouplessButton.setAttribute('style', 'margin: 0.5em;')
     const fixGrouplessClickHandler = (_event) => fixGroupless(book)
     const fixGrouplessButton = pane.appendChild(UI.widgets.button(dom, undefined, 'Put all individuals with no group in a new group', fixGrouplessClickHandler, { needsBorder: true }))
-    
+    fixGrouplessButton.setAttribute('style', 'margin: 0.5em;')
   } // main
   main()
   return pane
