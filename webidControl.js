@@ -1,6 +1,7 @@
 // Render a control to record the webids we have for this agent
 /* eslint-disable multiline-ternary */
 import * as UI from 'solid-ui'
+import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
 import { renderAutocompleteControl } from './lib/autocompleteBar'
@@ -10,7 +11,7 @@ const $rdf = UI.rdf
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils
-const kb = UI.store
+const kb = store
 const style = UI.style
 
 const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic

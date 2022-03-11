@@ -3,12 +3,12 @@
 ** organization conveys many distinct types of thing.
 **
 */
-import { icons, ns, style, widgets, store } from 'solid-ui'
-import { NamedNode, Store, st } from 'rdflib'
-import { queryPublicDataByName, filterByLanguage, wikidataParameters,
-  AUTOCOMPLETE_LIMIT, QueryParameters, getPreferredLanguages } from './publicData'
-
-const kb = store
+import { NamedNode } from 'rdflib'
+import { store } from 'solid-logic'
+import { style, widgets } from 'solid-ui'
+import {
+  AUTOCOMPLETE_LIMIT, filterByLanguage, getPreferredLanguages, QueryParameters, queryPublicDataByName
+} from './publicData'
 
 const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
 const AUTOCOMPLETE_ROWS = 20 // 20?
@@ -120,7 +120,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
     if (hits == 1) { // Maybe require green confirmation button be clicked?
       console.log(`  auto complete elimination:  "${filter}" -> "${pickedName}"`)
-      gotIt(kb.sym(pick), pickedName) // uri, name
+      gotIt(store.sym(pick), pickedName) // uri, name
     }
   }
 
@@ -190,7 +190,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         row.addEventListener('click', async _event => {
           console.log('       click row textContent: ' + row.textContent)
           console.log('       click name: ' + name)
-          gotIt(kb.sym(uri), name)
+          gotIt(store.sym(uri), name)
         })
       })
     }

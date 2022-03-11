@@ -3,6 +3,7 @@
 /* global confirm, $rdf */
 
 import * as UI from 'solid-ui'
+import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup } from './contactLogic'
 export function toolsPane (
   selectAllGroups,
@@ -13,7 +14,7 @@ export function toolsPane (
   me
 ) {
   const dom = dataBrowserContext.dom
-  const kb = UI.store
+  const kb = store
   const ns = UI.ns
   const VCARD = ns.vcard
 
@@ -68,7 +69,7 @@ export function toolsPane (
 
     //
     try {
-      await UI.authn.registrationControl(context, book, ns.vcard('AddressBook'))
+      await UI.login.registrationControl(context, book, ns.vcard('AddressBook'))
     } catch (e) {
       UI.widgets.complain(context, 'registrationControl: ' + e)
     }
@@ -160,7 +161,7 @@ export function toolsPane (
       stats.nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       log('Loading name index...')
 
-      UI.store.fetcher.nowOrWhenFetched(
+      store.fetcher.nowOrWhenFetched(
         stats.nameEmailIndex,
         undefined,
         function (_ok, _message) {
