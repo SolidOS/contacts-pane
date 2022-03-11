@@ -1,12 +1,13 @@
 import { sym } from "rdflib";
-import { default as pane } from "../contactsPane";
-import { context, fetcher } from "./context";
-import { authn } from "solid-ui";
+import { default as pane } from "../contactsPane"
+import { context, fetcher } from "./context"
+import { login } from "solid-ui"
+import { authn } from "solid-logic"
 
 const loginBanner = document.getElementById("loginBanner");
 const webId = document.getElementById("webId");
 
-loginBanner.appendChild(authn.loginStatusBox(document, null, {}));
+loginBanner.appendChild(login.loginStatusBox(document, null, {}));
 
 async function finishLogin() {
   await authn.authSession.handleIncomingRedirect();
@@ -19,18 +20,10 @@ async function finishLogin() {
   }
 }
 
-
-
-
-// https://testingsolidos.solidcommunity.net/profile/card#me
-// https://timbl.inrupt.net/profile/card#me
-//
 // const webIdToShow = "https://angelo.veltens.org/profile/card#me";
 const webIdToShow = "https://testingsolidos.solidcommunity.net/profile/card#me";
-// const webIdToShow = "https://timbl.inrupt.net/profile/card#me";
 // const addressBookToShow = "https://sstratsianis.solidcommunity.net/private/Friends/index.ttl#this"
 const addressBookToShow = "https://timbl.com/timbl/Public/Test/Contacts/index.ttl#this";
-
 
 finishLogin().then(() => { fetcher.load(webIdToShow).then(() => {
   fetcher.load(addressBookToShow).then(() => {

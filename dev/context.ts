@@ -1,6 +1,7 @@
-import {DataBrowserContext, LiveStore, PaneRegistry} from "pane-registry";
-import { store, solidLogicSingleton } from "solid-ui";
-import {default as contactsPane } from "../contactsPane";
+import { DataBrowserContext, PaneRegistry } from "pane-registry";
+import { LiveStore } from "rdflib"
+import { store, solidLogicSingleton } from "solid-logic";
+import { default as contactsPane } from "../contactsPane";
 
 export const context: DataBrowserContext = {
   session: {
