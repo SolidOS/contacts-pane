@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && npm run build-lib",
     "clean": "rm -rf lib",
-    "build-lib": "mkdir lib && npx eslint *.js && make && npx tsc-transpile-only src/*.ts --outDir lib",
+    "build-lib": "mkdir lib && make && npx tsc-transpile-only src/*.ts --outDir lib",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
     "test": "npm run lint",
