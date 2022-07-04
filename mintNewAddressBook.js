@@ -1,6 +1,7 @@
 import * as UI from 'solid-ui'
-import { setACLUserPublic } from 'solid-logic'
+import { solidLogicSingleton } from 'solid-logic'
 
+const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
 // const toolsPane = toolsPane0.toolsPane
