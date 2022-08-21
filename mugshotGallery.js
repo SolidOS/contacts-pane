@@ -200,8 +200,18 @@ export function renderMugshotGallery (dom, subject) {
       droppedFileHandler
     )
     if (image) {
-      img.setAttribute('src', image.uri)
+      // img.setAttribute('src', image.uri) use token and works with NSS but not with CSS
+      // we need to get image with authenticated fetch
+      store.fetcher._fetch(image.uri)
+        .then(function(response) {
+          return response.blob()
+        })
+        .then(function(myBlob) {
+          const objectURL = URL.createObjectURL(myBlob)
+          img.setAttribute('src', objectURL)
+        })
       UI.widgets.makeDraggable(img, image)
+
     }
     return img
   }
