@@ -51,12 +51,18 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
     $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
   ]
+  // insert webID in groups
+  // replace person with webId in vcard:hasMember (webId may already exist)
+  // insert owl:sameAs
   const groups = kb.each(null, ns.vcard('hasMember'), person)
+  const deletables = []
   groups.forEach(group => {
+    deletables.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
+    insertables.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc())) // may exist do we need to check ?
     insertables.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
   try {
-    await updateMany([], insertables)
+    await updateMany(deletables, insertables)
   } catch (err) { throw new Error(`Could not create webId ${WEBID_NOUN}: ${webid}.`) }
 }
 
@@ -79,12 +85,17 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
   await kb.updater.update(deletables, [])
 
   // remove webIDs from groups
-  const groups = kb.each(null, ns.vcard('hasMember'), person)
+  const groups = kb.each(null, ns.vcard('hasMember'), kb.sym(webid))
   const removeFromGroups = []
+  const insertInGroups = []
   groups.forEach(group => {
     removeFromGroups.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+    if (kb.each(null, ns.owl('sameAs'), kb.sym(webid), group.doc()).length = 1) {
+      removeFromGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid)), group.doc())
+      insertInGroups.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
+    }
   })
-  await updateMany(removeFromGroups)
+  await updateMany(removeFromGroups, insertInGroups)
 }
 
 // Trace things the same as this - other IDs for same thing

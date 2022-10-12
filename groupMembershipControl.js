@@ -15,7 +15,18 @@ export async function renderGroupMemberships (person, context) {
   async function removeFromGroup (thing, group) {
     const pname = kb.any(thing, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
-    const groups = kb.each(null, ns.vcard('hasMember'), thing)
+    // find all webids of thing
+    const thingwebids = kb.each(null, ns.owl('sameAs'), thing, group.doc())
+    // webid can be deleted only if not used in a other thing
+    let webids = []
+    thingwebids.map(webid => {
+      if (kb.any(webid, ns.owl('sameAs'), thing, group.doc()).length = 1 ) webids = webids.concat(webid)
+      }
+    )
+    // const webids = kb.any(webid, ns.owl('sameAs'))
+    let thingOrWebid = thing
+    if (webids.length > 0) thingOrWebid = kb.sym(webids[0])
+    const groups = kb.each(null, ns.vcard('hasMember'), thingOrWebid)
     if (groups.length < 2) {
       alert(
         'Must be a member of at least one group.  Add to another group first.'
@@ -24,9 +35,10 @@ export async function renderGroupMemberships (person, context) {
     }
     const message = 'Remove ' + pname + ' from group ' + gname + '?'
     if (confirm(message)) {
-      const del = kb
+      let del = kb
         .statementsMatching(person, undefined, undefined, group.doc())
         .concat(kb.statementsMatching(undefined, undefined, person, group.doc()))
+      webids.map(webid => del.concat(kb.statementsMatching(undefined,undefined, webid, group.doc())))
       kb.updater.update(del, [], function (uri, ok, err) {
         if (!ok) {
           const message = 'Error removing member from group ' + group + ': ' + err
@@ -52,9 +64,11 @@ export async function renderGroupMemberships (person, context) {
     return tr
   }
 
+  // find all documents where person ns.vcard('fn')
   function syncGroupList () {
-    const groups = kb.each(null, ns.vcard('hasMember'), person)
-
+    // to be changed person and or webids
+    // const groups = kb.each(null, ns.vcard('hasMember'), person)
+    const groups = kb.each(person, ns.vcard('fn'), undefined) // non il faut acceder a la liste des group.doc()
     utils.syncTableToArray(groupList, groups, newRowForGroup)
   }
 
