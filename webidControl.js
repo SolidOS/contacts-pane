@@ -58,7 +58,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   const deletables = []
   groups.forEach(group => {
     deletables.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
-    insertables.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc())) // may exist do we need to check ?
+    insertables.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc())) // May exist; do we need to check?
     insertables.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
   })
   try {
