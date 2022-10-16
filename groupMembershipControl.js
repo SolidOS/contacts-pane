@@ -15,9 +15,9 @@ export async function renderGroupMemberships (person, context) {
   async function removeFromGroup (thing, group) {
     const pname = kb.any(thing, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
-    // find all webids of thing
+    // find all WebIDs of thing
     const thingwebids = kb.each(null, ns.owl('sameAs'), thing, group.doc())
-    // webid can be deleted only if not used in a other thing
+    // WebID can be deleted only if not used in another thing
     let webids = []
     thingwebids.map(webid => {
       if (kb.any(webid, ns.owl('sameAs'), thing, group.doc()).length = 1 ) webids = webids.concat(webid)
