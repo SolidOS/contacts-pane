@@ -66,7 +66,7 @@ export async function renderGroupMemberships (person, context) {
 
   // find all documents where person ns.vcard('fn')
   function syncGroupList () {
-    // to be changed person and or webids
+    // person and/or WebIDs to be changed
     // const groups = kb.each(null, ns.vcard('hasMember'), person)
     const groups = kb.each(person, ns.vcard('fn'), undefined) // non il faut acceder a la liste des group.doc()
     utils.syncTableToArray(groupList, groups, newRowForGroup)
