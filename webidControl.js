@@ -51,8 +51,8 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
     $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
   ]
-  // insert webID in groups
-  // replace person with webId in vcard:hasMember (webId may already exist)
+  // insert WebID in groups
+  // replace person with WebID in vcard:hasMember (WebID may already exist)
   // insert owl:sameAs
   const groups = kb.each(null, ns.vcard('hasMember'), person)
   const deletables = []
