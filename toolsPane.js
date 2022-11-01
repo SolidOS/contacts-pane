@@ -85,7 +85,9 @@ export function toolsPane (
     function stats () {
       const totalCards = kb.each(undefined, VCARD('inAddressBook'), book).length
       log('' + totalCards + ' cards loaded. ')
-      const groups = kb.each(book, VCARD('includesGroup')) // alain double value
+      let groups = kb.each(book, VCARD('includesGroup'))
+      const strings = new Set(groups.map(group => group.uri)) // remove dups
+      groups = [...strings].map(uri => kb.sym(uri))
       log('' + groups.length + ' total groups. ')
       const gg = []
       for (const g in selectedGroups) {
@@ -576,7 +578,10 @@ export function toolsPane (
                 log('   Regenerating group of uniques...' + cleanGroup)
                 const data = sz.statementsToN3(sts)
 
-                return kb.fetcher.webOperation('PUT', cleanGroup, { data })
+                return kb.fetcher.webOperation('PUT', cleanGroup, {
+                  data: data,
+                  contentType: 'text/turtle'
+                })
               })
               .then(() => {
                 log('     Done uniques group ' + cleanGroup)
@@ -616,12 +621,14 @@ export function toolsPane (
             .then(scanForDuplicates)
             .then(checkGroupMembers)
             .then(checkAllNameless)
-            .then((resolve, reject) => {
-              if (confirm('Write new clean versions?')) {
-                resolve(true) // errors resolve is not a function
-              } else {
-                reject() // errors reject is not a function
-              }
+            .then(() => {
+              return new Promise(function (resolve, reject) {
+                if (confirm('Write new clean versions?')) {
+                  resolve(true)
+                } else {
+                  reject()
+                }
+              })
             })
             .then(saveCleanPeople)
             .then(saveAllGroups)
