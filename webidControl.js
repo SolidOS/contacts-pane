@@ -55,11 +55,11 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   // replace person with WebID in vcard:hasMember (WebID may already exist)
   // insert owl:sameAs
   const groups = kb.each(null, ns.vcard('hasMember'), person)
-  const deletables = []
+  let deletables = []
   groups.forEach(group => {
-    deletables.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
+    deletables = deletables.concat(kb.statementsMatching(group, ns.vcard('hasMember'), person, group.doc()))
     insertables.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc())) // May exist; do we need to check?
-    insertables.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
+    insertables.push($rdf.st(kb.sym(webid), ns.owl('sameAs'), person, group.doc()))
   })
   try {
     await updateMany(deletables, insertables)
@@ -86,13 +86,13 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
 
   // remove webIDs from groups
   const groups = kb.each(null, ns.vcard('hasMember'), kb.sym(webid))
-  const removeFromGroups = []
+  let removeFromGroups = []
   const insertInGroups = []
-  groups.forEach(group => {
-    removeFromGroups.push($rdf.st(person, ns.owl('sameAs'), kb.sym(webid), group.doc()))
-    if (kb.each(null, ns.owl('sameAs'), kb.sym(webid), group.doc()).length = 1) {
-      removeFromGroups.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid)), group.doc())
-      insertInGroups.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
+  groups.forEach(async group => {
+    removeFromGroups = removeFromGroups.concat(kb.statementsMatching(kb.sym(webid), ns.owl('sameAs'), person, group.doc()))
+    insertInGroups.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
+    if (kb.statementsMatching(kb.sym(webid), ns.owl('sameAs'), null, group.doc()).length < 2) {
+      removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
     }
   })
   await updateMany(removeFromGroups, insertInGroups)

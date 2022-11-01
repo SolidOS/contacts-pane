@@ -15,11 +15,12 @@ to change its state according to an ontology, comment on it, etc.
 /* global alert, confirm */
 
 import { authn } from 'solid-logic'
-import { addPersonToGroup, saveNewContact, saveNewGroup } from './contactLogic'
+import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers } from './contactLogic'
 import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
+import { groupMembership } from './groupMembershipControl'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -217,8 +218,25 @@ export default {
                   const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
                   await kb.fetcher.load(nameEmailIndex)
 
+                  //  - delete person's WebID's in each Group
                   //  - delete the references to it in group files and save them back
-                  //   - delete the reference in people.ttl and save it back
+                  //  - delete the reference in people.ttl and save it back
+
+                  // find all Groups
+                  const groups = groupMembership(person)
+                  let removeFromGroups = []
+                  // find person WebID's
+                  groups.map( group => {
+                    const webids = kb.each(null, ns.owl('sameAs'), person, group.doc())
+                    // for each check in each Group that it is not used by an other person then delete
+                    webids.map( webid => {
+                      if (kb.statementsMatching(webid, ns.owl('sameAs'), null, group.doc()).length = 1) {
+                        removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
+                      }
+                    })
+                  })
+                  // console.log(removeFromGroups)
+                  await kb.updater.updateMany(removeFromGroups)
                   await deleteThingAndDoc(person)
                   await deleteRecursive(kb, container)
                   refreshNames() // "Doesn't work" -- maybe does now with waiting for async
@@ -417,8 +435,7 @@ export default {
           const groups = Object.keys(selectedGroups).map(groupURI => kb.sym(groupURI))
           groups.forEach(group => {
             if (selectedGroups[group.value]) {
-              const a = kb.each(group, ns.vcard('hasMember'), null, group.doc())
-              cards = cards.concat(a)
+              cards = cards.concat(groupMembers(kb, group))
             }
           })
           cards.sort(compareForSort) // @@ sort by name not UID later

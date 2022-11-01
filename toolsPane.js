@@ -4,7 +4,7 @@
 
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
-import { saveNewGroup, addPersonToGroup } from './contactLogic'
+import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 export function toolsPane (
   selectAllGroups,
   selectedGroups,
@@ -85,7 +85,7 @@ export function toolsPane (
     function stats () {
       const totalCards = kb.each(undefined, VCARD('inAddressBook'), book).length
       log('' + totalCards + ' cards loaded. ')
-      const groups = kb.each(book, VCARD('includesGroup'))
+      const groups = kb.each(book, VCARD('includesGroup')) // alain double value
       log('' + groups.length + ' total groups. ')
       const gg = []
       for (const g in selectedGroups) {
@@ -137,7 +137,7 @@ export function toolsPane (
 
       for (let i = 0; i < gg.length; i++) {
         const g = kb.sym(gg[i])
-        const a = kb.each(g, ns.vcard('hasMember'))
+        const a = groupMembers(kb, g)
         log(UI.utils.label(g) + ': ' + a.length + ' members')
         for (let j = 0; j < a.length; j++) {
           const card = a[j]
@@ -357,6 +357,7 @@ export function toolsPane (
                   const other = stats.nameLessIndex[cardText]
                   if (other) {
                     log('  Matches with ' + other)
+                    // alain not sure it works we may need to concat with 'sameAs' group.doc (.map(st => st.why))
                     const cardGroups = kb.each(null, ns.vcard('hasMember'), card)
                     const otherGroups = kb.each(null, ns.vcard('hasMember'), other)
                     for (let j = 0; j < cardGroups.length; j++) {
@@ -432,9 +433,9 @@ export function toolsPane (
               for (let i = 0; i < stats.uniques.length; i++) {
                 stats.uniquesSet[stats.uniques[i].uri] = true
               }
-              stats.groupMembers = kb
-                .statementsMatching(null, ns.vcard('hasMember'))
-                .map(st => st.object)
+              stats.groupMembers = []
+              kb.each(null, ns.vcard('hasMember'))
+                .map(group => { stats.groupMembers = stats.groupMembers.concat(groupMembers(kb, group)) })
               log('  Naive group members ' + stats.groupMembers.length)
               stats.groupMemberSet = []
               for (let j = 0; j < stats.groupMembers.length; j++) {
@@ -617,9 +618,9 @@ export function toolsPane (
             .then(checkAllNameless)
             .then((resolve, reject) => {
               if (confirm('Write new clean versions?')) {
-                resolve(true)
+                resolve(true) // errors resolve is not a function
               } else {
-                reject()
+                reject() // errors reject is not a function
               }
             })
             .then(saveCleanPeople)
@@ -660,13 +661,15 @@ export function toolsPane (
 
       const reverseIndex = {}
       const groupless = []
-      const groups = kb.each(book, VCARD('includesGroup'))
-
+      let groups = kb.each(book, VCARD('includesGroup'))
+      const strings = new Set(groups.map(group => group.uri)) // remove dups
+      groups = [...strings].map(uri => kb.sym(uri))
       log('' + groups.length + ' total groups. ')
 
       for (let i = 0; i < groups.length; i++) {
         const g = groups[i]
-        const a = kb.each(g, ns.vcard('hasMember'))
+        const a = groupMembers(kb, g)
+
         log(UI.utils.label(g) + ': ' + a.length + ' members')
         for (let j = 0; j < a.length; j++) {
           kb.allAliases(a[j]).forEach(function (y) {

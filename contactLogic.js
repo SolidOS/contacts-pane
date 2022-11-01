@@ -138,7 +138,7 @@ export async function addPersonToGroup (thing, group) {
   const pname = kb.any(thing, ns.vcard('fn'))
   const gname = kb.any(group, ns.vcard('fn'))
   if (!pname) { return alert('No vcard name known for ' + thing) }
-  const already = kb.holds(group, ns.vcard('hasMember'), thing, group.doc())
+  const already = kb.holds(thing, ns.vcard('fn'), null, group.doc())
   if (already) {
     return alert(
       'ALREADY added ' + pname + ' to group ' + gname
@@ -147,14 +147,18 @@ export async function addPersonToGroup (thing, group) {
   const message = 'Add ' + pname + ' to group ' + gname + '?'
   if (!confirm(message)) return
   const ins = [
-    $rdf.st(group, ns.vcard('hasMember'), thing, group.doc()),
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
-  // find person webIDs
+  // find person webIDs and insert in vcard:hasMember
   const webIDs = getPersonas(kb, thing).map(webid => webid.value)
-  webIDs.forEach(webid => {
-    ins.push($rdf.st(thing, ns.owl('sameAs'), kb.sym(webid), group.doc()))
-  })
+  if (webIDs.length) {
+    webIDs.forEach(webid => {
+      ins.push($rdf.st(kb.sym(webid), ns.owl('sameAs'), thing, group.doc()))
+      ins.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
+    })
+  } else {
+    ins.push($rdf.st(group, ns.vcard('hasMember'), thing, group.doc()))
+  }
   try {
     await updater.update([], ins)
     // to allow refresh of card groupList
@@ -165,3 +169,20 @@ export async function addPersonToGroup (thing, group) {
   }
   return thing
 }
+
+/**
+ * Find persons member of a group
+ */
+
+export function groupMembers (kb, group) {
+  const a = kb.each(group, ns.vcard('hasMember'), null, group.doc())
+  let b = []
+  a.forEach(item => {
+    const contacts = kb.each(item, ns.owl('sameAs'), null, group.doc())
+    b = contacts.length ? b.concat(contacts) : b.concat(item)
+  })
+  const strings = new Set(b.map(contact => contact.uri)) // remove dups
+  b = [...strings].map(uri => kb.sym(uri))
+  return b
+}
+
