@@ -178,8 +178,16 @@ export function groupMembers (kb, group) {
   const a = kb.each(group, ns.vcard('hasMember'), null, group.doc())
   let b = []
   a.forEach(item => {
-    const contacts = kb.each(item, ns.owl('sameAs'), null, group.doc())
-    b = contacts.length ? b.concat(contacts) : b.concat(item)
+    /* const contacts = kb.each(item, ns.owl('sameAs'), null, group.doc())
+    if (contacts.length) {
+      if (!kb.any(contacts[0], ns.vard('fn'))) b = b.concat(item) // this is the old data model
+      else b = b.concat(contacts)
+    } else { b = b.concat(item) }
+    b = b.concat(item) */
+
+    // to keep compatibility with old data model
+    // check if item is a contact, else it is a WebID and parse 'sameAs' for contacts
+    b = kb.any(item, ns.vcard('fn'), null, group.doc()) ? b.concat(item) : b.concat(kb.each(item, ns.owl('sameAs'), null, group.doc()))
   })
   const strings = new Set(b.map(contact => contact.uri)) // remove dups
   b = [...strings].map(uri => kb.sym(uri))
