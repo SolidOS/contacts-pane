@@ -724,6 +724,46 @@ export function toolsPane (
     fixGrouplessButton.style.cssText = buttonStyle
     fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
+
+    async function fixToOldDataModel (book) {
+      async function updateToOldDataModel(groups) {
+        let ds = []
+        let ins = []
+        groups.forEach(group => {
+          let vcardOrWebids = kb.statementsMatching(null, ns.owl('sameAs'), null, group.doc()).map(st => st.subject)
+          const strings = new Set(vcardOrWebids.map(contact => contact.uri)) // remove dups
+          vcardOrWebids = [...strings].map(uri => kb.sym(uri))
+          vcardOrWebids.forEach(item => {
+            if (!kb.each(item, ns.vcard('fn'), null, group.doc()).length) {
+              // delete item this is a new data model,  item is a webid not a card.
+              ds = ds.concat(kb
+                .statementsMatching(item, ns.owl('sameAs'), null, group.doc())
+                .concat(kb.statementsMatching(undefined, undefined, item, group.doc())))
+              // add webid card to group
+              const cards = kb.each(item, ns.owl('sameAs'), null, group.doc())
+              cards.forEach(card => {
+                ins = ins.concat($rdf.st(card, ns.owl('sameAs'), item, group.doc()))
+                  .concat($rdf.st(group, ns.vcard('hasMember'), card, group.doc()))
+              })
+            }
+          })
+        })
+        if (ds.length && confirm('Groups can be updated to old data model ?')) {
+          await kb.updater.updateMany(ds, ins)
+          alert('Update done')
+        } else { if (!ds.length) alert('Nothing to update.\nAll Groups already use the old data model.')}
+      }
+      let groups = kb.each(book, VCARD('includesGroup'))
+      const strings = new Set(groups.map(group => group.uri)) // remove dups
+      groups = [...strings].map(uri => kb.sym(uri))
+      updateToOldDataModel(groups)
+    }
+
+    const fixToOldDataModelButton = pane.appendChild(dom.createElement('button'))
+    fixToOldDataModelButton.style.cssText = buttonStyle
+    fixToOldDataModelButton.textContent = 'Revert groups to old data model'
+    fixToOldDataModelButton.addEventListener('click', _event => fixToOldDataModel(book))
+
   } // main
   main()
   return pane
