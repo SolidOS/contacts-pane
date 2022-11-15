@@ -595,7 +595,41 @@ export default {
           const groups = groupsInOrder()
           utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
           refreshGroupsSelected()
+          checkDataModel(groups)
         } // syncGroupTable
+
+        async function checkDataModel(groups) {
+          // check if migration is needed in groups
+          async function updateDataModel(groups) {
+            let ds = []
+            let ins = []
+            groups.forEach(group => {
+              let vcardOrWebids = kb.statementsMatching(null, ns.owl('sameAs'), null, group.doc()).map(st => st.subject)
+              const strings = new Set(vcardOrWebids.map(contact => contact.uri)) // remove dups
+              vcardOrWebids = [...strings].map(uri => kb.sym(uri))
+              vcardOrWebids.forEach(item => {
+                if (kb.each(item, ns.vcard('fn'), null, group.doc()).length) {
+                  // delete item, it is an old data model,  item is a card not a webid.
+                  ds = ds.concat(kb
+                    .statementsMatching(item, ns.owl('sameAs'), null, group.doc())
+                    .concat(kb.statementsMatching(undefined, undefined, item, group.doc())))
+                  // add card webids to group
+                  const webids = kb.each(item, ns.owl('sameAs'), null, group.doc())
+                  webids.forEach(webid => {
+                    ins = ins.concat($rdf.st(webid, ns.owl('sameAs'), item, group.doc()))
+                      .concat($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
+                  })
+                }
+              })
+            })
+            if (ds.length && confirm('Groups data model need to be updated ?')) {
+              await kb.updater.updateMany(ds, ins)
+              alert('Update done')
+            }
+          }
+          await kb.fetcher.load(groups)
+          updateDataModel(groups)
+        } // checkDataModel
 
         // Click on New Group button
         async function newGroupClickHandler (_event) {
