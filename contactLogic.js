@@ -194,3 +194,35 @@ export function groupMembers (kb, group) {
   return b
 }
 
+export function isLocal(group, item) {
+  const tree = group.dir().dir()
+  return item.uri && item.uri.startsWith(tree.uri)
+}
+
+export function getSameAs(item, doc) {
+  return each(item, ns.owl('sameAs'), null, doc).concat(
+      each(null, ns.owl('sameAs'), item, doc)
+}
+
+async function getDataModelIssues(groups) {
+  let ds = []
+  let ins = []
+  groups.forEach(group => {
+
+    const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
+    members.forEach((member) => {
+      const others = getSameAs(member, group.doc())
+      if (others.length && isLocal(group, member)) { // Problem: local ID used instead of webID
+        for (const other of others) {
+          if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs
+            del = del.push($rdf.st(group, ns.vcard('hasMember'), member, group.doc()))
+            ins = ins.push($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
+            break
+          }
+        } // other
+        console.log('Data Model: No remote webid found for ' + member)
+      } // if
+    })
+  }) // next group
+    return {ds, is }
+  } // getDataModelIssues
