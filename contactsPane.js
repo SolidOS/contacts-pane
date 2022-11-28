@@ -604,23 +604,33 @@ export default {
             let ds = []
             let ins = []
             groups.forEach(group => {
+              // check for WebId's in VCARD('hasMember)
+              const members = kb.statementsMatching(group, ns.vcard('hasMember'), null, group.doc()).map(st => st.object)
+              console.log('Alain ' + members)
+              const newModel = members.some(member => !kb.any(member, ns.vcard('fn'), null, group.doc())) ? true : false
+              // if newModel, shall we check that sameAs is in expected order ?
+              console.log(newModel)
+              if (!newModel) {
+              // update to new model
               let vcardOrWebids = kb.statementsMatching(null, ns.owl('sameAs'), null, group.doc()).map(st => st.subject)
-              const strings = new Set(vcardOrWebids.map(contact => contact.uri)) // remove dups
-              vcardOrWebids = [...strings].map(uri => kb.sym(uri))
-              vcardOrWebids.forEach(item => {
-                if (kb.each(item, ns.vcard('fn'), null, group.doc()).length) {
-                  // delete item, it is an old data model,  item is a card not a webid.
-                  ds = ds.concat(kb
-                    .statementsMatching(item, ns.owl('sameAs'), null, group.doc())
-                    .concat(kb.statementsMatching(undefined, undefined, item, group.doc())))
-                  // add card webids to group
-                  const webids = kb.each(item, ns.owl('sameAs'), null, group.doc())
-                  webids.forEach(webid => {
-                    ins = ins.concat($rdf.st(webid, ns.owl('sameAs'), item, group.doc()))
-                      .concat($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
-                  })
-                }
-              })
+                const strings = new Set(vcardOrWebids.map(contact => contact.uri)) // remove dups
+                vcardOrWebids = [...strings].map(uri => kb.sym(uri))
+                vcardOrWebids.forEach(item => {
+                  if (kb.each(item, ns.vcard('fn'), null, group.doc()).length) {
+                    // delete item, it is an old data model,  item is a card not a webid.
+                    ds = ds.concat(kb
+                      .statementsMatching(item, ns.owl('sameAs'), null, group.doc())
+                      .statementsMatching(null, ns.owl('sameAs'), item, group.doc()) // and also reverse
+                      .concat(kb.statementsMatching(undefined, undefined, item, group.doc())))
+                    // add card webids to group
+                    const webids = kb.each(item, ns.owl('sameAs'), null, group.doc())
+                    webids.forEach(webid => {
+                      ins = ins.concat($rdf.st(webid, ns.owl('sameAs'), item, group.doc()))
+                        .concat($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
+                    })
+                  }
+                })
+              }
             })
             if (ds.length && confirm('Groups data model need to be updated ?')) {
               await kb.updater.updateMany(ds, ins)
