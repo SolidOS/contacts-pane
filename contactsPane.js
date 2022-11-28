@@ -21,6 +21,7 @@ import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
 import { groupMembership } from './groupMembershipControl'
+import { getDataModelIssues } from './contactLogic'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -227,10 +228,10 @@ export default {
                   let removeFromGroups = []
                   // find person WebID's
                   groups.map( group => {
-                    const webids = getSameAs(person, group.doc())
+                    const webids = getSameAs(kb, person, group.doc())
                     // for each check in each Group that it is not used by an other person then delete
                     webids.map( webid => {
-                      if (getSameAs(webid, group.doc()).length = 1) {
+                      if (getSameAs(kb, webid, group.doc()).length = 1) {
                         removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
                       }
                     })
@@ -312,8 +313,10 @@ export default {
         }
 
         async function loadAllGroups () {
+          await kb.fetcher.load(groupIndex)
           const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
           await kb.fetcher.load(gs)
+          return gs
         }
 
         function groupsInOrder () {
@@ -595,16 +598,18 @@ export default {
           const groups = groupsInOrder()
           utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
           refreshGroupsSelected()
-          await checkDataModel(groups)
+          // await checkDataModel(groups)
         } // syncGroupTable
 
 
-       async function checkDataModel (groups) {
-          await kb.fetcher.load(groups) // Take a long time to do every time
-          const { ds, is } = getDataModelIssues(groups)
+       async function checkDataModel () {
+          // await kb.fetcher.load(groups) // asssume loaded already
+          const groups = await loadAllGroups()
 
-          if (ds.length && confirm(`Groups data model need to be updated? (${ds.length})`)) {
-            await kb.updater.updateMany(ds, ins)
+          const { del, ins } = await getDataModelIssues(groups)
+
+          if (del.length && confirm(`Groups data model need to be updated? (${del.length})`)) {
+            await kb.updater.updateMany(del, ins)
             alert('Update done')
           }
         } // checkDataModel
@@ -870,6 +875,10 @@ export default {
         // })
 
         div.appendChild(dom.createElement('hr'))
+
+        // const groups = await loadAllGroups()   @@@
+        checkDataModel().then(()=> {console.log('async checkDataModel done.')})
+
         //  div.appendChild(newAddressBookButton(book))       // later
         // end of AddressBook instance
       } // renderThreeColumnBrowser

@@ -195,34 +195,38 @@ export function groupMembers (kb, group) {
 }
 
 export function isLocal(group, item) {
-  const tree = group.dir().dir()
-  return item.uri && item.uri.startsWith(tree.uri)
+  const tree = group.dir().dir().dir()
+  const local = item.uri && item.uri.startsWith(tree.uri)
+  // console.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
+  return local
 }
 
-export function getSameAs(item, doc) {
-  return each(item, ns.owl('sameAs'), null, doc).concat(
-      each(null, ns.owl('sameAs'), item, doc)
+export function getSameAs(kb, item, doc) {
+  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
+      kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
-async function getDataModelIssues(groups) {
-  let ds = []
+export async function getDataModelIssues(groups) {
+  let del = []
   let ins = []
   groups.forEach(group => {
-
     const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
     members.forEach((member) => {
-      const others = getSameAs(member, group.doc())
+      const others = getSameAs(kb, member, group.doc())
       if (others.length && isLocal(group, member)) { // Problem: local ID used instead of webID
         for (const other of others) {
-          if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs
-            del = del.push($rdf.st(group, ns.vcard('hasMember'), member, group.doc()))
-            ins = ins.push($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
+          if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs'
+            console.warn(`getDataModelIssues:  Need to swap ${member} to ${other}`)
+            del.push($rdf.st(group, ns.vcard('hasMember'), member, group.doc()))
+            ins.push($rdf.st(group, ns.vcard('hasMember'), other, group.doc()))
             break
           }
+          console.log('getDataModelIssues: ??? expected id not to be local ' + other)
         } // other
-        console.log('Data Model: No remote webid found for ' + member)
       } // if
-    })
+    }) // member
   }) // next group
-    return {ds, is }
-  } // getDataModelIssues
+  return {del, ins }
+} // getDataModelIssues
+
+// Ends
