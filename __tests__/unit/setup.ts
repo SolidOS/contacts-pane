@@ -1,10 +1,11 @@
 import { DataBrowserContext, PaneRegistry } from "pane-registry";
-import { sym } from "rdflib";
-import { SolidLogic, store } from "solid-logic";
+import { LiveStore, sym} from "rdflib";
+// import { SolidLogic, store } from "solid-logic";
 
 export const subject = sym("https://janedoe.example/profile/card#me");
 export const doc = subject.doc();
 
+const store = new LiveStore()
 export const context = {
     dom: document,
     getOutliner: () => null,

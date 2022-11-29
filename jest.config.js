@@ -1,5 +1,5 @@
 module.exports = {
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ["./jest.setup.js"],
+  setupFilesAfterEnv: ["./jest.setup.ts"],
   transformIgnorePatterns: ["/node_modules/(?!lit-html).+\\.js"],
 };

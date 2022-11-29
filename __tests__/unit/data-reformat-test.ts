@@ -2,8 +2,7 @@ import { getDataModelIssues } from '../../src/contacsPane'
 
 comsole.log('data reformat test')
 
-
-import pane from "../index";
+import pane from "../../contactsPane";
 import { parse } from "rdflib";
 import { store } from "solid-logic";
 import { context, doc, subject } from "./setup";
@@ -185,6 +184,7 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     });
     it("returns a null label if not a person", () => {
       expect(pane.label(store.sym('https://random.example.com/'), context)).toEqual(null);
+      // done()
     });
 
   });
