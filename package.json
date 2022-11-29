@@ -9,7 +9,7 @@
     "build-lib": "mkdir lib && make && npx tsc-transpile-only src/*.ts --outDir lib",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
-    "test": "npm run lint",
+    "test": "npm run lint && jest",
     "prepublishOnly": "npm test && npm run build",
     "postpublish": "git push origin main --follow-tags"
   },
