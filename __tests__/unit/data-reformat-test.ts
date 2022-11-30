@@ -1,11 +1,9 @@
-import { getDataModelIssues } from '../../src/contacsPane'
-
-comsole.log('data reformat test')
+import {parse} from "rdflib";
+import {store} from "solid-logic";
+import {ns} from "solid-ui";
 
 import pane from "../../contactsPane";
-import { parse } from "rdflib";
-import { store } from "solid-logic";
-import { context, doc, subject } from "./setup";
+import {context, doc, subject} from "./setup";
 
 // This was at testingsolidos.solidcommunity.net
 const exampleProfile = `@prefix : <#>.
