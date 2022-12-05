@@ -140,7 +140,7 @@ describe("contacts-pane", () => {
         });
     }); // label tests
     describe("render tests", () => {
-        it("renders a UI of an address book", () => {
+        it("renders an empty UI of an address book", () => {
             const div = pane.render(book, context);
             expect(div.outerHTML).toMatch("<div class=\"contactPane\"></div>");
             expect(div.innerHTML).toMatch("");

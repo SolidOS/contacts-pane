@@ -64,7 +64,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   try {
     await updater.updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
-    console.log("Error: can't update " + person + ' as new contact:' + e)
+    console.error("Error: can't update " + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
   }
   return person
@@ -86,7 +86,7 @@ export async function saveNewGroup (book, name) {
   const gname = sanitizeToAlpha(name)
   const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
   const doc = group.doc()
-  console.log(' New group will be: ' + group + '\n')
+  // console.log(' New group will be: ' + group + '\n')
   try {
     await kb.fetcher.load(gix)
   } catch (err) {
@@ -129,7 +129,7 @@ export async function addPersonToGroup (thing, group) {
 
   const types = kb.findTypeURIs(thing)
   for (const ty in types) {
-    console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+    // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
   }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
@@ -216,12 +216,12 @@ export async function getDataModelIssues(groups) {
       if (others.length && isLocal(group, member)) { // Problem: local ID used instead of webID
         for (const other of others) {
           if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs'
-            console.warn(`getDataModelIssues:  Need to swap ${member} to ${other}`)
+            // console.warn(`getDataModelIssues:  Need to swap ${member} to ${other}`)
             del.push($rdf.st(group, ns.vcard('hasMember'), member, group.doc()))
             ins.push($rdf.st(group, ns.vcard('hasMember'), other, group.doc()))
             break
           }
-          console.log('getDataModelIssues: ??? expected id not to be local ' + other)
+          // console.log('getDataModelIssues: ??? expected id not to be local ' + other)
         } // other
       } // if
     }) // member
