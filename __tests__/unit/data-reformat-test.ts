@@ -3,7 +3,7 @@ import fetchMock from "jest-fetch-mock";
 
 import pane from "../../contactsPane";
 import { parse, NamedNode } from "rdflib";
-import { context, doc, subject, mockFetchFunction, ns, store, prefixes, web } from "./setup";
+import { context, doc, subject, mockFetchFunction, mockUpdate, ns, store, prefixes, web } from "./setup";
 
 // This was at testingsolidos.solidcommunity.net
 
@@ -117,8 +117,8 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     let thing = store.sym(base + 'thing1')
     store.add(thing, ns.rdf('type'),  ns.vcard('Organization'), doc)
     expect(pane.label(thing, context)).toEqual('contact');
-
   });
+
   it("returns a good label Contact for Individual", () => {
     let thing = store.sym(base + 'thing2')
     store.add(thing, ns.rdf('type'),  ns.vcard('Individual'), doc)
@@ -153,6 +153,13 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
 
   }); // label tests
 
+  describe("render tests", () => { // How to get the UI which comes over time?
+    it("renders an empty UI of an address book", () => {
+      const div = pane.render(book, context)
+      expect(div.outerHTML).toMatch("<div class=\"contactPane\"></div>");
+      expect(div.innerHTML).toMatch("");
+    });
+  }); // render tests
 
   describe("data format tests", () => {
     beforeAll(async () => {
@@ -168,6 +175,9 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
       expect(ins.length).toEqual(1)
       expect(del.toString()).toEqual('<https://janedoe.example/profile/Group/Test.ttl#this> <http://www.w3.org/2006/vcard/ns#hasMember> <https://janedoe.example/profile/People/aaaaaaaaaa/index.ttl#this> .')
       expect(ins.toString()).toEqual('<https://janedoe.example/profile/Group/Test.ttl#this> <http://www.w3.org/2006/vcard/ns#hasMember> <https://alice.example/card#me> .')
+      mockUpdate(store, del, ins)
+      expect(store.the(testGroup, ns.vcard('hasMember'), null, testGroup.doc())).toEqual(aliceWebId)
+
     });
 
   }); // data format tests

@@ -1,6 +1,6 @@
 import { DataBrowserContext, PaneRegistry } from "pane-registry";
 
-// export { sym} from "rdflib";
+import  { Statement, LiveStore } from "rdflib";
 import { ns, store, rdf } from "solid-ui"
 export { ns, store, rdf } from "solid-ui"
 
@@ -33,15 +33,6 @@ export const context = {
     },
 } as unknown as DataBrowserContext;
 
-/*
-const foo = ns.rdf('type')
-console.log('ns: ' + ns)
-console.log('Object.keys(ns): ', Object.keys(ns))
-console.log('Object.keys(ns)[0]: ', Object.keys(ns)[0])
-console.log('ns[Object.keys(ns)[0]]: ', ns[Object.keys(ns)[0]])
-console.log('ns[Object.keys(ns)[0]]("foo"): ', ns[Object.keys(ns)[0]]('foo'))
-console.log(" ns['default']:", ns['default'])
-*/
 const  prefs = Object.keys(ns).filter(x => x !== 'default') // default is bogus value
 export const prefixes = prefs.map(prefix => `@prefix ${prefix}: ${ns[prefix]('')}.\n`).join('') // In turtle
 
@@ -74,4 +65,13 @@ export async function mockFetchFunction (req) {
         status: 404,
         body: 'Not Found'
     }
+}
+
+export function mockUpdate (store: LiveStore, del: Statement[], ins: Statement[]) {
+  for (const st of del) {
+    store.remove(st)
+  }
+  for (const st of ins) {
+    store.addStatement(st)
+  }
 }
