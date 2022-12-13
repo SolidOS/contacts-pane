@@ -663,7 +663,7 @@ export default {
           const nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
           if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
           await kb.fetcher.load(nameEmailIndex)
-          console.log('Name index loaded async' + nameEmailIndex)
+          // console.log('Name index loaded async' + nameEmailIndex)
 
           const name = await UI.widgets
             .askName(dom, kb, cardMain, UI.ns.foaf('name'), klass) // @@ was, 'person'

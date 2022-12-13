@@ -47,7 +47,7 @@
     "jose": "^4.8.3",
     "pane-registry": "2.4.13",
     "rdflib": "^2.2.21",
-    "solid-logic": "2.0.1",
+    "solid-logic": "^2.1.0",
     "solid-ui": "2.4.24"
   },
   "devDependencies": {
