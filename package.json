@@ -9,7 +9,7 @@
     "build-lib": "mkdir lib && make && npx tsc-transpile-only src/*.ts --outDir lib",
     "lint": "eslint '*.js'",
     "lint-fix": "eslint '*.js' --fix",
-    "test": "npm run lint",
+    "test": "npm run lint && npm run build && npx tsc --target es2015  --moduleResolution node  __tests__/unit/*.ts && jest __tests__/unit/*test.ts",
     "prepublishOnly": "npm test && npm run build",
     "postpublish": "git push origin main --follow-tags"
   },
@@ -37,12 +37,21 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "@testing-library/jest-dom": "^5.16.5",
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
+    "jest-fetch-mock": "^3.0.3",
+    "jose": "^4.8.3",
     "pane-registry": "2.4.13",
     "rdflib": "^2.2.21",
-    "solid-logic": "2.0.1",
+    "solid-logic": "^2.1.0",
     "solid-ui": "2.4.24"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.18.6",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.27.0",

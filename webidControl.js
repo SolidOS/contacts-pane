@@ -38,7 +38,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 
   // check this is a url
   try {
-    const url = new URL(webid)
+    const _url = new URL(webid)
   } catch (error) {
     throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)
   }

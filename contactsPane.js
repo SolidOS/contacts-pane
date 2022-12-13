@@ -21,6 +21,7 @@ import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
 import { groupMembership } from './groupMembershipControl'
+import { getDataModelIssues } from './contactLogic'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -227,10 +228,10 @@ export default {
                   let removeFromGroups = []
                   // find person WebID's
                   groups.map( group => {
-                    const webids = kb.each(null, ns.owl('sameAs'), person, group.doc())
+                    const webids = getSameAs(kb, person, group.doc())
                     // for each check in each Group that it is not used by an other person then delete
                     webids.map( webid => {
-                      if (kb.statementsMatching(webid, ns.owl('sameAs'), null, group.doc()).length = 1) {
+                      if (getSameAs(kb, webid, group.doc()).length = 1) {
                         removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
                       }
                     })
@@ -312,8 +313,10 @@ export default {
         }
 
         async function loadAllGroups () {
+          await kb.fetcher.load(groupIndex)
           const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
           await kb.fetcher.load(gs)
+          return gs
         }
 
         function groupsInOrder () {
@@ -595,40 +598,20 @@ export default {
           const groups = groupsInOrder()
           utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
           refreshGroupsSelected()
-          checkDataModel(groups)
+          // await checkDataModel(groups)
         } // syncGroupTable
 
-        async function checkDataModel(groups) {
-          // check if migration is needed in groups
-          async function updateDataModel(groups) {
-            let ds = []
-            let ins = []
-            groups.forEach(group => {
-              let vcardOrWebids = kb.statementsMatching(null, ns.owl('sameAs'), null, group.doc()).map(st => st.subject)
-              const strings = new Set(vcardOrWebids.map(contact => contact.uri)) // remove dups
-              vcardOrWebids = [...strings].map(uri => kb.sym(uri))
-              vcardOrWebids.forEach(item => {
-                if (kb.each(item, ns.vcard('fn'), null, group.doc()).length) {
-                  // delete item, it is an old data model,  item is a card not a webid.
-                  ds = ds.concat(kb
-                    .statementsMatching(item, ns.owl('sameAs'), null, group.doc())
-                    .concat(kb.statementsMatching(undefined, undefined, item, group.doc())))
-                  // add card webids to group
-                  const webids = kb.each(item, ns.owl('sameAs'), null, group.doc())
-                  webids.forEach(webid => {
-                    ins = ins.concat($rdf.st(webid, ns.owl('sameAs'), item, group.doc()))
-                      .concat($rdf.st(group, ns.vcard('hasMember'), webid, group.doc()))
-                  })
-                }
-              })
-            })
-            if (ds.length && confirm('Groups data model need to be updated ?')) {
-              await kb.updater.updateMany(ds, ins)
-              alert('Update done')
-            }
+
+       async function checkDataModel () {
+          // await kb.fetcher.load(groups) // asssume loaded already
+          const groups = await loadAllGroups()
+
+          const { del, ins } = await getDataModelIssues(groups)
+
+          if (del.length && confirm(`Groups data model need to be updated? (${del.length})`)) {
+            await kb.updater.updateMany(del, ins)
+            alert('Update done')
           }
-          await kb.fetcher.load(groups)
-          updateDataModel(groups)
         } // checkDataModel
 
         // Click on New Group button
@@ -680,7 +663,7 @@ export default {
           const nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
           if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
           await kb.fetcher.load(nameEmailIndex)
-          console.log('Name index loaded async' + nameEmailIndex)
+          // console.log('Name index loaded async' + nameEmailIndex)
 
           const name = await UI.widgets
             .askName(dom, kb, cardMain, UI.ns.foaf('name'), klass) // @@ was, 'person'
@@ -892,6 +875,10 @@ export default {
         // })
 
         div.appendChild(dom.createElement('hr'))
+
+        // const groups = await loadAllGroups()   @@@
+        checkDataModel().then(()=> {console.log('async checkDataModel done.')})
+
         //  div.appendChild(newAddressBookButton(book))       // later
         // end of AddressBook instance
       } // renderThreeColumnBrowser

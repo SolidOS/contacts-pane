@@ -64,7 +64,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   try {
     await updater.updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
-    console.log("Error: can't update " + person + ' as new contact:' + e)
+    console.error("Error: can't update " + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
   }
   return person
@@ -86,7 +86,7 @@ export async function saveNewGroup (book, name) {
   const gname = sanitizeToAlpha(name)
   const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
   const doc = group.doc()
-  console.log(' New group will be: ' + group + '\n')
+  // console.log(' New group will be: ' + group + '\n')
   try {
     await kb.fetcher.load(gix)
   } catch (err) {
@@ -129,7 +129,7 @@ export async function addPersonToGroup (thing, group) {
 
   const types = kb.findTypeURIs(thing)
   for (const ty in types) {
-    console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+    // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
   }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
@@ -194,3 +194,39 @@ export function groupMembers (kb, group) {
   return b
 }
 
+export function isLocal(group, item) {
+  const tree = group.dir().dir().dir()
+  const local = item.uri && item.uri.startsWith(tree.uri)
+  // console.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
+  return local
+}
+
+export function getSameAs(kb, item, doc) {
+  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
+      kb.each(null, ns.owl('sameAs'), item, doc))
+}
+
+export async function getDataModelIssues(groups) {
+  let del = []
+  let ins = []
+  groups.forEach(group => {
+    const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
+    members.forEach((member) => {
+      const others = getSameAs(kb, member, group.doc())
+      if (others.length && isLocal(group, member)) { // Problem: local ID used instead of webID
+        for (const other of others) {
+          if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs'
+            // console.warn(`getDataModelIssues:  Need to swap ${member} to ${other}`)
+            del.push($rdf.st(group, ns.vcard('hasMember'), member, group.doc()))
+            ins.push($rdf.st(group, ns.vcard('hasMember'), other, group.doc()))
+            break
+          }
+          // console.log('getDataModelIssues: ??? expected id not to be local ' + other)
+        } // other
+      } // if
+    }) // member
+  }) // next group
+  return {del, ins }
+} // getDataModelIssues
+
+// Ends
