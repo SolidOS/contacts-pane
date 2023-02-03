@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "2.6.6",
+  "version": "2.6.7",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
