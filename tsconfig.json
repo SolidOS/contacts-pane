@@ -5,7 +5,9 @@
     "strict": false,
     "outDir": "lib",
     "sourceMap": true,
-    "skipLibCheck": true // otherwise it takes *.d.ts from node_modules see: https://stackoverflow.com/questions/51634361/how-to-force-tsc-to-ignore-node-modules-folder
+    "allowSyntheticDefaultImports" : true // https://github.com/inrupt/solid-client-authn-js/issues/3219
+    // "esModuleInterop": true // ,
+    // "skipLibCheck": true // otherwise it takes *.d.ts from node_modules see: https://stackoverflow.com/questions/51634361/how-to-force-tsc-to-ignore-node-modules-folder
   },
   "include": [
     "./src/**/*"
