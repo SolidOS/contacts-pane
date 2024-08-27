@@ -87,7 +87,8 @@ export async function renderGroupMemberships (person, context) {
     if (!book) {
       book = kb.any(undefined, ns.vcard('includesGroup'))
       if (!book) {
-        throw new Error('findBookFromGroups: Cant find address book which this group is part of')
+        // throw new Error('findBookFromGroups: Cant find address book which this group is part of')
+        return  // no book => no groups
       }
     }
     const groupIndex = kb.any(book, ns.vcard('groupIndex'))
