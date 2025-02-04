@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
-    "solid-ui": "^2.4.33"
+    "solid-ui": "^2.5.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.1",
