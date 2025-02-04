@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - 16.x
           - 18.x
+          - 20.x
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -27,8 +27,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Save build
-        if: matrix.node-version == '16.x'
-        uses: actions/upload-artifact@v2
+        if: matrix.node-version == '18.x'
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: |
@@ -40,12 +40,12 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: 18.x
       - uses: rlespinasse/github-slug-action@v3.x
       - name: Append commit hash to package version
         run: 'sed -i -E "s/(\"version\": *\"[^\"]+)/\1-${GITHUB_SHA_SHORT}/" package.json'
@@ -60,12 +60,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: build
       - uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: 18.x
       - name: Disable pre- and post-publish actions
         run: 'sed -i -E "s/\"((pre|post)publish)/\"ignore:\1/" package.json'
       - uses: JS-DevTools/npm-publish@v1
