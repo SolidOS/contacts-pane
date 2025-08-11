@@ -1,8 +1,9 @@
+import { defineConfig } from "eslint/config";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 
-export default [{
+export default defineConfig([{
     plugins: {
         "@typescript-eslint": typescriptEslint,
     },
@@ -24,4 +25,4 @@ export default [{
             varsIgnorePattern: "^_",
         }],
     },
-}];
+}]);
