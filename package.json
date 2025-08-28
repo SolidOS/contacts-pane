@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "2.6.13",
+  "version": "2.7.0",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
-    "solid-ui": "^2.5.1"
+    "solid-ui": "^2.6.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.0",
