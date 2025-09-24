@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
   "scripts": {
@@ -38,7 +38,8 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
-    "solid-ui": "^2.6.0"
+    "lint-staged": "^16.2.0",
+    "solid-ui": "^2.6.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.0",
@@ -57,7 +58,6 @@
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jest-fetch-mock": "^3.0.3",
-    "lint-staged": "^16.1.5",
     "typescript": "^5.9.2",
     "typescript-transpile-only": "^0.0.4"
   },
