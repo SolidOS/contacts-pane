@@ -124,7 +124,7 @@ export function toolsPane (
     checkAccessButton.style.cssText = buttonStyle
     async function checkAcces (_event) {
       function doCard (card) {
-        UI.widgets.fixIndividualCardACL(card, log, function (ok, message) {
+        UI.acl.fixIndividualCardACL(card, log, function (ok, message) {
           if (ok) {
             log('Success for ' + UI.utils.label(card))
           } else {
