@@ -1,4 +1,0 @@
-# This file primarily exists to prevent ./lib from being ignored when publishing.
-# (Because it's listed in .gitignore).
-
-coverage

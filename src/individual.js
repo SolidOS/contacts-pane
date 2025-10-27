@@ -2,7 +2,7 @@ import * as UI from 'solid-ui'
 import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
-import { renderGroupMemberships } from './groupMembershipControl.js'
+import { renderGroupMemberships } from './src/groupMembershipControl.js'
 import textOfForms from './lib/forms'
 import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
 

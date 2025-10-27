@@ -6,7 +6,6 @@ import { ns, widgets, icons } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
 import { wikidataParameters } from './publicData'
 
-
 const WEBID_NOUN = 'Solid ID'
 
 const kb = store
@@ -18,8 +17,7 @@ const GREEN_PLUS = icons.iconBase + 'noun_34653_green.svg'
 const SEARCH_ICON = icons.iconBase + 'noun_Search_875351.svg'
 
 export async function renderAutocompleteControl (dom:HTMLDocument,
-   person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {
-
+  person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {
   async function autoCompleteDone (object, _name) {
     const webid = object.uri
     removeDecorated()
@@ -63,7 +61,7 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
   const klass = options.class
   const acOptions = {
     queryParams,
-    class:klass,
+    class: klass,
     acceptButton,
     cancelButton
   }
@@ -77,7 +75,6 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
   creationArea.setAttribute('style', 'display: flex; flex-flow: wrap;')
 
   if (options.editable) {
-
     // creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone)) wait for searchButton
     creationArea.style.width = '100%'
     const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))

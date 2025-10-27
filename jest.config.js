@@ -1,11 +1,16 @@
-module.exports = {
-  "verbose": true, // Turn on console.log
-
+export default {
+  // verbose: true, // Uncomment for detailed test output
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ["./jest.setup.ts"],
-  transformIgnorePatterns: ["/node_modules/(?!lit-html).+\\.js"],
-
   testEnvironmentOptions: {
-      customExportConditions: ['node']
+    customExportConditions: ['node'],
+  },
+  testPathIgnorePatterns: ['/node_modules/', '/lib/'],
+  transform: {
+    '^.+\\.[tj]sx?$': ['babel-jest', { configFile: './babel.config.js' }],
+  },
+  setupFilesAfterEnv: ['./jest.setup.ts'],
+  testMatch: ['**/test/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+  roots: ['<rootDir>/src', '<rootDir>/test'],
 }
-};

@@ -24,7 +24,7 @@ const AUTOCOMPLETE_ROWS = 12 // 20?
  *
  * @returns The HTML widget created
  */
-// eslint-disable-next-line complexity
+
 export function autocompleteField ( // @@ are they allowed too be async??
   dom: HTMLDocument,
   container: HTMLElement | undefined,
@@ -34,7 +34,6 @@ export function autocompleteField ( // @@ are they allowed too be async??
   doc: NamedNode | undefined,
   callbackFunction: (ok: boolean, errorMessage: string) => void
 ): HTMLElement {
-
   async function addOneIdAndRefresh (result, _name) {
     const ds = kb.statementsMatching(subject, property as any) // remove any multiple values
 
@@ -114,23 +113,20 @@ export function autocompleteField ( // @@ are they allowed too be async??
   }
 */
 
-  queryParams.endPoint = endPoint.uri
-
   const searchByNameQuery = kb.the(form, ns.ui('searchByNameQuery'), null, formDoc)
-  queryParams.searchByNameQuery = searchByNameQuery
 
-  var queryParams = {label: 'from form', logo: '', class: klass, endPoint, searchByNameQuery}
+  const queryParams = { label: 'from form', logo: '', class: klass, endPoint: endPoint.uri, searchByNameQuery }
 
   const options = { // cancelButton?: HTMLElement,
-                               // acceptButton?: HTMLElement,
-                               class: klass,
-                               queryParams }
+    // acceptButton?: HTMLElement,
+    class: klass,
+    queryParams
+  }
 
   // const acWiget = rhs.appendChild(await renderAutoComplete(dom, options, addOneIdAndRefresh))
 
   // @@ set existing value is any
   renderAutoComplete(dom, options, addOneIdAndRefresh).then(acWiget => rhs.appendChild(acWiget))
-
 
   const field = dom.createElement('input')
   ;(field as any).style = style.textInputStyle // Do we have to override length etc?
@@ -170,11 +166,5 @@ export function autocompleteField ( // @@ are they allowed too be async??
   }
   return box
 }
-
-
-
-
-
-
 
 // ends

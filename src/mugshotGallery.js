@@ -87,8 +87,8 @@ export function renderMugshotGallery (dom, subject) {
     )
     kb.fetcher
       .webOperation('PUT', pic.uri, {
-        data: data,
-        contentType: contentType
+        data,
+        contentType
       })
       .then(function (response) {
         if (!response.ok) {
@@ -203,15 +203,14 @@ export function renderMugshotGallery (dom, subject) {
       // img.setAttribute('src', image.uri) use token and works with NSS but not with CSS
       // we need to get image with authenticated fetch
       store.fetcher._fetch(image.uri)
-        .then(function(response) {
+        .then(function (response) {
           return response.blob()
         })
-        .then(function(myBlob) {
+        .then(function (myBlob) {
           const objectURL = URL.createObjectURL(myBlob)
           img.setAttribute('src', objectURL)
         })
       UI.widgets.makeDraggable(img, image)
-
     }
     return img
   }

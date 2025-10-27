@@ -15,13 +15,12 @@ to change its state according to an ontology, comment on it, etc.
 /* global alert, confirm */
 
 import { authn } from 'solid-logic'
-import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers } from './contactLogic'
+import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers, getDataModelIssues } from './contactLogic'
 import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
-import { renderIndividual } from './individual'
+import { renderIndividual } from '../individual'
 import { toolsPane } from './toolsPane'
 import { groupMembership } from './groupMembershipControl'
-import { getDataModelIssues } from './contactLogic'
 
 // const $rdf = UI.rdf
 const ns = UI.ns
@@ -71,9 +70,9 @@ export default {
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
         function (ws, newBase) {
           thisPane.clone(thisAddressBook, newBase, { // @@ clone is not a thing - use mintNew
-            me: me,
-            div: div,
-            dom: dom
+            me,
+            div,
+            dom
           })
         }
       )
@@ -103,10 +102,10 @@ export default {
 
       const context = {
         target: subject,
-        me: me,
+        me,
         noun: 'address book',
-        div: div,
-        dom: dom
+        div,
+        dom
       } // missing: statusRegion
 
       //  Render a 3-column browser for an address book or a group
@@ -190,7 +189,7 @@ export default {
             if (!ok) {
               return complainIfBad(
                 ok,
-                "Can't load card: " + local + ': ' + message
+                'Can\'t load card: ' + local + ': ' + message
               )
             }
             // console.log("Loaded card " + local + '\n')
@@ -227,11 +226,11 @@ export default {
                   const groups = groupMembership(person)
                   let removeFromGroups = []
                   // find person WebID's
-                  groups.map( group => {
+                  groups.forEach(group => {
                     const webids = getSameAs(kb, person, group.doc())
                     // for each check in each Group that it is not used by an other person then delete
-                    webids.map( webid => {
-                      if (getSameAs(kb, webid, group.doc()).length = 1) {
+                    webids.forEach(webid => {
+                      if (getSameAs(kb, webid, group.doc()).length === 1) {
                         removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
                       }
                     })
@@ -289,7 +288,7 @@ export default {
               message
             ) {
               if (!ok) {
-                const msg = "Can't load group file: " + group + ': ' + message
+                const msg = 'Can\'t load group file: ' + group + ': ' + message
                 badness.push(msg)
                 return complainIfBad(ok, msg)
               }
@@ -522,7 +521,7 @@ export default {
                   if (!ok) {
                     return complainIfBad(
                       ok,
-                      "Can't load group file: " + groupList + ': ' + message
+                      'Can\'t load group file: ' + groupList + ': ' + message
                     )
                   }
                   refreshNames()
@@ -601,8 +600,7 @@ export default {
           // await checkDataModel(groups)
         } // syncGroupTable
 
-
-       async function checkDataModel () {
+        async function checkDataModel () {
           // await kb.fetcher.load(groups) // asssume loaded already
           const groups = await loadAllGroups()
 
@@ -632,7 +630,7 @@ export default {
           try {
             group = await saveNewGroup(book, name)
           } catch (err) {
-            console.log("Error: can't save new group:" + err)
+            console.log('Error: can\'t save new group:' + err)
             cardMain.innerHTML = 'Failed to save group' + err
             return
           }
@@ -657,7 +655,7 @@ export default {
           try {
             await kb.fetcher.load(ourBook)
           } catch (err) {
-            throw new Error("Book won't load:" + ourBook)
+            throw new Error('Book won\'t load:' + ourBook)
           }
 
           const nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
@@ -675,7 +673,7 @@ export default {
           try {
             person = await saveNewContact(book, name, selectedGroups, klass)
           } catch (err) {
-            const msg = "Error: can't save new contact: " + err
+            const msg = 'Error: can\'t save new contact: ' + err
             console.log(msg)
             alert(msg)
           }
@@ -877,7 +875,7 @@ export default {
         div.appendChild(dom.createElement('hr'))
 
         // const groups = await loadAllGroups()   @@@
-        checkDataModel().then(()=> {console.log('async checkDataModel done.')})
+        checkDataModel().then(() => { console.log('async checkDataModel done.') })
 
         //  div.appendChild(newAddressBookButton(book))       // later
         // end of AddressBook instance
@@ -960,3 +958,8 @@ export default {
   } // render function
 } // pane object
 // ends
+
+export function getSameAs (kb, item, doc) {
+  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
+    kb.each(null, ns.owl('sameAs'), item, doc))
+}

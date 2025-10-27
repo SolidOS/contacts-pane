@@ -3,15 +3,21 @@
   "version": "2.7.1",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "./contactsPane.js",
+  "files": [
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "npm run clean && npm run build-lib",
     "clean": "rm -rf lib",
+    "build": "npm run clean && npm run build-lib",
     "build-lib": "mkdir lib && make && npx tsc-transpile-only src/*.ts --outDir lib",
-    "lint": "eslint '*.js'",
-    "lint-fix": "eslint '*.js' --fix",
-    "test": "npm run lint && npm run build && npx tsc --target es2015  --moduleResolution node  --allowSyntheticDefaultImports __tests__/unit/*.ts && jest __tests__/unit/*test.ts",
-    "jest": "jest __tests__/unit/*test.ts",
-    "prepublishOnly": "npm run lint && npm run build && npm run jest",
+    "lint": "eslint",
+    "lint-fix": "eslint --fix",
+    "typecheck": "npm run lint && npm run build && npx tsc --target es2015  --moduleResolution node  --allowSyntheticDefaultImports __tests__/unit/*.ts && jest __tests__/unit/*test.ts",
+    "test": "jest",
+    "prepublishOnly": "npm run build && npm run lint && npm run test",
+    "preversion": "npm run lint && npm run test",
     "postpublish": "git push origin main --follow-tags"
   },
   "repository": {
@@ -58,6 +64,7 @@
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jest-fetch-mock": "^3.0.3",
+    "neostandard": "^0.12.2",
     "typescript": "^5.9.2",
     "typescript-transpile-only": "^0.0.4"
   },

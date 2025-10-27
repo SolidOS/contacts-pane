@@ -41,10 +41,10 @@ export function toolsPane (
 
   const context = {
     target: book,
-    me: me,
+    me,
     noun: 'address book',
     div: pane,
-    dom: dom,
+    dom,
     statusRegion: statusBlock
   }
 
@@ -437,7 +437,7 @@ export function toolsPane (
               }
               stats.groupMembers = []
               kb.each(null, ns.vcard('hasMember'))
-                .map(group => { stats.groupMembers = stats.groupMembers.concat(groupMembers(kb, group)) })
+                .forEach(group => { stats.groupMembers = stats.groupMembers.concat(groupMembers(kb, group)) })
               log('  Naive group members ' + stats.groupMembers.length)
               stats.groupMemberSet = []
               for (let j = 0; j < stats.groupMembers.length; j++) {
@@ -548,7 +548,7 @@ export function toolsPane (
                 const data = sz.statementsToN3(sts)
 
                 return kb.fetcher.webOperation('PUT', cleanPeople, {
-                  data: data,
+                  data,
                   contentType: 'text/turtle'
                 })
               })
@@ -579,7 +579,7 @@ export function toolsPane (
                 const data = sz.statementsToN3(sts)
 
                 return kb.fetcher.webOperation('PUT', cleanGroup, {
-                  data: data,
+                  data,
                   contentType: 'text/turtle'
                 })
               })
@@ -626,7 +626,7 @@ export function toolsPane (
                 if (confirm('Write new clean versions?')) {
                   resolve(true)
                 } else {
-                  reject()
+                  reject(new Error('User cancelled writing clean versions'))
                 }
               })
             })
@@ -726,7 +726,7 @@ export function toolsPane (
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
 
     async function fixToOldDataModel (book) {
-      async function updateToOldDataModel(groups) {
+      async function updateToOldDataModel (groups) {
         let ds = []
         let ins = []
         groups.forEach(group => {
@@ -751,7 +751,7 @@ export function toolsPane (
         if (ds.length && confirm('Groups can be updated to old data model ?')) {
           await kb.updater.updateMany(ds, ins)
           alert('Update done')
-        } else { if (!ds.length) alert('Nothing to update.\nAll Groups already use the old data model.')}
+        } else { if (!ds.length) alert('Nothing to update.\nAll Groups already use the old data model.') }
       }
       let groups = kb.each(book, VCARD('includesGroup'))
       const strings = new Set(groups.map(group => group.uri)) // remove dups
@@ -763,7 +763,6 @@ export function toolsPane (
     fixToOldDataModelButton.style.cssText = buttonStyle
     fixToOldDataModelButton.textContent = 'Revert groups to old data model'
     fixToOldDataModelButton.addEventListener('click', _event => fixToOldDataModel(book))
-
   } // main
   main()
   return pane

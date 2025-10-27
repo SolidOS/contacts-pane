@@ -2,7 +2,7 @@
 
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
-import { getPersonas } from './webidControl'
+import { getPersonas } from '../webidControl'
 
 const ns = UI.ns
 const $rdf = UI.rdf
@@ -64,7 +64,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   try {
     await updater.updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
-    console.error("Error: can't update " + person + ' as new contact:' + e)
+    console.error('Error: can\'t update ' + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
   }
   return person
@@ -128,9 +128,9 @@ export async function addPersonToGroup (thing, group) {
   }
 
   const types = kb.findTypeURIs(thing)
-  for (const ty in types) {
-    // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
-  }
+  // for (const ty in types) {
+  // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+  // }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
     return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
@@ -194,21 +194,21 @@ export function groupMembers (kb, group) {
   return b
 }
 
-export function isLocal(group, item) {
+export function isLocal (group, item) {
   const tree = group.dir().dir().dir()
   const local = item.uri && item.uri.startsWith(tree.uri)
   // console.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
   return local
 }
 
-export function getSameAs(kb, item, doc) {
+export function getSameAs (kb, item, doc) {
   return kb.each(item, ns.owl('sameAs'), null, doc).concat(
-      kb.each(null, ns.owl('sameAs'), item, doc))
+    kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
-export async function getDataModelIssues(groups) {
-  let del = []
-  let ins = []
+export async function getDataModelIssues (groups) {
+  const del = []
+  const ins = []
   groups.forEach(group => {
     const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
     members.forEach((member) => {
@@ -226,7 +226,7 @@ export async function getDataModelIssues(groups) {
       } // if
     }) // member
   }) // next group
-  return {del, ins }
+  return { del, ins }
 } // getDataModelIssues
 
 // Ends

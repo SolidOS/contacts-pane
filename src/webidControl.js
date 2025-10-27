@@ -1,5 +1,5 @@
 // Render a control to record the webids we have for this agent
-/* eslint-disable multiline-ternary */
+
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
@@ -38,6 +38,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 
   // check this is a url
   try {
+    // eslint-disable-next-line no-unused-vars
     const _url = new URL(webid)
   } catch (error) {
     throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)

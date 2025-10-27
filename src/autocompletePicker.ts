@@ -29,10 +29,12 @@ Autocomplete happens in four phases:
   5. Optionally waiting for accept button to be pressed
 */
 
-type AutocompleteOptions = { cancelButton?: HTMLElement,
-                             acceptButton?: HTMLElement,
-                             class: NamedNode,
-                             queryParams: QueryParameters  }
+type AutocompleteOptions = {
+  cancelButton?: HTMLElement,
+  acceptButton?: HTMLElement,
+  class: NamedNode,
+  queryParams: QueryParameters
+}
 
 interface Callback1 {
   (subject: NamedNode, name: string): void;
@@ -54,21 +56,21 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
   }
   function finish (object, name) {
-    console.log('Auto complete: finish! '  + object)
-     // remove(options.cancelButton)
+    console.log('Auto complete: finish! ' + object)
+    // remove(options.cancelButton)
     // remove(options.acceptButton)
     // remove(div)
     callback(object, name)
   }
-  async function gotIt(object:NamedNode, name:string) {
+  async function gotIt (object:NamedNode, name:string) {
     if (options.acceptButton) {
-       (options.acceptButton as any).disabled = false
-       searchInput.value = name // complete it
-       foundName = name
-       foundObject = object
-       console.log('Auto complete: name: '  + name)
-       console.log('Auto complete: waiting for accept '  + object)
-       return
+      (options.acceptButton as any).disabled = false
+      searchInput.value = name // complete it
+      foundName = name
+      foundObject = object
+      console.log('Auto complete: name: ' + name)
+      console.log('Auto complete: waiting for accept ' + object)
+      return
     }
     finish(object, name)
   }
@@ -96,18 +98,18 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   }
 
   function cancelText (_event) {
-     searchInput.value = '';
-     if (options.acceptButton) {
-       (options.acceptButton as any).disabled == true; // start again
-     }
-     candidatesLoaded = false
+    searchInput.value = ''
+    if (options.acceptButton) {
+      (options.acceptButton as any).disabled = true // start again
+    }
+    candidatesLoaded = false
   }
 
   function thinOut (filter) {
-    var hits = 0
-    var pick = null, pickedName = ''
+    let hits = 0
+    let pick = null; let pickedName = ''
     for (let j = table.children.length - 1; j > 0; j--) { // backwards as we are removing rows
-      let row = table.children[j]
+      const row = table.children[j]
       if (nameMatch(filter, row.textContent)) {
         hits += 1
         pick = row.getAttribute('subject')
@@ -118,7 +120,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         ;(row as any).style.display = 'none'
       }
     }
-    if (hits == 1) { // Maybe require green confirmation button be clicked?
+    if (hits === 1) { // Maybe require green confirmation button be clicked?
       console.log(`  auto complete elimination:  "${filter}" -> "${pickedName}"`)
       gotIt(store.sym(pick), pickedName) // uri, name
     }
@@ -130,20 +132,20 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
   }
 
-  async function inputEventHHandler(_event) {
+  async function inputEventHHandler (_event) {
     if (runningTimeout) {
       clearTimeout(runningTimeout)
     }
     setTimeout(refreshList, AUTOCOMPLETE_DEBOUNCE_MS)
   }
 
-  async function refreshList() {
+  async function refreshList () {
     if (inputEventHandlerLock) {
-      console.log (`Ignoring "${searchInput.value}" because of lock `)
+      console.log(`Ignoring "${searchInput.value}" because of lock `)
       return
     }
     inputEventHandlerLock = true
-    var languagePrefs = await getPreferredLanguages()
+    const languagePrefs = await getPreferredLanguages()
     const filter = searchInput.value.trim().toLowerCase()
     if (filter.length < AUTOCOMPLETE_THRESHOLD) { // too small
       clearList()
@@ -151,11 +153,11 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
       numberOfRows = AUTOCOMPLETE_ROWS
     } else {
       if (allDisplayed && lastFilter && filter.startsWith(lastFilter)) {
-          thinOut(filter) // reversible?
-          inputEventHandlerLock = false
-          return
+        thinOut(filter) // reversible?
+        inputEventHandlerLock = false
+        return
       }
-      var bindings
+      let bindings
       try {
         bindings = await queryPublicDataByName(filter, OrgClass, options.queryParams)
         // bindings = await queryDbpedia(sparql)
@@ -178,11 +180,11 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
       }
       allDisplayed = loadedEnough && slimmed.length <= numberOfRows
       console.log(` Filter:"${filter}" bindings: ${bindings.length}, slimmed to ${slimmed.length}; rows: ${numberOfRows}, Enough? ${loadedEnough}, All displayed? ${allDisplayed}`)
-      slimmed.slice(0,numberOfRows).forEach(binding => {
+      slimmed.slice(0, numberOfRows).forEach(binding => {
         const row = table.appendChild(dom.createElement('tr'))
         style.setStyle(row, 'autocompleteRowStyle')
-        var uri = binding.subject.value
-        var name = binding.name.value
+        const uri = binding.subject.value
+        const name = binding.name.value
         row.setAttribute('style', 'padding: 0.3em;')
         row.setAttribute('subject', uri)
         row.style.color = allDisplayed ? '#080' : '#000' // green means 'you should find it here'
@@ -197,14 +199,13 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     inputEventHandlerLock = false
   } // refreshList
 
-
-/* sparqlForSearch
+  /* sparqlForSearch
 *
 * name -- e.g., "mass"
 * theType -- e.g., <http://umbel.org/umbel/rc/EducationalOrganization>
 */
   function sparqlForSearch (name:string, theType:NamedNode):string {
-    let clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp
+    const clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp
     const sparql = `select distinct ?subject, ?name where {
       ?subject a <${theType.uri}>; rdfs:label ?name
       FILTER regex(?name, "${clean}", "i")
@@ -222,7 +223,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   }
 
   let candidatesLoaded = false
-  let runningTimeout = null
+  const runningTimeout = null
   let inputEventHandlerLock = false
   let allDisplayed = false
   var lastFilter = null
@@ -244,10 +245,10 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     if (event.keyCode === 13) {
       acceptButtonHandler(event)
     }
-  }, false);
+  }, false)
 
   searchInput.addEventListener('input', inputEventHHandler)
   return div
 } // renderAutoComplete
 
-const ends = 'ENDS';
+const ends = 'ENDS'
