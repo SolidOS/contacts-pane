@@ -1,11 +1,19 @@
-module.exports = {
-  "verbose": true, // Turn on console.log
-
+export default {
+  // verbose: true, // Uncomment for detailed test output
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ["./jest.setup.ts"],
-  transformIgnorePatterns: ["/node_modules/(?!lit-html).+\\.js"],
-
   testEnvironmentOptions: {
-      customExportConditions: ['node']
+    customExportConditions: ['node'],
+  },
+  transform: {
+    '^.+\\.[tj]sx?$': ['babel-jest', { configFile: './babel.config.js' }],
+  },
+  // Some npm packages publish ESM sources. By default Jest will NOT transform
+  // files in node_modules which causes syntax errors like "import ..." here.
+  // Allow transforming mime-types and mime-db so Babel can compile them for tests.
+  transformIgnorePatterns: ['/node_modules/(?!(mime-types|mime-db)/)'],
+  setupFilesAfterEnv: ['./jest.setup.ts'],
+  testMatch: ['**/test/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+  roots: ['<rootDir>/src', '<rootDir>/test'],
 }
-};
