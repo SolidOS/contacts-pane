@@ -12,7 +12,7 @@ export default [
       '**/*.json',
       'node_modules/**',
       'coverage/**',
-      'lib/**',
+      'dist/**',
       'shapes/**'
     ],
   },

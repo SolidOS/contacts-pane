@@ -17,7 +17,7 @@
     "sourceMap": true /* Generates corresponding '.map' file. */,
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
 
-    "outDir": "lib" /* Redirect output structure to the directory. */,
+    "outDir": "dist" /* Redirect output structure to the directory. */,
     "rootDir": "src/",
 
     // "rootDir": "./",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
@@ -53,6 +53,7 @@
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
     // "typeRoots": [],                       /* List of folders to include type definitions from. */
     "typeRoots": [
+      "declarations.d.ts",
       "node_modules/@types"
     ] /* List of folders to include type definitions from. */,
     // "allowSyntheticDefaultImports": true,  /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
@@ -70,7 +71,9 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "declarations.d.ts",
+    "**/*.ttl"
   ],
-  "exclude": ["node_modules", "lib"]
+  "exclude": ["node_modules", "dist", "coverage"]
 }
