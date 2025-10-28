@@ -15,15 +15,15 @@ export default [
       webidControl: "./src/webidControl.js"
     },
     output: {
-    path: path.resolve(process.cwd(), 'dist'),
-    filename: '[name].js',
-    library: {
-      name: '[name]',
-      type: 'umd'
+      path: path.resolve(process.cwd(), 'dist'),
+      filename: '[name].js',
+      library: {
+        name: '[name]',
+        type: 'umd'
+      },
+      globalObject: 'this',
+      clean: false
     },
-    globalObject: 'this',
-    clean: false
-  },
     plugins: [
       new NodePolyfillPlugin()
     ],
