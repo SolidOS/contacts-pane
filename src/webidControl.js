@@ -4,7 +4,7 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './lib/autocompleteBar'
+import { renderAutocompleteControl } from './autocompleteBar'
 // import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 
 const $rdf = UI.rdf

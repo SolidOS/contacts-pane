@@ -10,8 +10,8 @@ const WEBID_NOUN = 'Solid ID'
 
 const kb = store
 
-const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-const AUTOCOMPLETE_ROWS = 12 // 20?
+//const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+//const AUTOCOMPLETE_ROWS = 12 // 20?
 
 const GREEN_PLUS = icons.iconBase + 'noun_34653_green.svg'
 const SEARCH_ICON = icons.iconBase + 'noun_Search_875351.svg'
@@ -32,8 +32,10 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
     return addOneIdAndRefresh(person, webid)
   }
   function removeDecorated () {
-    creationArea.removeChild(decoratedAutocomplete)
-    decoratedAutocomplete = null
+    if (decoratedAutocomplete) {
+      creationArea.removeChild(decoratedAutocomplete)
+      decoratedAutocomplete = null
+    }
   }
   async function searchButtonHandler (_event) {
     if (decoratedAutocomplete) {
@@ -66,7 +68,7 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
     cancelButton
   }
 
-  var decoratedAutocomplete = null
+  var decoratedAutocomplete: HTMLDivElement | null = null
   // const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)

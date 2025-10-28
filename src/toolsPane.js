@@ -5,6 +5,7 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
+
 export function toolsPane (
   selectAllGroups,
   selectedGroups,

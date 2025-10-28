@@ -2,7 +2,7 @@
 
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
-import { getPersonas } from '../webidControl'
+import { getPersonas } from './webidControl'
 
 const ns = UI.ns
 const $rdf = UI.rdf

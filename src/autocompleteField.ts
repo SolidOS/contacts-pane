@@ -5,8 +5,8 @@ import { store } from 'solid-logic'
 import { ns, style, widgets } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
 
-const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-const AUTOCOMPLETE_ROWS = 12 // 20?
+//const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+//const AUTOCOMPLETE_ROWS = 12 // 20?
 
 /**
  * Render a autocomplete form field
@@ -100,8 +100,8 @@ export function autocompleteField ( // @@ are they allowed too be async??
   const uri = widgets.mostSpecificClassURI(form)
   let params = widgets.fieldParams[uri]
   if (params === undefined) params = {} // non-bottom field types can do this
-  const theStyle = params.style || style.textInputStyle
-  const klass = kb.the(form, ns.ui('category'), null, formDoc)
+  //const theStyle = params.style || style.textInputStyle
+  const klass = kb.the(form, ns.ui('category'), null, formDoc) as NamedNode
   /*
   { label: string;
     logo: string;
@@ -115,7 +115,14 @@ export function autocompleteField ( // @@ are they allowed too be async??
 
   const searchByNameQuery = kb.the(form, ns.ui('searchByNameQuery'), null, formDoc)
 
-  const queryParams = { label: 'from form', logo: '', class: klass, endPoint: endPoint.uri, searchByNameQuery }
+  if (!klass) {
+    box.appendChild(
+      dom.createTextNode('Error: No class given for autocomplete field: ' + form)
+    )
+    return box
+  }
+
+  const queryParams = { label: 'from form', logo: '', class: klass, endPoint: endPoint.value, searchByNameQuery: searchByNameQuery?.value }
 
   const options = { // cancelButton?: HTMLElement,
     // acceptButton?: HTMLElement,

@@ -5,7 +5,7 @@
 import { Literal, NamedNode, parse } from 'rdflib'
 import { store } from 'solid-logic'
 import { ns } from 'solid-ui'
-import * as instituteDetailsQuery from '../lib/instituteDetailsQuery.js'
+import * as instituteDetailsQuery from '../dist/instituteDetailsQuery'
 
 export const AUTOCOMPLETE_LIMIT = 3000 // How many to get from server
 
@@ -57,9 +57,9 @@ export async function getPreferredLanguages () {
 export const escoParameters:QueryParameters = {
   label: 'ESCO',
   logo: 'https://ec.europa.eu/esco/portal/static_resource2/images/logo/logo_en.gif',
-  searchByNameQuery: null, // No sparql endpoint
+  searchByNameQuery: undefined, // No sparql endpoint
   searchByNameURI: 'https://ec.europa.eu/esco/api/search?language=$(language)&type=occupation&text=$(name)',
-  endpoint: null,
+  endpoint: undefined,
   class: {}
 }
 
@@ -117,8 +117,8 @@ WHERE
  * remove dupliacte names for the same thing, leaving the user's
  * preferred language version
 */
-export function filterByLanguage (bindings, languagePrefs) {
-  const uris = {}
+export function filterByLanguage (bindings: Bindings, languagePrefs: string[]): Bindings {
+  const uris: Record<string, Binding[]> = {}
   bindings.forEach(binding => { // Organize names by their subject
     const uri = binding.subject.value
     uris[uri] = uris[uri] || []
@@ -128,15 +128,15 @@ export function filterByLanguage (bindings, languagePrefs) {
   const languagePrefs2 = languagePrefs
   languagePrefs2.reverse() // prefered last
 
-  const slimmed = []
+  const slimmed: Binding[] = []
   for (const u in uris) { // needs hasOwnProperty ?
     const bindings = uris[u]
     const sortMe = bindings.map(binding => {
-      return [languagePrefs2.indexOf(binding.name['xml:lang']), binding]
+      return [languagePrefs2.indexOf(binding.name?.['xml:lang'] || ''), binding]
     })
     sortMe.sort() // best at th ebottom
     sortMe.reverse() // best at the top
-    slimmed.push(sortMe[0][1])
+    slimmed.push(sortMe[0][1] as Binding)
   } // map u
   console.log(` Filter by language: ${bindings.length} -> ${slimmed.length}`)
   return slimmed
@@ -199,11 +199,13 @@ export function loadFromBindings (kb, solidSubject:NamedNode, bindings, doc) {
         // eslint-disable-next-line no-useless-escape
         const regexp = /.*\(([-0-9\.-]*) ([-0-9\.-]*)\)/
         const match = regexp.exec(value)
-        const float = ns.xsd('float')
-        const latitude = new Literal(match[1], null, float)
-        const longitude = new Literal(match[2], null, float)
-        kb.add(solidSubject, ns.schema('longitude'), longitude, doc)
-        kb.add(solidSubject, ns.schema('latitude'), latitude, doc)
+        if (match) {
+          const float = ns.xsd('float')
+          const latitude = new Literal(match[1], null, float)
+          const longitude = new Literal(match[2], null, float)
+          kb.add(solidSubject, ns.schema('longitude'), longitude, doc)
+          kb.add(solidSubject, ns.schema('latitude'), latitude, doc)
+        }
       } else if (predMap[key]) {
         const pred = predMap[key] || ns.schema(key) // fallback to just using schema.org
         kb.add(solidSubject, pred, obj, doc) // @@ deal with non-string and objects
@@ -219,19 +221,23 @@ export function loadFromBindings (kb, solidSubject:NamedNode, bindings, doc) {
 /*  Query all entities of given class and partially matching name
 */
 export async function queryESCODataByName (filter: string, theClass:NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
+  if (!queryTarget.searchByNameURI) {
+    throw new Error('Query target searchByNameURI is required for ESCO queries')
+  }
   const queryURI = queryTarget.searchByNameURI
     .replace('$(name)', filter)
     .replace('$(limit)', '' + AUTOCOMPLETE_LIMIT)
-    .replace('$(class)', theClass)
+    .replace('$(class)', theClass.uri)
   console.log('Querying ESCO data - uri: ' + queryURI)
 
   const options = {
-    credentials: 'omit',
+    credentials: 'omit' as const,
     headers: { Accept: 'application/json' }
   } // CORS
   const response = await store.fetcher.webOperation('GET', queryURI, options)
   // complain('Error querying db of organizations: ' + err)
   const text = response.responseText
+  if (!text) throw new Error('No response text from ESCO query ' + queryURI)
   console.log('    Query result  text' + text.slice(0, 500) + '...')
   if (text.length === 0) throw new Error('Wot no text back from ESCO query ' + queryURI)
   const json = JSON.parse(text)
@@ -250,59 +256,70 @@ export async function queryESCODataByName (filter: string, theClass:NamedNode, q
 /*  Query all entities of given class and partially matching name
 */
 export async function queryPublicDataByName (filter: string, theClass:NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
-  const sparql = queryTarget.searchByNameQuery
+  const sparql = queryTarget.searchByNameQuery!
     .replace('$(name)', filter)
     .replace('$(limit)', '' + AUTOCOMPLETE_LIMIT)
-    .replace('$(class)', theClass)
+    .replace('$(class)', theClass.uri)
   console.log('Querying public data - sparql: ' + sparql)
   return queryPublicDataSelect(sparql, queryTarget)
 }
 
 export async function queryPublicDataSelect (sparql: string, queryTarget: QueryParameters): Promise<Bindings> {
-  const myUrlWithParams = new URL(queryTarget.endpoint)
+  if (!queryTarget.endpoint) {
+    throw new Error('Query target endpoint is required')
+  }
+  const myUrlWithParams = new URL(queryTarget.endpoint!)
   myUrlWithParams.searchParams.append('query', sparql)
   const queryURI = myUrlWithParams.href
   console.log(' queryPublicDataSelect uri: ' + queryURI)
 
   const options = {
-    credentials: 'omit',
+    credentials: 'omit' as const,
     headers: { Accept: 'application/json' }
   } // CORS
   const response = await store.fetcher.webOperation('GET', queryURI, options)
   // complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   // console.log('    Query result  text' + text.slice(0,100) + '...')
-  if (text.length === 0) throw new Error('Wot no text back from query ' + queryURI)
-  const json = JSON.parse(text)
-  console.log('    Query result JSON' + JSON.stringify(json, null, 4).slice(0, 100) + '...')
-  const bindings = json.results.bindings
-  return bindings
+  if (!text ||text.length === 0) 
+    throw new Error('Wot no text back from query ' + queryURI)
+  else {
+    const json = JSON.parse(text)
+    console.log('    Query result JSON' + JSON.stringify(json, null, 4).slice(0, 100) + '...')
+    const bindings = json.results.bindings
+    return bindings
+  }
 }
 
-export async function queryPublicDataConstruct (sparql: string, pubicId: NamedNode, queryTarget: QueryParameters): Promise<Bindings> {
+export async function queryPublicDataConstruct (sparql: string, publicId: NamedNode, queryTarget: QueryParameters): Promise<void> {
   console.log('queryPublicDataConstruct: sparql:', sparql)
+  if (!queryTarget.endpoint) {
+    throw new Error('Query target endpoint is required')
+  }
   const myUrlWithParams = new URL(queryTarget.endpoint)
   myUrlWithParams.searchParams.append('query', sparql)
   const queryURI = myUrlWithParams.href
   console.log(' queryPublicDataConstruct uri: ' + queryURI)
   const options = {
-    credentials: 'omit', // CORS
+    credentials: 'omit' as const, // CORS
     headers: { Accept: 'text/turtle' }
   }
   const response = await store.fetcher.webOperation('GET', queryURI, options)
   const text = response.responseText
-  const report = text.lenth > 500 ? text.slice(0, 200) + ' ... ' + text.slice(-200) : text
+  const report = text && text.length > 500 ? text.slice(0, 200) + ' ... ' + text.slice(-200) : text
   console.log('    queryPublicDataConstruct result text:' + report)
-  if (text.length === 0) throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI)
-  parse(text, store, pubicId.uri, 'text/turtle')
+  if (!text || text.length === 0) 
+    throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI)
+  else 
+    parse(text, store, publicId.uri, 'text/turtle')
 }
 
 export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID: NamedNode) {
   if (publicDataID.uri.startsWith('https://dbpedia.org/resource/')) {
     return getDbpediaDetails(kb, subject, publicDataID)
   } else if (publicDataID.uri.match(/^https?:\/\/www\.wikidata\.org\/entity\/.*/)) {
-    const QId = publicDataID.uri.split('/')[4]
-    const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
+    //const QId = publicDataID.uri.split('/')[4]
+    //const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
     // In fact loading the data URI gives much to much irrelevant data, from wikidata.
     await getWikidataDetails(kb, subject, publicDataID)
     // await getWikidataLocation(kb, subject, publicDataID)  -- should get that in the details query now
@@ -338,7 +355,7 @@ optional { $(subject)  wdt:P1813  ?shortName }
 optional { $(subject)  wdt:P355  ?subsidiary }
 # SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en,de,it" }
 }`
-    .replace(subjectRegexp, publicDataID)
+    .replace(subjectRegexp, publicDataID.uri)
   const bindings = await queryPublicDataSelect(sparql, wikidataParameters)
   loadFromBindings(kb, publicDataID, bindings, publicDataID.doc()) // arg2 was solidSubject
 }
@@ -354,7 +371,7 @@ export async function getWikidataLocation (kb, solidSubject:NamedNode, publicDat
 optional {  ?location  wdt:P17  ?country }
 
 # SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en,de,it" }
-}`.replace(subjectRegexp, publicDataID)
+}`.replace(subjectRegexp, publicDataID.uri)
   console.log(' location query sparql:' + sparql)
   const bindings = await queryPublicDataSelect(sparql, wikidataParameters)
   console.log(' location query bindings:', bindings)
@@ -371,6 +388,7 @@ export async function getDbpediaDetails (kb, solidSubject:NamedNode, publicDataI
     OPTIONAL { ${publicDataID} foaf:lat ?lat; foaf:long ?long }
     OPTIONAL { ${publicDataID} <http://dbpedia.org/ontology/country> ?country }
    }`
+  /*
   const predMap = {
     city: ns.vcard('locality'),
     state: ns.vcard('region'),
@@ -379,9 +397,11 @@ export async function getDbpediaDetails (kb, solidSubject:NamedNode, publicDataI
     lat: ns.geo('latitude'),
     long: ns.geo('longitude'),
   }
+  */
   const bindings = await queryPublicDataSelect(sparql, dbpediaParameters)
-  bindings.forEach(binding => {
+  return bindings.map(binding => {
     const uri = binding.subject.value // @@ To be written
-    const name = binding.name.value
+    const name = binding.name?.value
+    return { uri, name }
   })
 }

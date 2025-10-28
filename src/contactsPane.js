@@ -8,9 +8,6 @@ to change its state according to an ontology, comment on it, etc.
 **  http://tools.ietf.org/html/rfc6350
 **  http://www.iana.org/assignments/vcard-elements/vcard-elements.xhtml
 **
-** Feross "Standard" style note:  Callback functions should not be called "callback"
-** or the "standard"  linter will complain if the first param is not a node.js error code. (2018-01)
-** Hence "callbackFunction"
 */
 /* global alert, confirm */
 
@@ -18,11 +15,10 @@ import { authn } from 'solid-logic'
 import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers, getDataModelIssues } from './contactLogic'
 import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
-import { renderIndividual } from '../individual'
+import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
 import { groupMembership } from './groupMembershipControl'
 
-// const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
 const style = UI.style

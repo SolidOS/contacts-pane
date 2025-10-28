@@ -1,6 +1,5 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
-import * as mime from 'mime-types'
 
 const $rdf = UI.rdf
 const ns = UI.ns

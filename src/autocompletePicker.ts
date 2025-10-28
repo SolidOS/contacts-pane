@@ -15,7 +15,7 @@ const AUTOCOMPLETE_ROWS = 20 // 20?
 const AUTOCOMPLETE_ROWS_STRETCH = 40
 const AUTOCOMPLETE_DEBOUNCE_MS = 300
 
-const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
+//const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
 
 /*
 Autocomplete happens in four phases:
@@ -50,11 +50,13 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     style.setStyle(errorRow, 'autocompleteRowStyle')
     errorRow.style.padding = '1em'
   }
+  /*
   function remove (ele?: HTMLElement) {
-    if (ele) {
+    if (ele && ele.parentNode) {
       ele.parentNode.removeChild(ele)
     }
   }
+  */
   function finish (object, name) {
     console.log('Auto complete: finish! ' + object)
     // remove(options.cancelButton)
@@ -83,10 +85,12 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     }
   }
 
+  /*
   async function cancelButtonHandler (_event) {
     console.log('Auto complete: Canceled by user! ')
     div.innerHTML = '' // Clear out the table
   }
+  */
 
   function nameMatch (filter:string, candidate: string):boolean {
     const parts = filter.split(' ') // Each name part must be somewhere
@@ -97,17 +101,19 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     return true
   }
 
+  /*
   function cancelText (_event) {
     searchInput.value = ''
     if (options.acceptButton) {
       (options.acceptButton as any).disabled = true // start again
     }
-    candidatesLoaded = false
+    _candidatesLoaded = false
   }
-
+  */
+  
   function thinOut (filter) {
     let hits = 0
-    let pick = null; let pickedName = ''
+    let pick: string | null = null; let pickedName = ''
     for (let j = table.children.length - 1; j > 0; j--) { // backwards as we are removing rows
       const row = table.children[j]
       if (nameMatch(filter, row.textContent)) {
@@ -120,14 +126,14 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         ;(row as any).style.display = 'none'
       }
     }
-    if (hits === 1) { // Maybe require green confirmation button be clicked?
+    if (hits === 1 && pick) { // Maybe require green confirmation button be clicked?
       console.log(`  auto complete elimination:  "${filter}" -> "${pickedName}"`)
       gotIt(store.sym(pick), pickedName) // uri, name
     }
   }
 
   function clearList () {
-    while (table.children.length > 1) {
+    while (table.children.length > 1 && table.lastChild) {
       table.removeChild(table.lastChild)
     }
   }
@@ -184,15 +190,15 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
         const row = table.appendChild(dom.createElement('tr'))
         style.setStyle(row, 'autocompleteRowStyle')
         const uri = binding.subject.value
-        const name = binding.name.value
+        const name = binding.name?.value
         row.setAttribute('style', 'padding: 0.3em;')
         row.setAttribute('subject', uri)
         row.style.color = allDisplayed ? '#080' : '#000' // green means 'you should find it here'
-        row.textContent = name
+        row.textContent = name || ''
         row.addEventListener('click', async _event => {
           console.log('       click row textContent: ' + row.textContent)
           console.log('       click name: ' + name)
-          gotIt(store.sym(uri), name)
+          gotIt(store.sym(uri), name || '')
         })
       })
     }
@@ -204,6 +210,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 * name -- e.g., "mass"
 * theType -- e.g., <http://umbel.org/umbel/rc/EducationalOrganization>
 */
+/*
   function sparqlForSearch (name:string, theType:NamedNode):string {
     const clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp
     const sparql = `select distinct ?subject, ?name where {
@@ -212,8 +219,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     } LIMIT ${AUTOCOMPLETE_LIMIT}`
     return sparql
   }
-
-  const queryParams: QueryParameters = options.queryParams
+*/
   const OrgClass = options.class // kb.sym('http://umbel.org/umbel/rc/EducationalOrganization') // @@@ other
   if (options.acceptButton) {
     options.acceptButton.addEventListener('click', acceptButtonHandler, false)
@@ -222,15 +228,16 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     // options.cancelButton.addEventListener('click', cancelButtonHandler, false)
   }
 
+  // @ts-ignore
   let candidatesLoaded = false
   const runningTimeout = null
   let inputEventHandlerLock = false
   let allDisplayed = false
-  var lastFilter = null
+  var lastFilter: string | null = null
   var numberOfRows = AUTOCOMPLETE_ROWS
   var div = dom.createElement('div')
-  var foundName = null // once found accepted string must match this
-  var foundObject = null
+  var foundName: string | null = null // once found accepted string must match this
+  var foundObject: NamedNode | null = null
   var table = div.appendChild(dom.createElement('table'))
   table.setAttribute('style', 'max-width: 30em; margin: 0.5em;')
   const head = table.appendChild(dom.createElement('tr'))
@@ -249,6 +256,4 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 
   searchInput.addEventListener('input', inputEventHHandler)
   return div
-} // renderAutoComplete
-
-const ends = 'ENDS'
+} // renderAutoComplete22q1
