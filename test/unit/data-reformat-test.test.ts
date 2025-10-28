@@ -7,7 +7,7 @@ import { context, doc, mockFetchFunction, mockUpdate, prefixes, web } from './se
 
 // This was at testingsolidos.solidcommunity.net
 
-const base = doc.dir().uri
+const base = doc.dir()?.uri || ''
 const webid1 = store.sym(base + 'People/localPerson/index.ttl#this')
 
 const exampleData = prefixes + `

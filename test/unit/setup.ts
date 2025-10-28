@@ -34,7 +34,7 @@ const prefs = Object.keys(ns).filter(x => x !== 'default') // default is bogus v
 export const prefixes = prefs.map(prefix => `@prefix ${prefix}: ${ns[prefix]('')}.\n`).join('') // In turtle
 
 export const web = {}
-export const requests = []
+export const requests: any[] = []
 
 export async function mockFetchFunction (req) {
   if (req.method !== 'GET') {
