@@ -281,7 +281,7 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
   // complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   // console.log('    Query result  text' + text.slice(0,100) + '...')
-  if (!text ||text.length === 0) 
+  if (!text || text.length === 0) 
     throw new Error('Wot no text back from query ' + queryURI)
   else {
     const json = JSON.parse(text)
@@ -318,9 +318,10 @@ export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID:
   if (publicDataID.uri.startsWith('https://dbpedia.org/resource/')) {
     return getDbpediaDetails(kb, subject, publicDataID)
   } else if (publicDataID.uri.match(/^https?:\/\/www\.wikidata\.org\/entity\/.*/)) {
-    //const QId = publicDataID.uri.split('/')[4]
-    //const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
-    // In fact loading the data URI gives much to much irrelevant data, from wikidata.
+    // Previous approach: 
+    //   const QId = publicDataID.uri.split('/')[4]
+    //   const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
+    // Not used because loading the data URI gives much too much irrelevant data from Wikidata.
     await getWikidataDetails(kb, subject, publicDataID)
     // await getWikidataLocation(kb, subject, publicDataID)  -- should get that in the details query now
   } else {
