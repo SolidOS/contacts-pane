@@ -318,9 +318,10 @@ export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID:
   if (publicDataID.uri.startsWith('https://dbpedia.org/resource/')) {
     return getDbpediaDetails(kb, subject, publicDataID)
   } else if (publicDataID.uri.match(/^https?:\/\/www\.wikidata\.org\/entity\/.*/)) {
-    //const QId = publicDataID.uri.split('/')[4]
-    //const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
-    // In fact loading the data URI gives much to much irrelevant data, from wikidata.
+    // Previous approach: 
+    //   const QId = publicDataID.uri.split('/')[4]
+    //   const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
+    // Not used because loading the data URI gives much too much irrelevant data from Wikidata.
     await getWikidataDetails(kb, subject, publicDataID)
     // await getWikidataLocation(kb, subject, publicDataID)  -- should get that in the details query now
   } else {
