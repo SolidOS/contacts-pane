@@ -2,20 +2,23 @@
   "name": "contacts-pane",
   "version": "2.7.1",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
-  "main": "./contactsPane.js",
+  "main": "dist/main.js",
   "files": [
-    "lib/",
+    "dist/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "clean": "rm -rf lib",
-    "build": "npm run clean && npm run build-lib",
-    "build-lib": "mkdir lib && make && npx tsc-transpile-only src/*.ts --outDir lib",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && mkdir dist && make && npm run build-js && npm run build-lib",
+    "build-js": "tsc",
+    "build-lib": "webpack --progress",
     "lint": "eslint",
     "lint-fix": "eslint --fix",
-    "typecheck": "npm run lint && npm run build && npx tsc --target es2015  --moduleResolution node  --allowSyntheticDefaultImports __tests__/unit/*.ts && jest __tests__/unit/*test.ts",
-    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "typecheck-test": "tsc --noEmit -p tsconfig.test.json",
+    "test": "jest --no-coverage",
+    "test-coverage": "jest --coverage",
     "prepublishOnly": "npm run build && npm run lint && npm run test",
     "preversion": "npm run lint && npm run test",
     "postpublish": "git push origin main --follow-tags"
@@ -44,8 +47,7 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
-    "lint-staged": "^16.2.0",
-    "solid-ui": "^2.6.1"
+    "solid-ui": "^2.6.1-45faa7b"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.0",
@@ -57,6 +59,8 @@
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "babel-jest": "^30.0.5",
+    "babel-loader": "^10.0.0",
+    "buffer": "^6.0.3",
     "eslint": "^9.33.0",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.3.0",
@@ -64,9 +68,15 @@
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jest-fetch-mock": "^3.0.3",
+    "lint-staged": "^16.2.6",
     "neostandard": "^0.12.2",
+    "node-polyfill-webpack-plugin": "^4.1.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
     "typescript": "^5.9.2",
-    "typescript-transpile-only": "^0.0.4"
+    "typescript-transpile-only": "^0.0.4",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
   },
   "husky": {
     "hooks": {
