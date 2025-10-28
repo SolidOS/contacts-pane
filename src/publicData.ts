@@ -281,7 +281,7 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
   // complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   // console.log('    Query result  text' + text.slice(0,100) + '...')
-  if (!text ||text.length === 0) 
+  if (!text || text.length === 0) 
     throw new Error('Wot no text back from query ' + queryURI)
   else {
     const json = JSON.parse(text)
