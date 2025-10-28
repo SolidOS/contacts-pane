@@ -17,8 +17,8 @@
     "lint-fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "typecheck-test": "tsc --noEmit -p tsconfig.test.json",
-    "test": "jest --no-coverage",
-    "test-coverage": "jest --coverage",
+    "test": "mkdir dist && make && jest --no-coverage",
+    "test-coverage": "mkdir dist && make && jest --coverage",
     "prepublishOnly": "npm run build && npm run lint && npm run test",
     "preversion": "npm run lint && npm run test",
     "postpublish": "git push origin main --follow-tags"
