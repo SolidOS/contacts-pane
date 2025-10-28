@@ -42,7 +42,7 @@ export function mockFetchFunction (req) {
       if (req.method === 'PUT') {
         const contents = yield req.text()
         web[req.url] = contents // Update our dummy web
-        console.log(`Tetst: Updated ${req.url} on PUT to <<<${web[req.url]}>>>`)
+        console.log(`Test: Updated ${req.url} on PUT to <<<${web[req.url]}>>>`)
       }
       return { status: 200 }
     }
