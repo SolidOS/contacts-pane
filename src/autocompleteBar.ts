@@ -10,8 +10,8 @@ const WEBID_NOUN = 'Solid ID'
 
 const kb = store
 
-//const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-//const AUTOCOMPLETE_ROWS = 12 // 20?
+// const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+// const AUTOCOMPLETE_ROWS = 12 // 20?
 
 const GREEN_PLUS = icons.iconBase + 'noun_34653_green.svg'
 const SEARCH_ICON = icons.iconBase + 'noun_Search_875351.svg'

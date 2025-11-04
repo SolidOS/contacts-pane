@@ -3,8 +3,8 @@ import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl'
-import textOfForms from '../dist/individualForms.js'
-import VCARD_ONTOLOGY_TEXT from '../dist/vcard.js'
+import textOfForms from './ontology/forms.ttl'
+import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 
 const $rdf = UI.rdf
 const ns = UI.ns

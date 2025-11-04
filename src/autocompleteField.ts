@@ -5,8 +5,8 @@ import { store } from 'solid-logic'
 import { ns, style, widgets } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
 
-//const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-//const AUTOCOMPLETE_ROWS = 12 // 20?
+// const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+// const AUTOCOMPLETE_ROWS = 12 // 20?
 
 /**
  * Render a autocomplete form field
@@ -100,7 +100,7 @@ export function autocompleteField ( // @@ are they allowed too be async??
   const uri = widgets.mostSpecificClassURI(form)
   let params = widgets.fieldParams[uri]
   if (params === undefined) params = {} // non-bottom field types can do this
-  //const theStyle = params.style || style.textInputStyle
+  // const theStyle = params.style || style.textInputStyle
   const klass = kb.the(form, ns.ui('category'), null, formDoc) as NamedNode
   /*
   { label: string;

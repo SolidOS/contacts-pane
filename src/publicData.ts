@@ -5,7 +5,7 @@
 import { Literal, NamedNode, parse } from 'rdflib'
 import { store } from 'solid-logic'
 import { ns } from 'solid-ui'
-import * as instituteDetailsQuery from '../dist/instituteDetailsQuery'
+import instituteDetailsQuery from './instituteDetailsQuery.sparql'
 
 export const AUTOCOMPLETE_LIMIT = 3000 // How many to get from server
 
@@ -281,9 +281,7 @@ export async function queryPublicDataSelect (sparql: string, queryTarget: QueryP
   // complain('Error querying db of organizations: ' + err)
   const text = response.responseText
   // console.log('    Query result  text' + text.slice(0,100) + '...')
-  if (!text || text.length === 0) 
-    throw new Error('Wot no text back from query ' + queryURI)
-  else {
+  if (!text || text.length === 0) { throw new Error('Wot no text back from query ' + queryURI) } else {
     const json = JSON.parse(text)
     console.log('    Query result JSON' + JSON.stringify(json, null, 4).slice(0, 100) + '...')
     const bindings = json.results.bindings
@@ -308,17 +306,14 @@ export async function queryPublicDataConstruct (sparql: string, publicId: NamedN
   const text = response.responseText
   const report = text && text.length > 500 ? text.slice(0, 200) + ' ... ' + text.slice(-200) : text
   console.log('    queryPublicDataConstruct result text:' + report)
-  if (!text || text.length === 0) 
-    throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI)
-  else 
-    parse(text, store, publicId.uri, 'text/turtle')
+  if (!text || text.length === 0) { throw new Error('queryPublicDataConstruct: No text back from construct query:' + queryURI) } else { parse(text, store, publicId.uri, 'text/turtle') }
 }
 
 export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID: NamedNode) {
   if (publicDataID.uri.startsWith('https://dbpedia.org/resource/')) {
     return getDbpediaDetails(kb, subject, publicDataID)
   } else if (publicDataID.uri.match(/^https?:\/\/www\.wikidata\.org\/entity\/.*/)) {
-    // Previous approach: 
+    // Previous approach:
     //   const QId = publicDataID.uri.split('/')[4]
     //   const dataURI = `http://www.wikidata.org/wiki/Special:EntityData/${QId}.ttl`
     // Not used because loading the data URI gives much too much irrelevant data from Wikidata.
@@ -337,7 +332,7 @@ export async function loadPublicDataThing (kb, subject: NamedNode, publicDataID:
 
 export async function getWikidataDetails (kb, solidSubject:NamedNode, publicDataID:NamedNode) {
   const subjRegexp = /wd:Q49108/g
-  const sparql = instituteDetailsQuery.replace(subjRegexp, publicDataID)
+  const sparql = instituteDetailsQuery.replace(subjRegexp, publicDataID.value)
   await queryPublicDataConstruct(sparql, publicDataID, wikidataParameters)
   console.log('getWikidataDetails: loaded.', publicDataID)
 }

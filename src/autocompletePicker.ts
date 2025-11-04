@@ -15,7 +15,7 @@ const AUTOCOMPLETE_ROWS = 20 // 20?
 const AUTOCOMPLETE_ROWS_STRETCH = 40
 const AUTOCOMPLETE_DEBOUNCE_MS = 300
 
-//const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
+// const autocompleteRowStyle = 'border: 0.2em solid straw;' // @@ white
 
 /*
 Autocomplete happens in four phases:
@@ -110,7 +110,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
     _candidatesLoaded = false
   }
   */
-  
+
   function thinOut (filter) {
     let hits = 0
     let pick: string | null = null; let pickedName = ''
@@ -210,7 +210,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
 * name -- e.g., "mass"
 * theType -- e.g., <http://umbel.org/umbel/rc/EducationalOrganization>
 */
-/*
+  /*
   function sparqlForSearch (name:string, theType:NamedNode):string {
     const clean = name.replace(/\W/g, '') // Remove non alphanum so as to protect regexp
     const sparql = `select distinct ?subject, ?name where {
@@ -235,7 +235,7 @@ export async function renderAutoComplete (dom: HTMLDocument, options:Autocomplet
   let allDisplayed = false
   var lastFilter: string | null = null
   var numberOfRows = AUTOCOMPLETE_ROWS
-  var div = dom.createElement('div')
+  const div = dom.createElement('div')
   var foundName: string | null = null // once found accepted string must match this
   var foundObject: NamedNode | null = null
   var table = div.appendChild(dom.createElement('table'))

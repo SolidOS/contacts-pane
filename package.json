@@ -2,7 +2,7 @@
   "name": "contacts-pane",
   "version": "2.7.1",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
-  "main": "dist/main.js",
+  "main": "dist/contactsPane.js",
   "files": [
     "dist/",
     "README.md",
@@ -10,15 +10,16 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && mkdir dist && make && npm run build-js && npm run build-lib",
-    "build-js": "tsc",
-    "build-lib": "webpack --progress",
+    "build": "npm run clean && npm run typecheck && npm run build-dist",
+    "build-dist": "npm run build-js && npm run build-types",
+    "build-js": "babel src --out-dir dist --extensions '.ts,.js' --source-maps",
+    "build-types": "tsc --emitDeclarationOnly",
     "lint": "eslint",
     "lint-fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "typecheck-test": "tsc --noEmit -p tsconfig.test.json",
-    "test": "mkdir dist && make && jest --no-coverage",
-    "test-coverage": "mkdir dist && make && jest --coverage",
+    "test": "jest --no-coverage",
+    "test-coverage": "jest --coverage",
     "prepublishOnly": "npm run build && npm run lint && npm run test",
     "preversion": "npm run lint && npm run test",
     "postpublish": "git push origin main --follow-tags"
@@ -60,6 +61,7 @@
     "@typescript-eslint/parser": "^8.39.0",
     "babel-jest": "^30.0.5",
     "babel-loader": "^10.0.0",
+    "babel-plugin-inline-import": "^3.0.0",
     "buffer": "^6.0.3",
     "eslint": "^9.33.0",
     "eslint-plugin-import": "^2.32.0",
@@ -70,13 +72,8 @@
     "jest-fetch-mock": "^3.0.3",
     "lint-staged": "^16.2.6",
     "neostandard": "^0.12.2",
-    "node-polyfill-webpack-plugin": "^4.1.0",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
     "typescript": "^5.9.2",
-    "typescript-transpile-only": "^0.0.4",
-    "webpack": "^5.102.1",
-    "webpack-cli": "^6.0.1"
+    "typescript-transpile-only": "^0.0.4"
   },
   "husky": {
     "hooks": {

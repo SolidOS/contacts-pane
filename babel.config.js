@@ -10,4 +10,14 @@ export default {
     ],
     '@babel/preset-typescript',
   ],
+  plugins: [
+    [
+      'babel-plugin-inline-import', {
+        extensions: [
+          '.ttl',
+          '.sparql'
+        ]
+      }
+    ]
+  ]
 }

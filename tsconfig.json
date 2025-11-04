@@ -73,7 +73,8 @@
   "include": [
     "src/**/*",
     "declarations.d.ts",
-    "**/*.ttl"
+    "**/*.ttl",
+    "**/*.sparql"
   ],
   "exclude": ["node_modules", "dist", "coverage"]
 }
