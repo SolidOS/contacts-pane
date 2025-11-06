@@ -51,7 +51,11 @@
     "mime-types": "^3.0.1"
   },
   "peerDependencies": {
-    "solid-ui": "^2.6.1-45faa7b"
+    "solid-ui": "2.6.1-45faa7b",
+    "rdflib": "^2.2.37"
+  },
+  "overrides": {
+    "solid-logic": "3.1.1-536a3ae"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.0",
@@ -73,9 +77,8 @@
     "jest-environment-jsdom": "^30.0.5",
     "jest-fetch-mock": "^3.0.3",
     "neostandard": "^0.12.2",
-    "pane-registry": "^2.5.1-89d27cf",
-    "rdflib": "^2.2.37",
-    "solid-logic": "^3.1.1-536a3ae",
+    "pane-registry": "2.5.1-89d27cf",
+    "solid-ui": "2.6.1-45faa7b",
     "typescript": "^5.9.2",
     "typescript-transpile-only": "^0.0.4"
   }
