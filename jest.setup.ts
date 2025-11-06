@@ -8,6 +8,9 @@ global.TextDecoder = TextDecoder;
 // Mock external dependencies that solid-logic expects
 jest.mock('$rdf', () => require('rdflib'), { virtual: true })
 
+// Mock SolidLogic for solid-ui webpack bundle
+jest.mock('SolidLogic', () => require('solid-logic'), { virtual: true })
+
 fetchMock.enableMocks();
 
 
