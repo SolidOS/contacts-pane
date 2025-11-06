@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/solid/contacts-pane"
+    "url": "git+https://github.com/solid/contacts-pane.git"
   },
   "keywords": [
     "solid",
@@ -48,6 +48,9 @@
   },
   "homepage": "https://github.com/solid/contacts-pane",
   "dependencies": {
+    "mime-types": "^3.0.1"
+  },
+  "peerDependencies": {
     "solid-ui": "^2.6.1-45faa7b"
   },
   "devDependencies": {
@@ -66,24 +69,14 @@
     "eslint": "^9.33.0",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.3.0",
-    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "jest-fetch-mock": "^3.0.3",
-    "lint-staged": "^16.2.6",
     "neostandard": "^0.12.2",
+    "pane-registry": "^2.5.1-89d27cf",
+    "rdflib": "^2.2.37",
+    "solid-logic": "^3.1.1-536a3ae",
     "typescript": "^5.9.2",
     "typescript-transpile-only": "^0.0.4"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "npm test"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint"
-    ]
   }
 }
