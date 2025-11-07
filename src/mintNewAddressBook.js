@@ -1,12 +1,12 @@
 import * as UI from 'solid-ui'
 import { solidLogicSingleton } from 'solid-logic'
+import * as $rdf from 'rdflib'
 
 const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
 // const toolsPane = toolsPane0.toolsPane
 
-const $rdf = UI.rdf
 // const ns = UI.ns
 // const utils = UI.utils
 

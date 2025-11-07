@@ -2,7 +2,6 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 
-// const $rdf = UI.rdf
 const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets

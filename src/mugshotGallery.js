@@ -1,8 +1,8 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import mime from 'mime-types'
+import * as $rdf from 'rdflib'
 
-const $rdf = UI.rdf
 const ns = UI.ns
 const utils = UI.utils
 const kb = store

@@ -6,8 +6,8 @@ import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
 import { renderAutocompleteControl } from './autocompleteBar'
 // import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
+import * as $rdf from 'rdflib'
 
-const $rdf = UI.rdf
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils

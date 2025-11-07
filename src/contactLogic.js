@@ -1,11 +1,11 @@
 // Logic for solid contacts
 
 import * as UI from 'solid-ui'
+import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
 
 const ns = UI.ns
-const $rdf = UI.rdf
 const utils = UI.utils
 const kb = store
 const updater = kb.updater
