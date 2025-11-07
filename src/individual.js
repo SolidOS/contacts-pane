@@ -2,11 +2,11 @@ import * as UI from 'solid-ui'
 import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
-import { renderGroupMemberships } from './groupMembershipControl.js'
-import textOfForms from './lib/forms'
-import VCARD_ONTOLOGY_TEXT from './lib/vcard.js'
+import { renderGroupMemberships } from './groupMembershipControl'
+import textOfForms from './ontology/forms.ttl'
+import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
+import * as $rdf from 'rdflib'
 
-const $rdf = UI.rdf
 const ns = UI.ns
 const kb = store
 const style = UI.style

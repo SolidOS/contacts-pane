@@ -1,9 +1,7 @@
-
 // Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 
-// const $rdf = UI.rdf
 const ns = UI.ns
 // const buttons = UI.buttonsn  no
 // const widgets = UI.widgets
@@ -29,10 +27,9 @@ export async function renderGroupMemberships (person, context) {
     const thingwebids = kb.each(null, ns.owl('sameAs'), thing, group.doc())
     // WebID can be deleted only if not used in another thing
     let webids = []
-    thingwebids.map(webid => {
+    thingwebids.forEach(webid => {
       if (kb.statementsMatching(webid, ns.owl('sameAs'), thing, group.doc())) webids = webids.concat(webid)
-      }
-    )
+    })
     let thingOrWebid = thing
     if (webids.length > 0) thingOrWebid = webids[0]
     const groups = kb.each(null, ns.vcard('hasMember'), thingOrWebid) // in all groups a person has same structure
@@ -47,9 +44,9 @@ export async function renderGroupMemberships (person, context) {
       let del = kb
         .statementsMatching(person, undefined, undefined, group.doc())
         .concat(kb.statementsMatching(undefined, undefined, person, group.doc()))
-      webids.map(webid => {
+      webids.forEach(webid => {
         if (kb.statementsMatching(webid, ns.owl('sameAs'), undefined, group.doc()).length < 2) {
-         del = del.concat(kb.statementsMatching(undefined, undefined, webid, group.doc()))
+          del = del.concat(kb.statementsMatching(undefined, undefined, webid, group.doc()))
         }
       })
       kb.updater.update(del, [], function (uri, ok, err) {

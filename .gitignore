@@ -7,6 +7,7 @@ yarn-error.log*
 
 # Compiled code
 lib
+dist
 
 # Runtime data
 pids
