@@ -1,14 +1,15 @@
 import { getDataModelIssues } from '../../src/contactLogic'
 import fetchMock from 'jest-fetch-mock'
-import { ns, store } from 'solid-ui'
+import { ns } from 'solid-ui'
+import { store } from 'solid-logic'
 import pane from '../../src/contactsPane'
-import { parse } from 'rdflib'
+import { parse, sym } from 'rdflib'
 import { context, doc, mockFetchFunction, mockUpdate, prefixes, web } from './setup'
 
 // This was at testingsolidos.solidcommunity.net
 
 const base = doc.dir()?.uri || ''
-const webid1 = store.sym(base + 'People/localPerson/index.ttl#this')
+const webid1 = sym(base + 'People/localPerson/index.ttl#this')
 
 const exampleData = prefixes + `
 
@@ -26,15 +27,15 @@ const exampleData = prefixes + `
 
 `
 
-const book = store.sym(base + 'book.ttl#this')
+const book = sym(base + 'book.ttl#this')
 
-const aliceLocal = store.sym(base + 'People/aaaaaaaaaa/index.ttl#this')
-const aliceWebId = store.sym('https://alice.example/card#me')
+const aliceLocal = sym(base + 'People/aaaaaaaaaa/index.ttl#this')
+const aliceWebId = sym('https://alice.example/card#me')
 
 web[aliceLocal.doc().uri] = '<#this> a vcard:Individual, schema:Person; vcard:fn "Alice".'
 
-const bobLocal = store.sym(base + 'People/bbbbbbbbbb/index.ttl#this')
-const bobWebId = store.sym('https://bob.example.net/#me')
+const bobLocal = sym(base + 'People/bbbbbbbbbb/index.ttl#this')
+const bobWebId = sym('https://bob.example.net/#me')
 web[bobLocal.doc().uri] = `<#this> a vcard:Individual, schema:Person;
    vcard:hasURL [ vcard:type vcard:WebId; vcard:value ${bobWebId} ];
    vcard:fn "Bob".`
@@ -55,7 +56,7 @@ web[base + 'groups.ttl'] = `
     vcard:fn "Work group".
 `
 
-const testGroup = store.sym(base + 'Group/Test.ttl#this')
+const testGroup = sym(base + 'Group/Test.ttl#this')
 web[testGroup.doc().uri] = `
 <#this> a vcard:Group;
     vcard:fn "Test Group";
@@ -66,7 +67,7 @@ web[testGroup.doc().uri] = `
 
     ${aliceLocal} = ${aliceWebId} .
 `
-const homeGroup = store.sym(base + 'Group/Home.ttl#this')
+const homeGroup = sym(base + 'Group/Home.ttl#this')
 web[homeGroup.doc().uri] = `
 <#this> a vcard:Group;
     vcard:fn "Home Group";
@@ -75,7 +76,7 @@ web[homeGroup.doc().uri] = `
                     <../People/bbbbbbbbbb/index.ttl#this> .
 `
 
-const workGroup = store.sym(base + 'Group/Work.ttl#this')
+const workGroup = sym(base + 'Group/Work.ttl#this')
 web[workGroup.doc().uri] = `
 <#this> a vcard:Group;
     vcard:fn "Work Group";
@@ -111,39 +112,39 @@ if (t[ns.vcard('Group').uri]) return 'Group'
 if (t[ns.vcard('AddressBook').uri]) return 'Address book'
 */
     it('returns a good label contact if Organization', () => {
-      const thing = store.sym(base + 'thing1')
+      const thing = sym(base + 'thing1')
       store.add(thing, ns.rdf('type'), ns.vcard('Organization'), doc)
       expect(pane.label(thing, context)).toEqual('contact')
     })
 
     it('returns a good label Contact for Individual', () => {
-      const thing = store.sym(base + 'thing2')
+      const thing = sym(base + 'thing2')
       store.add(thing, ns.rdf('type'), ns.vcard('Individual'), doc)
       expect(pane.label(thing, context)).toEqual('Contact')
     })
     it('returns a good label Person if Person', () => {
-      const thing = store.sym(base + 'thing3')
+      const thing = sym(base + 'thing3')
       store.add(thing, ns.rdf('type'), ns.schema('Person'), doc)
       expect(pane.label(thing, context)).toEqual('Person')
     })
     it('returns a good label Person if foaf:Person', () => {
-      const thing = store.sym(base + 'thing4')
+      const thing = sym(base + 'thing4')
       store.add(thing, ns.rdf('type'), ns.foaf('Person'), doc)
       expect(pane.label(thing, context)).toEqual('Person')
     })
     it('returns a good label Group if Group', () => {
-      const thing = store.sym(base + 'thing5')
+      const thing = sym(base + 'thing5')
 
       store.add(thing, ns.rdf('type'), ns.vcard('Group'), doc)
       expect(pane.label(thing, context)).toEqual('Group')
     })
     it('returns a good label AddressBook if AddressBook', () => {
-      const thing = store.sym(base + 'thing6')
+      const thing = sym(base + 'thing6')
       store.add(thing, ns.rdf('type'), ns.vcard('AddressBook'), doc)
       expect(pane.label(thing, context)).toEqual('Address book')
     })
     it('returns a null label if not a person', () => {
-      expect(pane.label(store.sym('https://random.example.com/'), context)).toEqual(null)
+      expect(pane.label(sym('https://random.example.com/'), context)).toEqual(null)
       // done()
     })
   }) // label tests

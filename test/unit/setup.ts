@@ -1,12 +1,9 @@
 import { DataBrowserContext, PaneRegistry } from 'pane-registry'
-import { Statement, LiveStore } from 'rdflib'
-import { ns, store } from 'solid-ui'
-import { SolidLogic } from 'solid-logic'
+import { Statement, LiveStore, sym } from 'rdflib'
+import { ns } from 'solid-ui'
+import { SolidLogic, store } from 'solid-logic'
 
-// console.log('@@ store', store)
-// console.log('@@ store.sym', store.sym)
-
-export const subject = store.sym('https://janedoe.example/profile/card#me')
+export const subject = sym('https://janedoe.example/profile/card#me')
 export const doc = subject.doc()
 
 export const context = {
