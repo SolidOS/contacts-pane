@@ -5,8 +5,8 @@ import { store } from 'solid-logic'
 import { ns, style, widgets } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
 
-const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-const AUTOCOMPLETE_ROWS = 12 // 20?
+// const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+// const AUTOCOMPLETE_ROWS = 12 // 20?
 
 /**
  * Render a autocomplete form field
@@ -24,7 +24,7 @@ const AUTOCOMPLETE_ROWS = 12 // 20?
  *
  * @returns The HTML widget created
  */
-// eslint-disable-next-line complexity
+
 export function autocompleteField ( // @@ are they allowed too be async??
   dom: HTMLDocument,
   container: HTMLElement | undefined,
@@ -34,7 +34,6 @@ export function autocompleteField ( // @@ are they allowed too be async??
   doc: NamedNode | undefined,
   callbackFunction: (ok: boolean, errorMessage: string) => void
 ): HTMLElement {
-
   async function addOneIdAndRefresh (result, _name) {
     const ds = kb.statementsMatching(subject, property as any) // remove any multiple values
 
@@ -101,8 +100,8 @@ export function autocompleteField ( // @@ are they allowed too be async??
   const uri = widgets.mostSpecificClassURI(form)
   let params = widgets.fieldParams[uri]
   if (params === undefined) params = {} // non-bottom field types can do this
-  const theStyle = params.style || style.textInputStyle
-  const klass = kb.the(form, ns.ui('category'), null, formDoc)
+  // const theStyle = params.style || style.textInputStyle
+  const klass = kb.the(form, ns.ui('category'), null, formDoc) as NamedNode
   /*
   { label: string;
     logo: string;
@@ -114,23 +113,27 @@ export function autocompleteField ( // @@ are they allowed too be async??
   }
 */
 
-  queryParams.endPoint = endPoint.uri
-
   const searchByNameQuery = kb.the(form, ns.ui('searchByNameQuery'), null, formDoc)
-  queryParams.searchByNameQuery = searchByNameQuery
 
-  var queryParams = {label: 'from form', logo: '', class: klass, endPoint, searchByNameQuery}
+  if (!klass) {
+    box.appendChild(
+      dom.createTextNode('Error: No class given for autocomplete field: ' + form)
+    )
+    return box
+  }
+
+  const queryParams = { label: 'from form', logo: '', class: klass, endPoint: endPoint.value, searchByNameQuery: searchByNameQuery?.value }
 
   const options = { // cancelButton?: HTMLElement,
-                               // acceptButton?: HTMLElement,
-                               class: klass,
-                               queryParams }
+    // acceptButton?: HTMLElement,
+    class: klass,
+    queryParams
+  }
 
   // const acWiget = rhs.appendChild(await renderAutoComplete(dom, options, addOneIdAndRefresh))
 
   // @@ set existing value is any
   renderAutoComplete(dom, options, addOneIdAndRefresh).then(acWiget => rhs.appendChild(acWiget))
-
 
   const field = dom.createElement('input')
   ;(field as any).style = style.textInputStyle // Do we have to override length etc?
@@ -170,11 +173,5 @@ export function autocompleteField ( // @@ are they allowed too be async??
   }
   return box
 }
-
-
-
-
-
-
 
 // ends

@@ -1,13 +1,13 @@
 // Render a control to record the webids we have for this agent
-/* eslint-disable multiline-ternary */
+
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 // import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './lib/autocompleteBar'
+import { renderAutocompleteControl } from './autocompleteBar'
 // import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
+import * as $rdf from 'rdflib'
 
-const $rdf = UI.rdf
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils
@@ -38,6 +38,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 
   // check this is a url
   try {
+    // eslint-disable-next-line no-unused-vars
     const _url = new URL(webid)
   } catch (error) {
     throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)

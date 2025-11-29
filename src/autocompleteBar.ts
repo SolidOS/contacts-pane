@@ -6,20 +6,18 @@ import { ns, widgets, icons } from 'solid-ui'
 import { renderAutoComplete } from './autocompletePicker' // dbpediaParameters
 import { wikidataParameters } from './publicData'
 
-
 const WEBID_NOUN = 'Solid ID'
 
 const kb = store
 
-const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
-const AUTOCOMPLETE_ROWS = 12 // 20?
+// const AUTOCOMPLETE_THRESHOLD = 4 // don't check until this many characters typed
+// const AUTOCOMPLETE_ROWS = 12 // 20?
 
 const GREEN_PLUS = icons.iconBase + 'noun_34653_green.svg'
 const SEARCH_ICON = icons.iconBase + 'noun_Search_875351.svg'
 
 export async function renderAutocompleteControl (dom:HTMLDocument,
-   person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {
-
+  person:NamedNode, options, addOneIdAndRefresh): Promise<HTMLElement> {
   async function autoCompleteDone (object, _name) {
     const webid = object.uri
     removeDecorated()
@@ -34,8 +32,10 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
     return addOneIdAndRefresh(person, webid)
   }
   function removeDecorated () {
-    creationArea.removeChild(decoratedAutocomplete)
-    decoratedAutocomplete = null
+    if (decoratedAutocomplete) {
+      creationArea.removeChild(decoratedAutocomplete)
+      decoratedAutocomplete = null
+    }
   }
   async function searchButtonHandler (_event) {
     if (decoratedAutocomplete) {
@@ -63,12 +63,12 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
   const klass = options.class
   const acOptions = {
     queryParams,
-    class:klass,
+    class: klass,
     acceptButton,
     cancelButton
   }
 
-  var decoratedAutocomplete = null
+  var decoratedAutocomplete: HTMLDivElement | null = null
   // const { dom } = dataBrowserContext
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
@@ -77,7 +77,6 @@ export async function renderAutocompleteControl (dom:HTMLDocument,
   creationArea.setAttribute('style', 'display: flex; flex-flow: wrap;')
 
   if (options.editable) {
-
     // creationArea.appendChild(await renderAutoComplete(dom, options, autoCompleteDone)) wait for searchButton
     creationArea.style.width = '100%'
     const plus = creationArea.appendChild(widgets.button(dom, GREEN_PLUS, options.idNoun, greenButtonHandler))

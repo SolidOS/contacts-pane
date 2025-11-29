@@ -1,12 +1,12 @@
 import * as UI from 'solid-ui'
 import { solidLogicSingleton } from 'solid-logic'
+import * as $rdf from 'rdflib'
 
 const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
 // const toolsPane0 = require('./toolsPane')
 // const toolsPane = toolsPane0.toolsPane
 
-const $rdf = UI.rdf
 // const ns = UI.ns
 // const utils = UI.utils
 
@@ -98,14 +98,14 @@ export function mintNewAddressBook (dataBrowserContext, context) {
           const p = div.appendChild(dom.createElement('p'))
           p.setAttribute('style', 'font-size: 140%;')
           p.innerHTML =
-            "Your <a href='" +
+            'Your <a href=\'' +
             newAppInstance.uri +
-            "'><b>new " +
+            '\'><b>new ' +
             appInstanceNoun +
             '</b></a> is ready. ' +
-            "<br/><br/><a href='" +
+            '<br/><br/><a href=\'' +
             newAppInstance.uri +
-            "'>Go to new " +
+            '\'>Go to new ' +
             appInstanceNoun +
             '</a>'
           const newContext = Object.assign(
