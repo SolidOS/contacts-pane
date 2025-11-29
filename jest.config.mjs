@@ -16,7 +16,7 @@ export default {
   setupFilesAfterEnv: ['./test/jest.setup.ts'],
   testMatch: ['**/test/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   roots: ['<rootDir>/src', '<rootDir>/test'],
-    moduleNameMapper: {
+  moduleNameMapper: {
     '^SolidLogic$': 'solid-logic',
     '^\\$rdf$': 'rdflib'
   },
