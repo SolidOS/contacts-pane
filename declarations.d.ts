@@ -3,11 +3,6 @@ declare module '*.ttl' {
   export default content;
 }
 
-declare module '*.sparql' {
-  const content: string;
-  export default content;
-}
-
 declare module '*.css' {
   const content: string;
   export default content;
