@@ -4,11 +4,11 @@ import webpack from 'webpack'
 
 export default [
   {
-    mode: "development",
-    entry: ["./dev/index.ts"],
+    mode: 'development',
+    entry: ['./dev/index.ts'],
     plugins: [
-      new HtmlWebpackPlugin({ 
-        template: "./dev/index.html",
+      new HtmlWebpackPlugin({
+        template: './dev/index.html',
         inject: 'head'
       }),
       new NodePolyfillPlugin(),
@@ -18,7 +18,7 @@ export default [
         UI: 'solid-ui'
       }),
       new webpack.DefinePlugin({
-        'global': 'globalThis',
+        global: 'globalThis',
         'process.env.NODE_ENV': JSON.stringify('development')
       })
     ],
@@ -27,7 +27,7 @@ export default [
         {
           test: /\.(js|ts)$/,
           exclude: /node_modules/,
-          use: ["babel-loader"],
+          use: ['babel-loader'],
         },
         {
           test: /\.ttl$/, // Target text  files
@@ -53,12 +53,12 @@ export default [
       ],
     },
     externals: {
-      'rdflib': '$rdf',
+      rdflib: '$rdf',
       'solid-logic': 'SolidLogic',
       'solid-ui': 'UI'
     },
     resolve: {
-      extensions: [".js", ".ts"],
+      extensions: ['.js', '.ts'],
       alias: {
         $rdf: 'rdflib',
         rdflib: 'rdflib',
@@ -85,6 +85,6 @@ export default [
         './dev'
       ],
     },
-    devtool: "source-map",
+    devtool: 'source-map',
   },
-];
+]

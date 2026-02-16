@@ -1,10 +1,9 @@
-# This turtle file defined the forms usied in the contacts management
+# This turtle file defined the forms used in the contacts management
 #
-#  Indivduals and orgs are in one file as they both
-# share some forms (address etc) and also interact (roles)
+# Indivduals and orgs are in one file as they both
+# share some forms (address etc) and also interactions (roles)
 
-# Now hand-edited, was originally made using form editor.
-# Forms documentaion: https://solid.github.io/solid-ui/Documentation/forms-intro.html
+# Forms documentaion: https://solidos.github.io/solid-ui/docs/forms-intro.html
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix dct: <http://purl.org/dc/terms/>.
@@ -19,19 +18,17 @@
 
 # Ontology additions or interpretations needed for the form to work well
 
-# The ontology file doesn't make them disjoint.  This makes the selector be a choice.
+# The ontology file doesn't make them disjoint. This makes the selector be a choice.
 vcard:TelephoneType   owl:disjointUnionOf ( vcard:Cell vcard:Home vcard:Work) .
 vcard:Type   owl:disjointUnionOf (vcard:Home vcard:Work) . # for email
 
 # Better field labels
-vcard:Cell ui:label "mobile"@en . # app will imake nitial caps if nec
+vcard:Cell ui:label "mobile"@en . # app will make initial caps if necessary
 vcard:hasAddress ui:label "address"@en .
 vcard:bday ui:label "born"@en.
 vcard:hasEmail ui:label "email"@en .
 vcard:hasTelephone ui:label "phone"@en .
 vcard:note ui:label "notes"@en .
-
-
 
 # Ontology data to drive a top classifier
 

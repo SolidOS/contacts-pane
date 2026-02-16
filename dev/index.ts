@@ -29,3 +29,8 @@ async function finishLogin() {
 
 finishLogin()
 
+<<<<<<< Updated upstream
+=======
+const webIdToShow = 'https://timeaturdean.solidcommunity.net/profile/card#me'
+
+>>>>>>> Stashed changes
