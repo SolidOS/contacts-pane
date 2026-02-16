@@ -3,9 +3,6 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
-// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './autocompleteBar'
-// import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 import * as $rdf from 'rdflib'
 import './styles/webidControl.css'
 
@@ -311,8 +308,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   if (options.editable) { // test
     options.manualURIEntry = true // introduced in solid-ui 2.4.2
     options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
-    // div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()
