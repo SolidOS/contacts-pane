@@ -25,12 +25,12 @@ const common = {
     ],
   },
   externals: {
-    'fs': 'null',
+    fs: 'null',
     'node-fetch': 'fetch',
     'isomorphic-fetch': 'fetch',
     'text-encoding': 'TextEncoder',
     '@trust/webcrypto': 'crypto',
-    'rdflib': 'rdflib',
+    rdflib: 'rdflib',
     'solid-logic': 'SolidLogic',
     'solid-ui': 'UI'
   },
