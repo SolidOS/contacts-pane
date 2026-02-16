@@ -1,4 +1,5 @@
 /* contactsPane styles — extracted from inline styles in contactsPane.js */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
 
 /* ── Layout: Three-column browser ────────────────────────────── */
 
@@ -33,10 +34,10 @@
 /* ── Search ──────────────────────────────────────────────────── */
 
 .contactPane .searchInput {
-  border: 0.1em solid #444;
-  border-radius: 0.5em;
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
   width: 100%;
-  font-size: 100%;
+  font-size: var(--font-size-base);
   padding: 0.1em 0.6em;
   margin: 0.2em;
 }
@@ -50,8 +51,8 @@
 /* ── Rendered sub-pane ───────────────────────────────────────── */
 
 .contactPane .renderPane {
-  border: 0.1em solid #444;
-  border-radius: 0.5em;
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
 }
 
 /* ── Delete button ───────────────────────────────────────────── */
@@ -63,20 +64,20 @@
 /* ── Sharing button & icon ───────────────────────────────────── */
 
 .contactPane .sharingButton {
-  padding: 1em;
-  margin: 1em;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md);
 }
 
 .contactPane .sharingButtonIcon {
-  width: 1.5em;
-  height: 1.5em;
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
 }
 
 /* ── "All" groups button ─────────────────────────────────────── */
 
 .contactPane .allGroupsButton {
-  margin-left: 1em;
-  font-size: 100%;
+  margin-left: var(--spacing-md);
+  font-size: var(--font-size-base);
 }
 
 .contactPane .allGroupsButton--loading {
@@ -84,8 +85,8 @@
 }
 
 .contactPane .allGroupsButton--active {
-  background-color: black;
-  color: white;
+  background-color: var(--color-text);
+  color: var(--color-background);
 }
 
 .contactPane .allGroupsButton--loaded {
