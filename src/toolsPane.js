@@ -1,6 +1,5 @@
 //  The tools pane is for managing and debugging and maintaining solid contacts databases
 //
-/* global confirm, $rdf */
 
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'

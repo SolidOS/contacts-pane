@@ -3,10 +3,7 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 
 const ns = UI.ns
-// const buttons = UI.buttonsn  no
-// const widgets = UI.widgets
 const utils = UI.utils
-// const style = UI.style
 const kb = store
 
 // Groups the person is a member of

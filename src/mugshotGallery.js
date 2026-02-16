@@ -2,6 +2,7 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import mime from 'mime-types'
 import * as $rdf from 'rdflib'
+import './styles/mugshotGallery.css'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -190,10 +191,7 @@ export function renderMugshotGallery (dom, subject) {
 
   function elementForImage (image) {
     const img = dom.createElement('img')
-    img.setAttribute(
-      'style',
-      'max-height: 10em; border-radius: 1em; margin: 0.7em;'
-    )
+    img.classList.add('mugshotImage')
     UI.widgets.makeDropTarget(
       img,
       handleURIsDroppedOnMugshot,
