@@ -718,7 +718,7 @@ export function toolsPane (
     })
 
     const fixGrouplessButton = pane.appendChild(dom.createElement('button'))
-    fixGrouplessButton.style.cssText = buttonStyle
+    fixGrouplessButton.classList.add('toolsButton')
     fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
 
@@ -757,7 +757,7 @@ export function toolsPane (
     }
 
     const fixToOldDataModelButton = pane.appendChild(dom.createElement('button'))
-    fixToOldDataModelButton.style.cssText = buttonStyle
+    fixToOldDataModelButton.classList.add('toolsButton')
     fixToOldDataModelButton.textContent = 'Revert groups to old data model'
     fixToOldDataModelButton.addEventListener('click', _event => fixToOldDataModel(book))
   } // main
