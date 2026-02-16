@@ -22,7 +22,8 @@
     "test-coverage": "jest --coverage",
     "prepublishOnly": "npm run build && npm run lint && npm run test",
     "preversion": "npm run lint && npm run typecheck && npm run test",
-    "postpublish": "git push origin main --follow-tags"
+    "postpublish": "git push origin main --follow-tags",
+    "start": "webpack serve --config webpack.dev.config.mjs --open"
   },
   "repository": {
     "type": "git",
@@ -66,19 +67,26 @@
     "babel-jest": "^30.2.0",
     "babel-loader": "^10.0.0",
     "babel-plugin-inline-import": "^3.0.0",
+    "baseline-browser-mapping": "^2.9.19",
     "buffer": "^6.0.3",
+    "css-loader": "^7.1.3",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^17.1.0",
+    "html-webpack-plugin": "^5.6.6",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "jest-fetch-mock": "^3.0.3",
     "neostandard": "^0.12.2",
+    "node-polyfill-webpack-plugin": "^4.1.0",
     "pane-registry": "^3.0.1",
     "rdflib": "^2.3.5",
     "solid-logic": "^4.0.2",
     "solid-ui": "^3.0.3",
+    "style-loader": "^4.0.0",
     "typescript": "^5.9.3",
-    "typescript-transpile-only": "^0.0.4"
+    "typescript-transpile-only": "^0.0.4",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
   }
 }
