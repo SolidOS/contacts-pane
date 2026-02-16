@@ -83,11 +83,7 @@ export default [
     },
     devServer: {
       static: [
-        './dev',
-        {
-          directory: './node_modules',
-          publicPath: '/node_modules'
-        }
+        './dev'
       ],
     },
     devtool: "source-map",
