@@ -6,10 +6,10 @@ import { renderGroupMemberships } from './groupMembershipControl'
 import textOfForms from './ontology/forms.ttl'
 import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 import * as $rdf from 'rdflib'
+import './styles/individual.css'
 
 const ns = UI.ns
 const kb = store
-const style = UI.style
 
 export function loadTurtleText (kb, thing, text) {
   const doc = thing.doc()
@@ -32,7 +32,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   function spacer () {
     div
       .appendChild(dom.createElement('div'))
-      .setAttribute('style', 'height: 1em')
+      .classList.add('spacer')
   }
   function complainIfBad (ok, body) {
     if (!ok) {
@@ -67,7 +67,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     complain('Error: Failed to load contact card: ' + err)
   } // end of try catch on load
 
-  div.style = style.paneDivStyle || 'padding: 0.5em 1.5em 1em 1.5em;'
+  div.classList.add('individualPane')
 
   authn.checkUser() // kick off async operation @@@ use async version
 

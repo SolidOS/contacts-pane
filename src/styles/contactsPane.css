@@ -106,3 +106,9 @@
 .contactPane .hidden {
   display: none;
 }
+
+/* ── Mint new address book ───────────────────────────────────── */
+
+.contactPane .claimSuccess {
+  font-size: 140%;
+}
