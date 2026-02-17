@@ -25,9 +25,24 @@ const common = {
     'isomorphic-fetch': 'fetch',
     'text-encoding': 'TextEncoder',
     '@trust/webcrypto': 'crypto',
-    rdflib: 'rdflib',
-    'solid-logic': 'SolidLogic',
-    'solid-ui': 'UI'
+    rdflib: {
+      commonjs: 'rdflib',
+      commonjs2: 'rdflib',
+      amd: 'rdflib',
+      root: '$rdf'
+    },
+    'solid-logic': {
+      commonjs: 'solid-logic',
+      commonjs2: 'solid-logic',
+      amd: 'solid-logic',
+      root: 'SolidLogic'
+    },
+    'solid-ui': {
+      commonjs: 'solid-ui',
+      commonjs2: 'solid-ui',
+      amd: 'solid-ui',
+      root: 'UI'
+    }
   },
   devtool: 'source-map',
 }
@@ -43,7 +58,7 @@ const normalConfig = {
       name: 'ContactsPane',
       export: 'default',
     },
-    globalObject: 'this',
+    globalObject: 'globalThis',
     clean: true,
   },
   plugins: [
@@ -73,7 +88,7 @@ const minConfig = {
       name: 'ContactsPane',
       export: 'default',
     },
-    globalObject: 'this',
+    globalObject: 'globalThis',
     clean: false,
   },
   plugins: [
