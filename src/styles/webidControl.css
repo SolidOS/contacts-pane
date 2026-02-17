@@ -1,0 +1,59 @@
+/* webidControl.js styles — extracted from inline styles */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Named pane (rendered sub-pane) ──────────────────────────── */
+
+.contactPane .namedPane {
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
+}
+
+/* ── WebID / Public ID outer container ───────────────────────── */
+
+.contactPane .webidControl {
+  border-radius: 0.3em;
+  border: 0.1em solid #888;
+}
+
+/* ── Persona row ─────────────────────────────────────────────── */
+
+.contactPane .personaRow {
+  padding: 0.2em;
+}
+
+.contactPane .personaRow--webid {
+  background-color: #ffe6ff;
+}
+
+/* ── Full-width elements ─────────────────────────────────────── */
+
+.contactPane .fullWidth {
+  width: 100%;
+}
+
+/* ── Open/close profile button ───────────────────────────────── */
+
+.contactPane .personaOpenButton {
+  float: right;
+  background-color: transparent;
+  border: none;
+}
+
+/* ── Section heading ─────────────────────────────────────────── */
+
+.contactPane .webidHeading {
+  font-size: 110%;
+  font-weight: bold;
+  color: var(--color-primary);
+  padding: 0.2em;
+  margin: 0.7em 0;
+}
+
+/* ── Prompt text ─────────────────────────────────────────────── */
+
+.contactPane .webidPrompt {
+  padding: 0.7em;
+  border: none;
+  font-size: var(--font-size-base);
+  white-space: pre-wrap;
+}

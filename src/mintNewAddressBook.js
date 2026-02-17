@@ -96,7 +96,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
           // @@ delete or grey other stuff
           console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
           const p = div.appendChild(dom.createElement('p'))
-          p.setAttribute('style', 'font-size: 140%;')
+          p.classList.add('claimSuccess')
           p.innerHTML =
             'Your <a href=\'' +
             newAppInstance.uri +

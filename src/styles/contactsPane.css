@@ -1,0 +1,114 @@
+/* contactsPane styles — extracted from inline styles in contactsPane.js */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Layout: Three-column browser ────────────────────────────── */
+
+.contactPane .bookTable {
+  border-collapse: collapse;
+  margin-right: 0;
+  max-height: 9in;
+}
+
+.contactPane .groupsHeader {
+  min-width: 10em;
+  padding-bottom: 0.2em;
+}
+
+.contactPane .peopleHeader {
+  min-width: 18em;
+}
+
+.contactPane .peopleMain {
+  overflow: scroll;
+}
+
+.contactPane .cardMain {
+  margin: 0;
+}
+
+.contactPane .groupsMain,
+.contactPane .groupsFooter {
+  padding: 0.1em;
+}
+
+/* ── Search ──────────────────────────────────────────────────── */
+
+.contactPane .searchInput {
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
+  width: 100%;
+  font-size: var(--font-size-base);
+  padding: 0.1em 0.6em;
+  margin: 0.2em;
+}
+
+/* ── Data cells ──────────────────────────────────────────────── */
+
+.contactPane .dataCell {
+  padding: 0.1em;
+}
+
+/* ── Rendered sub-pane ───────────────────────────────────────── */
+
+.contactPane .renderPane {
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
+}
+
+/* ── Delete button ───────────────────────────────────────────── */
+
+.contactPane .deleteButton {
+  height: 2em;
+}
+
+/* ── Sharing button & icon ───────────────────────────────────── */
+
+.contactPane .sharingButton {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md);
+}
+
+.contactPane .sharingButtonIcon {
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+}
+
+/* ── "All" groups button ─────────────────────────────────────── */
+
+.contactPane .allGroupsButton {
+  margin-left: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.contactPane .allGroupsButton--loading {
+  background-color: #ff8;
+}
+
+.contactPane .allGroupsButton--active {
+  background-color: var(--color-text);
+  color: var(--color-background);
+}
+
+.contactPane .allGroupsButton--loaded {
+  background-color: #cfc;
+}
+
+/* ── Selection & visibility states ───────────────────────────── */
+
+.contactPane .selected {
+  background-color: #cce;
+}
+
+.contactPane .group-loading {
+  background-color: #ffe;
+}
+
+.contactPane .hidden {
+  display: none;
+}
+
+/* ── Mint new address book ───────────────────────────────────── */
+
+.contactPane .claimSuccess {
+  font-size: 140%;
+}

@@ -1,0 +1,48 @@
+/* toolsPane.js styles — extracted from inline styles */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Tools pane table ────────────────────────────────────────── */
+
+.contactPane .toolsTable {
+  font-size: 120%;
+  margin: var(--spacing-md);
+  border: 0.1em var(--color-border-pale);
+}
+
+/* ── Tools header row ────────────────────────────────────────── */
+
+.contactPane .toolsHeader {
+  min-width: 20em;
+  padding: var(--spacing-md);
+  font-size: 150%;
+  border-bottom: 0.1em solid var(--color-error);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ── Status block ────────────────────────────────────────────── */
+
+.contactPane .toolsStatusBlock {
+  padding: var(--spacing-xl);
+}
+
+/* ── Tools buttons ───────────────────────────────────────────── */
+
+.contactPane .toolsButton {
+  font-size: var(--font-size-base);
+  margin: 0.8em;
+  padding: var(--spacing-xs);
+}
+
+/* ── Load index button states ────────────────────────────────── */
+
+.contactPane .toolsButton--loading {
+  background-color: #ffc;
+}
+
+.contactPane .toolsButton--error {
+  background-color: #fcc;
+}
+
+.contactPane .toolsButton--success {
+  background-color: #cfc;
+}

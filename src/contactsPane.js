@@ -1,6 +1,6 @@
 /*   Contact AddressBook Pane
 **
-**  This outline pane allows a user to interact with an contact,
+**  This outline pane allows a user to interact with a contact,
 to change its state according to an ontology, comment on it, etc.
 **
 ** See also things like
@@ -9,7 +9,6 @@ to change its state according to an ontology, comment on it, etc.
 **  http://www.iana.org/assignments/vcard-elements/vcard-elements.xhtml
 **
 */
-/* global alert, confirm */
 
 import { authn } from 'solid-logic'
 import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers, getDataModelIssues } from './contactLogic'
@@ -18,10 +17,10 @@ import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
 import { groupMembership } from './groupMembershipControl'
+import './styles/contactsPane.css'
 
 const ns = UI.ns
 const utils = UI.utils
-const style = UI.style
 
 export default {
   icon: UI.icons.iconBase + 'noun_99101.svg', // changed from embedded icon 2016-05-01
@@ -50,7 +49,7 @@ export default {
 
     // stick functions here
     function complain (message) {
-      console.log('contactsPane: ' + message)
+      // console.log('contactsPane: ' + message)
       div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
     }
     function complainIfBad (ok, body) {
@@ -65,7 +64,7 @@ export default {
         dom,
         { noun: 'address book', appPathSegment: 'contactorator.timbl.com' },
         function (ws, newBase) {
-          thisPane.clone(thisAddressBook, newBase, { // @@ clone is not a thing - use mintNew
+          thisPane.mintNew(thisAddressBook, newBase, {
             me,
             div,
             dom
@@ -240,7 +239,7 @@ export default {
                 }
               }
             )
-            deleteButton.style = 'height: 2em;'
+            deleteButton.classList.add('deleteButton')
           })
         }
 
@@ -254,20 +253,11 @@ export default {
               count++
               lastRow = row
             }
-            row.setAttribute(
-              'style',
-              matches
-                ? selectedPeople[row.subject.uri]
-                  ? 'background-color: #cce;'
-                  : ''
-                : 'display: none;'
-            )
+            row.classList.toggle('selected', matches && !!selectedPeople[row.subject.uri])
+            row.classList.toggle('hidden', !matches)
           }
           if (count === 1 && active) {
             const unique = lastRow.subject
-            // selectedPeople = { }
-            // selectedPeople[unique.uri] = true
-            // lastRow.setAttribute('style', 'background-color: #cce;')
             selectPerson(unique)
           }
         }
@@ -278,7 +268,7 @@ export default {
           callbackFunction
         ) {
           function fetchGroupAndSelct (group, groupRow) {
-            groupRow.setAttribute('style', 'background-color: #ffe;')
+            groupRow.classList.add('group-loading')
             kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
               ok,
               message
@@ -288,7 +278,8 @@ export default {
                 badness.push(msg)
                 return complainIfBad(ok, msg)
               }
-              groupRow.setAttribute('style', 'background-color: #cce;')
+              groupRow.classList.remove('group-loading')
+              groupRow.classList.add('selected')
               selectedGroups[group.uri] = true
               refreshGroupsSelected()
               refreshNames() // @@ every time??
@@ -339,10 +330,7 @@ export default {
         function renderPane (dom, subject, paneName) {
           const p = dataBrowserContext.session.paneRegistry.byName(paneName)
           const d = p.render(subject, dataBrowserContext)
-          d.setAttribute(
-            'style',
-            'border: 0.1em solid #444; border-radius: 0.5em'
-          )
+          d.classList.add('renderPane')
           return d
         }
 
@@ -452,7 +440,7 @@ export default {
             const personRow = dom.createElement('tr')
             const personLeft = personRow.appendChild(dom.createElement('td'))
             // const personRight = personRow.appendChild(dom.createElement('td'))
-            personLeft.setAttribute('style', dataCellStyle)
+            personLeft.classList.add('dataCell')
             personRow.subject = person
             const name = nameFor(person)
             personLeft.textContent = name
@@ -471,10 +459,7 @@ export default {
           for (let i = 0; i < table.children.length; i++) {
             const row = table.children[i]
             if (row.subject) {
-              row.setAttribute(
-                'style',
-                selectionArray[row.subject.uri] ? 'background-color: #cce;' : ''
-              )
+              row.classList.toggle('selected', !!selectionArray[row.subject.uri])
             }
           }
         }
@@ -544,12 +529,11 @@ export default {
                     const sharingButton = cardMain.appendChild(
                       dom.createElement('button')
                     )
-                    sharingButton.style.cssText =
-                      'padding: 1em; margin: 1em'
+                    sharingButton.classList.add('sharingButton')
                     const img = sharingButton.appendChild(
                       dom.createElement('img')
                     )
-                    img.style.cssText = 'width: 1.5em; height: 1.5em'
+                    img.classList.add('sharingButtonIcon')
                     img.setAttribute(
                       'src',
                       UI.icons.iconBase + 'noun_123691.svg'
@@ -573,7 +557,7 @@ export default {
             groupRow.subject = group
             UI.widgets.makeDraggable(groupRow, group)
 
-            groupRow.setAttribute('style', dataCellStyle)
+            groupRow.classList.add('dataCell')
             groupRow.textContent = name
 
             UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
@@ -685,10 +669,7 @@ export default {
         // //////////////////   Body of 3-column browser
 
         const bookTable = dom.createElement('table')
-        bookTable.setAttribute(
-          'style',
-          'border-collapse: collapse; margin-right: 0; max-height: 9in;'
-        )
+        bookTable.classList.add('bookTable')
         div.appendChild(bookTable)
         /*
         bookTable.innerHTML = `
@@ -714,44 +695,36 @@ export default {
         const cardHeader = bookHeader.appendChild(dom.createElement('td'))
 
         const groupsMain = bookMain.appendChild(dom.createElement('td'))
+        groupsMain.classList.add('groupsMain')
         const groupsMainTable = groupsMain.appendChild(dom.createElement('table'))
         const peopleMain = bookMain.appendChild(dom.createElement('td'))
         const peopleMainTable = peopleMain.appendChild(dom.createElement('table'))
 
         const groupsFooter = bookFooter.appendChild(dom.createElement('td'))
+        groupsFooter.classList.add('groupsFooter')
         const peopleFooter = bookFooter.appendChild(dom.createElement('td'))
         const cardFooter = bookFooter.appendChild(dom.createElement('td'))
 
         cardHeader.appendChild(dom.createElement('div')) // searchDiv
-        // searchDiv.setAttribute('style', 'border: 0.1em solid #888; border-radius: 0.5em')
+
         const searchInput = cardHeader.appendChild(dom.createElement('input'))
         searchInput.setAttribute('type', 'text')
-        searchInput.style = style.searchInputStyle ||
-          'border: 0.1em solid #444; border-radius: 0.5em; width: 100%; font-size: 100%; padding: 0.1em 0.6em'
+        searchInput.classList.add('searchInput')
 
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(true) // Active: select person if just one left
         })
 
         const cardMain = bookMain.appendChild(dom.createElement('td'))
-        cardMain.setAttribute('style', 'margin: 0;') // fill space available
-        const dataCellStyle = 'padding: 0.1em;'
+        cardMain.classList.add('cardMain')
 
         groupsHeader.textContent = 'groups'
-        groupsHeader.setAttribute(
-          'style',
-          'min-width: 10em; padding-bottom 0.2em;'
-        )
+        groupsHeader.classList.add('groupsHeader')
 
         function setGroupListVisibility (visible) {
-          const vis = visible ? '' : 'display: none;'
-          groupsHeader.setAttribute(
-            'style',
-            'min-width: 10em; padding-bottom 0.2em;' + vis
-          )
-          const hfstyle = 'padding: 0.1em;'
-          groupsMain.setAttribute('style', hfstyle + vis)
-          groupsFooter.setAttribute('style', hfstyle + vis)
+          groupsHeader.classList.toggle('hidden', !visible)
+          groupsMain.classList.toggle('hidden', !visible)
+          groupsFooter.classList.toggle('hidden', !visible)
         }
         setGroupListVisibility(true)
 
@@ -761,26 +734,24 @@ export default {
         if (book) {
           const allGroups = groupsHeader.appendChild(dom.createElement('button'))
           allGroups.textContent = 'All'
-          const style = 'margin-left: 1em; font-size: 100%;'
-          allGroups.setAttribute('style', style)
+          allGroups.classList.add('allGroupsButton')
           allGroups.addEventListener('click', function (_event) {
             allGroups.state = allGroups.state ? 0 : 1
             peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
             if (allGroups.state) {
-              allGroups.setAttribute('style', style + 'background-color: #ff8;')
+              allGroups.classList.add('allGroupsButton--loading')
               selectAllGroups(selectedGroups, groupsMainTable, function (
                 ok,
                 message
               ) {
                 if (!ok) return complain(message)
-                allGroups.setAttribute(
-                  'style',
-                  style + 'background-color: black; color: white'
-                )
+                allGroups.classList.remove('allGroupsButton--loading')
+                allGroups.classList.add('allGroupsButton--active')
                 refreshGroupsSelected()
               })
             } else {
-              allGroups.setAttribute('style', style + 'background-color: #cfc;') // pale green hint groups loaded
+              allGroups.classList.remove('allGroupsButton--loading', 'allGroupsButton--active')
+              allGroups.classList.add('allGroupsButton--loaded') // pale green hint groups loaded
               selectedGroups = {}
               refreshGroupsSelected()
             }
@@ -798,8 +769,8 @@ export default {
         } // if not book
 
         peopleHeader.textContent = 'name'
-        peopleHeader.setAttribute('style', 'min-width: 18em;')
-        peopleMain.setAttribute('style', 'overflow:scroll;')
+        peopleHeader.classList.add('peopleHeader')
+        peopleMain.classList.add('peopleMain')
 
         // New Contact button
         const newContactButton = dom.createElement('button')

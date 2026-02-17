@@ -3,16 +3,13 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
-// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './autocompleteBar'
-// import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 import * as $rdf from 'rdflib'
+import './styles/webidControl.css'
 
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils
 const kb = store
-const style = UI.style
 
 const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
 const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
@@ -21,7 +18,6 @@ const WEBID_NOUN = 'Solid ID'
 const PUBLICID_NOUN = 'In public data'
 const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
 const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
-const webidPanelBackgroundColor = '#ffe6ff'
 
 /// ///////////////////////// Logic
 
@@ -157,10 +153,7 @@ export function isOrganization (agent) {
 export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
   const p = dataBrowserContext.session.paneRegistry.byName(paneName)
   const d = p.render(subject, dataBrowserContext) // @@@ change some bits of context!
-  d.setAttribute(
-    'style',
-    'border: 0.1em solid #444; border-radius: 0.5em'
-  )
+  d.classList.add('namedPane')
   return d
 }
 
@@ -232,18 +225,18 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       const row = widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, opts)
       if (isWebId) {
         row.children[1].textConent = opts.title // @@ will be overwritten
-        row.style.backgroundColor = webidPanelBackgroundColor
+        row.classList.add('personaRow--webid')
       }
-      row.style.padding = '0.2em'
+      row.classList.add('personaRow')
       return row
     }
 
     const div = dom.createElement('div')
-    div.style.width = '100%'
+    div.classList.add('fullWidth')
     const personaTable = div.appendChild(dom.createElement('table'))
-    personaTable.style.width = '100%'
+    personaTable.classList.add('fullWidth')
     const nav = personaTable.appendChild(renderNewRow(persona))
-    nav.style.width = '100%'
+    nav.classList.add('fullWidth')
     const mainRow = personaTable.appendChild(dom.createElement('tr'))
     const mainCell = mainRow.appendChild(dom.createElement('td'))
     mainCell.setAttribute('colspan', 3)
@@ -253,9 +246,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
     const rhs = nav.children[2]
     const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
-    openButton.style.float = 'right'
-    delete openButton.style.backgroundColor
-    delete openButton.style.border
+    openButton.classList.add('personaOpenButton')
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
     widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
@@ -263,7 +254,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
         console.log('main: ', main)
-        main.style.width = '100%'
+        main.classList.add('fullWidth')
         console.log('renderIdControl: main element: ', main)
         // main.style.visibility = 'collapse'
         mainCell.appendChild(main)
@@ -297,7 +288,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
-  div.style = 'border-radius:0.3em; border: 0.1em solid #888;' // padding: 0.8em;
+  div.classList.add('webidControl')
 
   if (getPersonas(kb, person).length === 0 && !options.editable) {
     div.style.display = 'none'
@@ -306,20 +297,18 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   const h4 = div.appendChild(dom.createElement('h4'))
   h4.textContent = options.idNoun
-  h4.style = style.formHeadingStyle
-  h4.style.color = style.highlightColor
+  h4.classList.add('webidHeading')
 
   const prompt = div.appendChild(dom.createElement('p'))
-  prompt.style = style.commentStyle
+  prompt.classList.add('webidPrompt')
   prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
-  table.style.width = '100%'
+  table.classList.add('fullWidth')
 
   if (options.editable) { // test
     options.manualURIEntry = true // introduced in solid-ui 2.4.2
     options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
-    // div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

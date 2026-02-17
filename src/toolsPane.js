@@ -1,10 +1,11 @@
 //  The tools pane is for managing and debugging and maintaining solid contacts databases
 //
-/* global confirm, $rdf */
 
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
+import './styles/toolsPane.css'
+import * as $rdf from 'rdflib'
 
 export function toolsPane (
   selectAllGroups,
@@ -19,23 +20,16 @@ export function toolsPane (
   const ns = UI.ns
   const VCARD = ns.vcard
 
-  const buttonStyle = 'font-size: 100%; margin: 0.8em; padding:0.5em;'
   const pane = dom.createElement('div')
   const table = pane.appendChild(dom.createElement('table'))
-  table.setAttribute(
-    'style',
-    'font-size:120%; margin: 1em; border: 0.1em #ccc ;'
-  )
+  table.classList.add('toolsTable')
   const headerRow = table.appendChild(dom.createElement('tr'))
   headerRow.textContent = UI.utils.label(book) + ' - tools'
-  headerRow.setAttribute(
-    'style',
-    'min-width: 20em; padding: 1em; font-size: 150%; border-bottom: 0.1em solid red; margin-bottom: 2em;'
-  )
+  headerRow.classList.add('toolsHeader')
 
   const statusRow = table.appendChild(dom.createElement('tr'))
   const statusBlock = statusRow.appendChild(dom.createElement('div'))
-  statusBlock.setAttribute('style', 'padding: 2em;')
+  statusBlock.classList.add('toolsStatusBlock')
   const MainRow = table.appendChild(dom.createElement('tr'))
   const box = MainRow.appendChild(dom.createElement('table'))
   table.appendChild(dom.createElement('tr')) // bottomRow
@@ -98,31 +92,34 @@ export function toolsPane (
     }
 
     async function loadIndexHandler (_event) {
-      loadIndexButton.setAttribute('style', 'background-color: #ffc;')
+      loadIndexButton.classList.add('toolsButton--loading')
+      loadIndexButton.classList.remove('toolsButton--error', 'toolsButton--success')
       const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
       try {
         await kb.fetcher.load(nameEmailIndex)
       } catch (e) {
-        loadIndexButton.setAttribute('style', 'background-color: #fcc;')
+        loadIndexButton.classList.remove('toolsButton--loading')
+        loadIndexButton.classList.add('toolsButton--error')
         log('Error: People index has NOT been loaded' + e + '\n')
       }
-      loadIndexButton.setAttribute('style', 'background-color: #cfc;')
+      loadIndexButton.classList.remove('toolsButton--loading')
+      loadIndexButton.classList.add('toolsButton--success')
       log(' People index has been loaded\n')
     } // loadIndexHandler
     const loadIndexButton = pane.appendChild(dom.createElement('button'))
     loadIndexButton.textContent = 'Load main index'
-    loadIndexButton.style.cssText = buttonStyle
+    loadIndexButton.classList.add('toolsButton')
     loadIndexButton.addEventListener('click', loadIndexHandler)
 
     const statButton = pane.appendChild(dom.createElement('button'))
     statButton.textContent = 'Statistics'
-    statButton.style.cssText = buttonStyle
+    statButton.classList.add('toolsButton')
     statButton.addEventListener('click', stats)
 
     const checkAccessButton = pane.appendChild(dom.createElement('button'))
     checkAccessButton.textContent =
       'Check individual card access of selected groups'
-    checkAccessButton.style.cssText = buttonStyle
+    checkAccessButton.classList.add('toolsButton')
     async function checkAcces (_event) {
       function doCard (card) {
         UI.acl.fixIndividualCardACL(card, log, function (ok, message) {
@@ -156,7 +153,7 @@ export function toolsPane (
     //      DUPLICATES CHECK
     const checkDuplicates = pane.appendChild(dom.createElement('button'))
     checkDuplicates.textContent = 'Find duplicate cards'
-    checkDuplicates.style.cssText = buttonStyle
+    checkDuplicates.classList.add('toolsButton')
     checkDuplicates.addEventListener('click', function (_event) {
       const stats = {} // global god context
 
@@ -699,7 +696,7 @@ export function toolsPane (
     }
 
     const checkGroupless = pane.appendChild(dom.createElement('button'))
-    checkGroupless.style.cssText = buttonStyle
+    checkGroupless.classList.add('toolsButton')
     checkGroupless.textContent = 'Find individuals with no group'
     checkGroupless.addEventListener('click', function (_event) {
       log('Loading groups...')
@@ -722,7 +719,7 @@ export function toolsPane (
     })
 
     const fixGrouplessButton = pane.appendChild(dom.createElement('button'))
-    fixGrouplessButton.style.cssText = buttonStyle
+    fixGrouplessButton.classList.add('toolsButton')
     fixGrouplessButton.textContent = 'Put all individuals with no group in a new group'
     fixGrouplessButton.addEventListener('click', _event => fixGroupless(book))
 
@@ -761,7 +758,7 @@ export function toolsPane (
     }
 
     const fixToOldDataModelButton = pane.appendChild(dom.createElement('button'))
-    fixToOldDataModelButton.style.cssText = buttonStyle
+    fixToOldDataModelButton.classList.add('toolsButton')
     fixToOldDataModelButton.textContent = 'Revert groups to old data model'
     fixToOldDataModelButton.addEventListener('click', _event => fixToOldDataModel(book))
   } // main
