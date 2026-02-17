@@ -3,22 +3,16 @@ import { authn, store } from 'solid-logic'
 import { renderMugshotGallery } from './mugshotGallery'
 import { renderWebIdControl, renderPublicIdControl } from './webidControl'
 import { renderGroupMemberships } from './groupMembershipControl'
-import textOfForms from './ontology/forms.ttl'
+import formsSource from './ontology/individualAndOrganizationForm.ttl'
 import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
-import * as $rdf from 'rdflib'
 import './styles/individual.css'
+import { renderForm, loadDocument } from './rdfFormsHelper'
 
 const ns = UI.ns
 const kb = store
 
-export function loadTurtleText (kb, thing, text) {
-  const doc = thing.doc()
-  if (!kb.holds(undefined, undefined, undefined, doc)) {
-    // If not loaded already
-    $rdf.parse(text, kb, doc.uri, 'text/turtle') // Load  directly
-  }
-}
-
+const formsName = 'individualAndOrganizationForm.ttl' // The name of the form file
+const vcardName = 'vcard.ttl' // The name of the vcard file
 // Render Individual card
 
 export async function renderIndividual (dom, div, subject, dataBrowserContext) {
@@ -34,37 +28,23 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
       .appendChild(dom.createElement('div'))
       .classList.add('spacer')
   }
-  function complainIfBad (ok, body) {
-    if (!ok) {
-      complain('Error: ' + body)
-    }
-  }
 
   /// ///////////////////////////
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)
 
-  const individualForm = kb.sym(
-    'https://solid.github.io/solid-panes/contact/individualForm.ttl#form1'
-  )
-  loadTurtleText(kb, individualForm, textOfForms)
+  // We load the local form document
+  loadDocument(kb, formsSource, formsName)
 
-  const orgDetailsForm = kb.sym( // orgDetailsForm organizationForm
-    'https://solid.github.io/solid-panes/contact/individualForm.ttl#orgDetailsForm'
-  )
-
-  // Ontology metadata for this pane we bundle with the JS
-  const vcardOnt = UI.ns.vcard('Type').doc()
-  if (!kb.holds(undefined, undefined, undefined, vcardOnt)) {
-    // If not loaded already
-    $rdf.parse(VCARD_ONTOLOGY_TEXT, kb, vcardOnt.uri, 'text/turtle') // Load ontology directly
-  }
+  // We need to make sure VCARD ontology is loaded in the store
+  const vcardOntUri = UI.ns.vcard('Type').doc().uri // URI to VCARD
+  loadDocument(kb, VCARD_ONTOLOGY_TEXT, vcardName, vcardOntUri)
 
   try {
     await kb.fetcher.load(subject.doc())
   } catch (err) {
-    complain('Error: Failed to load contact card: ' + err)
+    complain('Error: Failed to load profile card: ' + err)
   } // end of try catch on load
 
   div.classList.add('individualPane')
@@ -73,16 +53,9 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(renderMugshotGallery(dom, subject))
 
-  const form = isOrganization ? orgDetailsForm : individualForm
-  UI.widgets.appendForm(
-    dom,
-    div,
-    {},
-    subject,
-    form,
-    subject.doc(),
-    complainIfBad
-  )
+  const whichForm = isOrganization ? "orgDetailsForm" : "individualForm"
+
+  renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
 
   spacer()
 

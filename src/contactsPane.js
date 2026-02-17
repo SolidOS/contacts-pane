@@ -27,16 +27,16 @@ export default {
 
   name: 'contact',
 
-  // Does the subject deserve an contact pane?
+  // Does the subject deserve a contact pane?
   label: function (subject, context) {
     const t = context.session.store.findTypeURIs(subject)
     if (t[ns.vcard('Individual').uri]) return 'Contact'
-    if (t[ns.vcard('Organization').uri]) return 'contact'
+    if (t[ns.vcard('Organization').uri]) return 'Contact'
     if (t[ns.foaf('Person').uri]) return 'Person'
     if (t[ns.schema('Person').uri]) return 'Person'
     if (t[ns.vcard('Group').uri]) return 'Group'
     if (t[ns.vcard('AddressBook').uri]) return 'Address book'
-    return null // No under other circumstances
+    return null // No, under other circumstances
   },
 
   mintClass: UI.ns.vcard('AddressBook'),
