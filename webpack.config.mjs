@@ -37,7 +37,7 @@ const normalConfig = {
   mode: 'production',
   output: {
     path: path.resolve(process.cwd(), 'dist'),
-    filename: 'contacts-pane.js',
+    filename: 'contactsPane.js',
     library: {
       type: 'umd',
       name: 'ContactsPane',
@@ -67,7 +67,7 @@ const minConfig = {
   mode: 'production',
   output: {
     path: path.resolve(process.cwd(), 'dist'),
-    filename: 'contacts-pane.min.js',
+    filename: 'contactsPane.min.js',
     library: {
       type: 'umd',
       name: 'ContactsPane',
