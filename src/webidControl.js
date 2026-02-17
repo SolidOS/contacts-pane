@@ -306,9 +306,22 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   table.classList.add('fullWidth')
 
   if (options.editable) { // test
-    options.manualURIEntry = true // introduced in solid-ui 2.4.2
-    options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    const barOptions = {
+      editable: options.editable,
+      manualURIEntry: true, // introduced in solid-ui 2.4.2
+      idNoun: options.idNoun,
+      dbLookup: options.dbLookup
+    }
+    const acOptions = {
+      queryParams: options.queryParams || wikidataParameters,
+      targetClass: options.class
+    }
+    try {
+      div.appendChild(await widgets.renderAutocompleteControl(dom, person, barOptions, acOptions, addOneIdAndRefresh))
+    } catch (err) {
+      console.error('renderAutocompleteControl failed:', err)
+      div.appendChild(widgets.errorMessageBlock(dom, 'Error rendering autocomplete: ' + err))
+    }
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

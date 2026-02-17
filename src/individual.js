@@ -53,7 +53,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(renderMugshotGallery(dom, subject))
 
-  const whichForm = isOrganization ? "orgDetailsForm" : "individualForm"
+  const whichForm = isOrganization ? 'orgDetailsForm' : 'individualForm'
 
   renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
 
