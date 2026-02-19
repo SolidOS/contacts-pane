@@ -194,11 +194,6 @@
   margin-right: 0 !important;
 }
 
-/* Add horizontal gap between label and textarea for all label+textarea pairs. */
-.individualPane div:has(> a) + div:has(textarea) {
-  margin-left: var(--spacing-sm);
-}
-
 /* Center textarea label vertically in flex rows. */
 .individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
   align-items: flex-start;
@@ -247,6 +242,11 @@
   cursor: not-allowed;
   opacity: 0.75;
   border: 0.05em solid white !important;
+}
+
+.individualPane textarea,
+.individualPane .formFieldValue textarea {
+  padding: 0.5em !important;
 }
 
 .webidControl table td div.contactPane.namedPane {
