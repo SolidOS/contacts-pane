@@ -1,4 +1,4 @@
-# This turtle file defined the forms used in the contacts management
+# This turtle file defines the forms used in the contacts management
 #
 # Indivduals and orgs are in one file as they both
 # share some forms (address etc) and also interactions (roles)
