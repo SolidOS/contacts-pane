@@ -6,7 +6,7 @@
 .contactPane .toolsTable {
   font-size: 120%;
   margin: var(--spacing-md);
-  border: 0.1em var(--color-border-pale);
+  border: 0.1em solid var(--color-border-pale);
 }
 
 /* ── Tools header row ────────────────────────────────────────── */

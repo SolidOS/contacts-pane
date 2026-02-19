@@ -30,7 +30,7 @@ export default [
           use: ['babel-loader'],
         },
         {
-          test: /\.ttl$/, // Target text  files
+          test: /\.ttl$/, // Target text files
           type: 'asset/source', // Load the file's content as a string
         },
         {
