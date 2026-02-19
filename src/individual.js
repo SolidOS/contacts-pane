@@ -6,6 +6,7 @@ import { renderGroupMemberships } from './groupMembershipControl'
 import formsSource from './ontology/individualAndOrganizationForm.ttl'
 import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 import './styles/individual.css'
+import './styles/rdfFormsEnforced.css'
 import { renderForm, loadDocument } from './rdfFormsHelper'
 
 const ns = UI.ns

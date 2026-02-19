@@ -67,32 +67,27 @@
             :id1409437207443
                 a ui:SingleLineTextField ;
                 ui:maxLength "128" ;
-                ui:property vcard:street-address ;
-                ui:size "40" .
+                ui:property vcard:street-address .
 
             :id1409437292400
                 a ui:SingleLineTextField ;
                 ui:maxLength "128" ;
-                ui:property vcard:locality ;
-                ui:size "40" .
+                ui:property vcard:locality .
 
             :id1409437421996
                 a ui:SingleLineTextField ;
                 ui:maxLength "25" ;
-                ui:property vcard:postal-code ;
-                ui:size "25" .
+                ui:property vcard:postal-code .
 
             :id1409437467649
                 a ui:SingleLineTextField ;
                 ui:maxLength "128" ;
-                ui:property vcard:region ;
-                ui:size "40" .
+                ui:property vcard:region .
 
             :id1409437569420
                 a ui:SingleLineTextField ;
                 ui:maxLength "128" ;
-                ui:property vcard:country-name ;
-                ui:size "40" .
+                ui:property vcard:country-name .
 
 
     :eMails a ui:Multiple ;

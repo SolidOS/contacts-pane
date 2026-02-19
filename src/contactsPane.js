@@ -892,24 +892,6 @@ export default {
         )
       }
 
-      me = authn.currentUser()
-      if (!me) {
-        console.log(
-          '(You do not have your Web Id set. Sign in or sign up to make changes.)'
-        )
-        UI.login.ensureLoadedProfile(context).then(
-          context => {
-            console.log('Logged in as ' + context.me)
-            me = context.me
-          },
-          err => {
-            div.appendChild(UI.widgets.errorMessageBlock(err))
-          }
-        )
-      } else {
-        // console.log("(Your webid is "+ me +")")
-      }
-
       // /////////////// Fix user when testing on a plane
 
       if (
