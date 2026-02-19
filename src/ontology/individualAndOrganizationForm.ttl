@@ -1,6 +1,6 @@
 # This turtle file defines the forms used in the contacts management
 #
-# Indivduals and orgs are in one file as they both
+# Individuals and orgs are in one file as they both
 # share some forms (address etc) and also interactions (roles)
 
 # Forms documentaion: https://solidos.github.io/solid-ui/docs/forms-intro.html
