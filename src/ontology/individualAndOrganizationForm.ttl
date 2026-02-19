@@ -178,7 +178,7 @@ vcard:note ui:label "notes"@en .
 
     :homePageURIField a ui:NamedNodeURIField;
         ui:label "Homepage"@en;
-        ui:property schema:uri .
+        ui:property schema:url .
 
 # Ontology data to drive the :OrgClassifier classifier
     solid:InterestingOrganization owl:disjointUnionOf  (
