@@ -24,12 +24,6 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
   }
 
-  function spacer () {
-    div
-      .appendChild(dom.createElement('div'))
-      .classList.add('spacer')
-  }
-
   /// ///////////////////////////
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
@@ -58,11 +52,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
 
-  spacer()
-
   div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
-
-  spacer()
 
   // Auto complete searches in a table
   // Prefer the fom below renderPublicIdControl
@@ -91,8 +81,6 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
     // predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
   })
-
-  spacer()
 
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))

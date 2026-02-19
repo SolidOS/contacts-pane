@@ -5,9 +5,3 @@
 .contactPane .individualPane {
   padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-md) var(--spacing-lg);
 }
-
-/* ── Spacer between sections ─────────────────────────────────── */
-
-.contactPane .spacer {
-  height: var(--spacing-md);
-}
