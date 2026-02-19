@@ -3,7 +3,7 @@
 # Individuals and orgs are in one file as they both
 # share some forms (address etc) and also interactions (roles)
 
-# Forms documentaion: https://solidos.github.io/solid-ui/docs/forms-intro.html
+# Forms documentation: https://solidos.github.io/solid-ui/docs/forms-intro.html
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix dct: <http://purl.org/dc/terms/>.
