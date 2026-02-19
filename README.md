@@ -2,7 +2,7 @@
 
 SolidOS pane that displays a personal contact and address books.
 
-![CI](https://github.com/solid/contacts-pane/workflows/CI/badge.svg)
+![CI](https://github.com/SolidOS/contacts-pane/workflows/CI/badge.svg)
 
 ## Contribute
 
