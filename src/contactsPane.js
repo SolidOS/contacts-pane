@@ -433,20 +433,32 @@ export default {
             }
           }
 
-          peopleHeader.textContent =
-            cards.length > 5 ? '' + cards.length + ' contacts' : 'contact'
+          peopleHeader.textContent = 'Contact name'
 
           function renderNameInGroupList (person) {
             const personRow = dom.createElement('tr')
+            personRow.setAttribute('role', 'listitem')
+            personRow.setAttribute('tabindex', '0')
+            personRow.setAttribute('aria-label', nameFor(person))
+            personRow.classList.add('personRow')
+            personRow.subject = person
             const personLeft = personRow.appendChild(dom.createElement('td'))
-            // const personRight = personRow.appendChild(dom.createElement('td'))
             personLeft.classList.add('dataCell')
-            personRow.subject = person
-            const name = nameFor(person)
-            personLeft.textContent = name
-            personRow.subject = person
+            // Visually hidden span for screen readers
+            const srOnly = dom.createElement('span')
+            srOnly.classList.add('visually-hidden')
+            srOnly.textContent = 'Contact: '
+            personLeft.appendChild(srOnly)
+            personLeft.appendChild(dom.createTextNode(nameFor(person)))
             UI.widgets.makeDraggable(personRow, person)
 
+            // Keyboard selection
+            personRow.addEventListener('keydown', function (event) {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                selectPerson(person)
+              }
+            })
             setPersonListener(personRow, person)
             return personRow
           }
@@ -472,7 +484,6 @@ export default {
 
         function syncGroupTable () {
           function renderGroupRow (group) {
-            // Is something is dropped on a group, add people to group
             async function handleURIsDroppedOnGroup (uris) {
               uris.forEach(function (u) {
                 console.log('Dropped on group: ' + u)
@@ -530,6 +541,7 @@ export default {
                       dom.createElement('button')
                     )
                     sharingButton.classList.add('sharingButton')
+                    sharingButton.setAttribute('aria-label', 'Toggle group sharing settings')
                     const img = sharingButton.appendChild(
                       dom.createElement('img')
                     )
@@ -538,6 +550,7 @@ export default {
                       'src',
                       UI.icons.iconBase + 'noun_123691.svg'
                     )
+                    img.setAttribute('alt', 'Sharing icon')
                     sharingButton.addEventListener('click', function () {
                       visible = !visible
                       if (visible) {
@@ -554,11 +567,27 @@ export default {
             // Body of renderGroupRow
             const name = kb.any(group, ns.vcard('fn'))
             const groupRow = dom.createElement('tr')
+            groupRow.setAttribute('role', 'listitem')
+            groupRow.setAttribute('tabindex', '0')
+            groupRow.setAttribute('aria-label', name ? name.value : 'Group')
             groupRow.subject = group
             UI.widgets.makeDraggable(groupRow, group)
 
             groupRow.classList.add('dataCell')
-            groupRow.textContent = name
+            // Visually hidden span for screen readers
+            const srOnly = dom.createElement('span')
+            srOnly.classList.add('visually-hidden')
+            srOnly.textContent = 'Group: '
+            groupRow.appendChild(srOnly)
+            groupRow.appendChild(dom.createTextNode(name))
+
+            // Keyboard selection
+            groupRow.addEventListener('keydown', function (event) {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                groupRowClickListener(event)
+              }
+            })
 
             UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
             UI.widgets.deleteButtonWithCheck(
@@ -577,7 +606,6 @@ export default {
           const groups = groupsInOrder()
           utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
           refreshGroupsSelected()
-          // await checkDataModel(groups)
         } // syncGroupTable
 
         async function checkDataModel () {
@@ -668,59 +696,151 @@ export default {
         // //////////////////////////// Three-column Contact Browser  - Body
         // //////////////////   Body of 3-column browser
 
+        // Main wrapper for accessibility and style
+        const main = dom.createElement('main')
+        main.id = 'main-content'
+        main.classList.add('addressBook-grid')
+        main.setAttribute('role', 'main')
+        main.setAttribute('aria-label', 'Address Book')
+        main.setAttribute('tabindex', '-1')
+        div.appendChild(main)
+
+        // Section wrapper for accessibility and style
+        const section = dom.createElement('section')
+        section.setAttribute('aria-labelledby', 'addressBook-section')
+        section.classList.add('addressBookSection', 'section-bg')
+        section.setAttribute('role', 'region')
+        section.setAttribute('tabindex', '-1')
+        main.appendChild(section)
+
+        const header = dom.createElement('header')
+        header.classList.add('text-center', 'mb-md')
+        const h2 = dom.createElement('h2')
+        h2.id = 'addressBook-heading'
+        h2.setAttribute('tabindex', '-1')
+        h2.textContent = title
+        header.appendChild(h2)
+        section.appendChild(header)
+
+        // Accessible table structure
         const bookTable = dom.createElement('table')
         bookTable.classList.add('bookTable')
-        div.appendChild(bookTable)
-        /*
-        bookTable.innerHTML = `
-        <tr>
-          <td id="groupsHeader"></td>
-          <td id="peopleHeader"></td>
-          <td id="cardHeader"></td>
-        </tr>
-          <tr id="bookMain"></tr>
-        <tr>
-          <td id="groupsFooter">
-          </td><td id="peopleFooter">
-          </td><td id="cardFooter">
-          </td>
-        </tr>`
-  */
-        const bookHeader = bookTable.appendChild(dom.createElement('tr'))
-        const bookMain = bookTable.appendChild(dom.createElement('tr'))
-        const bookFooter = bookTable.appendChild(dom.createElement('tr'))
+        bookTable.setAttribute('role', 'table')
+        bookTable.setAttribute('aria-label', 'Contacts browser')
+        section.appendChild(bookTable)
 
-        const groupsHeader = bookHeader.appendChild(dom.createElement('td'))
-        const peopleHeader = bookHeader.appendChild(dom.createElement('td'))
-        const cardHeader = bookHeader.appendChild(dom.createElement('td'))
+        // Table caption for screen readers
+        const caption = dom.createElement('caption')
+        caption.textContent = 'Contacts three-column browser'
+        caption.classList.add('visually-hidden')
+        bookTable.appendChild(caption)
 
-        const groupsMain = bookMain.appendChild(dom.createElement('td'))
+        // Table head
+        const thead = dom.createElement('thead')
+        const bookHeader = dom.createElement('tr')
+        thead.appendChild(bookHeader)
+        bookTable.appendChild(thead)
+
+        // Table body
+        const tbody = dom.createElement('tbody')
+        const bookMain = dom.createElement('tr')
+        tbody.appendChild(bookMain)
+        bookTable.appendChild(tbody)
+
+        // Table footer
+        const tfoot = dom.createElement('tfoot')
+        const bookFooter = dom.createElement('tr')
+        tfoot.appendChild(bookFooter)
+        bookTable.appendChild(tfoot)
+
+        // Headers
+        const groupsHeader = dom.createElement('th')
+        groupsHeader.setAttribute('scope', 'col')
+        groupsHeader.setAttribute('id', 'groupsHeader')
+        groupsHeader.textContent = 'Groups'
+        groupsHeader.classList.add('groupsHeader')
+        bookHeader.appendChild(groupsHeader)
+
+        const peopleHeader = dom.createElement('th')
+        peopleHeader.setAttribute('scope', 'col')
+        peopleHeader.setAttribute('id', 'peopleHeader')
+        peopleHeader.textContent = 'Name'
+        peopleHeader.classList.add('peopleHeader')
+        bookHeader.appendChild(peopleHeader)
+
+        const cardHeader = dom.createElement('th')
+        cardHeader.setAttribute('scope', 'col')
+        cardHeader.setAttribute('id', 'cardHeader')
+        cardHeader.textContent = 'Search for name'
+        cardHeader.classList.add('cardHeader')
+        bookHeader.appendChild(cardHeader)
+
+        // Main columns
+        const groupsMain = dom.createElement('td')
         groupsMain.classList.add('groupsMain')
-        const groupsMainTable = groupsMain.appendChild(dom.createElement('table'))
-        const peopleMain = bookMain.appendChild(dom.createElement('td'))
-        const peopleMainTable = peopleMain.appendChild(dom.createElement('table'))
+        groupsMain.setAttribute('role', 'region')
+        groupsMain.setAttribute('aria-labelledby', 'groupsHeader')
+        const groupsMainTable = dom.createElement('table')
+        groupsMainTable.setAttribute('role', 'list')
+        groupsMainTable.setAttribute('aria-label', 'Groups list')
+        groupsMain.appendChild(groupsMainTable)
+        bookMain.appendChild(groupsMain)
 
-        const groupsFooter = bookFooter.appendChild(dom.createElement('td'))
+        const peopleMain = dom.createElement('td')
+        peopleMain.classList.add('peopleMain')
+        peopleMain.setAttribute('role', 'region')
+        peopleMain.setAttribute('aria-labelledby', 'peopleHeader')
+        const peopleMainTable = dom.createElement('table')
+        peopleMainTable.setAttribute('role', 'list')
+        peopleMainTable.setAttribute('aria-label', 'People list')
+        peopleMain.appendChild(peopleMainTable)
+        bookMain.appendChild(peopleMain)
+
+        const cardMain = dom.createElement('td')
+        cardMain.classList.add('cardMain')
+        cardMain.setAttribute('role', 'region')
+        cardMain.setAttribute('aria-labelledby', 'cardHeader')
+        bookMain.appendChild(cardMain)
+
+        // Footer columns
+        const groupsFooter = dom.createElement('td')
         groupsFooter.classList.add('groupsFooter')
-        const peopleFooter = bookFooter.appendChild(dom.createElement('td'))
-        const cardFooter = bookFooter.appendChild(dom.createElement('td'))
+        bookFooter.appendChild(groupsFooter)
 
-        cardHeader.appendChild(dom.createElement('div')) // searchDiv
+        const peopleFooter = dom.createElement('td')
+        bookFooter.appendChild(peopleFooter)
 
-        const searchInput = cardHeader.appendChild(dom.createElement('input'))
+        const cardFooter = dom.createElement('td')
+        bookFooter.appendChild(cardFooter)
+
+        // Search input
+        const searchDiv = dom.createElement('div')
+        searchDiv.classList.add('searchDiv')
+        cardHeader.appendChild(searchDiv)
+        const searchInput = dom.createElement('input')
         searchInput.setAttribute('type', 'text')
+        searchInput.setAttribute('aria-label', 'Search contacts')
         searchInput.classList.add('searchInput')
-
+        searchDiv.appendChild(searchInput)
         searchInput.addEventListener('input', function (_event) {
-          refreshFilteredPeople(true) // Active: select person if just one left
+          refreshFilteredPeople(true)
         })
 
-        const cardMain = bookMain.appendChild(dom.createElement('td'))
-        cardMain.classList.add('cardMain')
+        // Accessibility: keyboard navigation for peopleMainTable rows
+        peopleMainTable.addEventListener('keydown', function (event) {
+          const rows = Array.from(peopleMainTable.children)
+          const current = document.activeElement
+          const idx = rows.indexOf(current)
+          if (event.key === 'ArrowDown' && idx < rows.length - 1) {
+            rows[idx + 1].focus()
+            event.preventDefault()
+          } else if (event.key === 'ArrowUp' && idx > 0) {
+            rows[idx - 1].focus()
+            event.preventDefault()
+          }
+        })
 
-        groupsHeader.textContent = 'groups'
-        groupsHeader.classList.add('groupsHeader')
-
+        // ...existing code...
         function setGroupListVisibility (visible) {
           groupsHeader.classList.toggle('hidden', !visible)
           groupsMain.classList.toggle('hidden', !visible)
@@ -734,7 +854,7 @@ export default {
         if (book) {
           const allGroups = groupsHeader.appendChild(dom.createElement('button'))
           allGroups.textContent = 'All'
-          allGroups.classList.add('allGroupsButton')
+          allGroups.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
           allGroups.addEventListener('click', function (_event) {
             allGroups.state = allGroups.state ? 0 : 1
             peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
@@ -768,7 +888,7 @@ export default {
           setGroupListVisibility(false) // If no books involved, hide group list
         } // if not book
 
-        peopleHeader.textContent = 'name'
+        peopleHeader.textContent = 'Contact name'
         peopleHeader.classList.add('peopleHeader')
         peopleMain.classList.add('peopleMain')
 
@@ -784,7 +904,8 @@ export default {
           }
         })
         container.appendChild(newContactButton)
-        newContactButton.innerHTML = 'New Contact' // + IndividualClassLabel
+        newContactButton.innerHTML = 'New contact' // + IndividualClassLabel
+        newContactButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
         peopleFooter.appendChild(container)
         newContactButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Individual')), false)
 
@@ -800,7 +921,8 @@ export default {
           }
         })
         container2.appendChild(newOrganizationButton)
-        newOrganizationButton.innerHTML = 'New Organization' // + IndividualClassLabel
+        newOrganizationButton.innerHTML = 'New organization' // + IndividualClassLabel
+        newOrganizationButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
         peopleFooter.appendChild(container2)
         newOrganizationButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Organization')), false)
 
@@ -810,7 +932,8 @@ export default {
             dom.createElement('button')
           )
           newGroupButton.setAttribute('type', 'button')
-          newGroupButton.innerHTML = 'New Group' // + IndividualClassLabel
+          newGroupButton.innerHTML = 'New group' // + IndividualClassLabel
+          newGroupButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
           newGroupButton.addEventListener(
             'click', newGroupClickHandler,
             false
@@ -820,6 +943,7 @@ export default {
           const toolsButton = cardFooter.appendChild(dom.createElement('button'))
           toolsButton.setAttribute('type', 'button')
           toolsButton.innerHTML = 'Tools'
+          toolsButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
           toolsButton.addEventListener('click', function (_event) {
             cardMain.innerHTML = ''
             cardMain.appendChild(
@@ -835,7 +959,11 @@ export default {
           })
         } // if book
 
-        cardFooter.appendChild(newAddressBookButton(book))
+        const newBookBtn = newAddressBookButton(book)
+        if (newBookBtn && newBookBtn.classList) {
+          newBookBtn.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
+        }
+        cardFooter.appendChild(newBookBtn)
 
         // })
 
