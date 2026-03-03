@@ -3,10 +3,14 @@
 
 /* ── Tools pane table ────────────────────────────────────────── */
 
-.contactPane .toolsTable {
+.contactPane .statsLog {
   font-size: 120%;
   margin: var(--spacing-md);
-  border: 0.1em solid var(--color-border-pale);
+  background-color: var(--color-background);
+}
+
+.contactPane .statsLog pre {
+  padding: var(--spacing-md);
 }
 
 /* ── Tools header row ────────────────────────────────────────── */
@@ -23,6 +27,20 @@
 
 .contactPane .toolsStatusBlock {
   padding: var(--spacing-xl);
+}
+
+/* ── Tools pane layout ────────────────────────────────────────── */
+
+.contactPane .toolsPane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contactPane .toolsButtonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* ── Tools buttons ───────────────────────────────────────────── */
@@ -44,5 +62,5 @@
 }
 
 .contactPane .toolsButton--success {
-  background-color: #cfc;
+  background-color: var(--color-primary);
 }

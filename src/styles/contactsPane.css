@@ -21,10 +21,26 @@
 
 /* ── Layout: Three-column browser ────────────────────────────── */
 
-.contactPane .bookTable {
-  border-collapse: collapse;
-  margin-right: 0;
+.contactPane .detailSection {
+  flex: 1 1 400px;
+  min-width: 300px;
   max-height: 9in;
+  overflow-y: auto;
+  background: var(--color-section-bg);
+  box-sizing: border-box;
+}
+
+.contactPane .detailsSectionContent {
+  min-height: 200px;
+  padding: 25px;
+}
+
+.contactPane .cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-md);
 }
 
 .contactPane .groupsHeader {
@@ -40,8 +56,31 @@
   overflow: scroll;
 }
 
-.contactPane .cardMain {
+.contactPane .detailsSectionContent {
   margin: 0;
+}
+
+/* ── Contact type chooser ───────────────────────────────────── */
+
+.contactPane .contactTypeChooser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 360px;
+}
+
+.contactPane .contactTypeChooser h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1em;
+}
+
+.contactPane .contactTypeSelect {
+  height: 38px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 0.95em;
+  background: #fafafa;
 }
 
 .contactPane .groupsMain,
@@ -51,13 +90,19 @@
 
 /* ── Search ──────────────────────────────────────────────────── */
 
+.contactPane .allGroupsButton {
+  border-radius: 22px !important;
+  /* existing styles */
+}
 .contactPane .searchInput {
-  border: 0.1em solid var(--color-text-muted);
-  border-radius: var(--border-radius-base);
+  height: 44px;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 1rem;
   width: 100%;
-  font-size: var(--font-size-base);
-  padding: 0.1em 0.6em;
-  margin: 0.2em;
+  box-sizing: border-box;
 }
 
 /* ── Data cells ──────────────────────────────────────────────── */
@@ -66,28 +111,21 @@
   padding: 0.1em;
 }
 
-/* ── Rendered sub-pane ───────────────────────────────────────── */
-
-.contactPane .renderPane {
-  border: 0.1em solid var(--color-text-muted);
-  border-radius: var(--border-radius-base);
-}
-
 /* ── Delete button ───────────────────────────────────────────── */
 
 .contactPane .deleteButton {
-  height: 2em;
-}
-
-/* ── Sharing button & icon ───────────────────────────────────── */
-
-.contactPane .sharingButton {
-  padding: var(--spacing-md);
-  margin: var(--spacing-md);
-}
-
-.contactPane .sharingButtonIcon {
-  width: var(--spacing-lg);
+  height: 44px;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 0 12px 0 44px;
+  font-size: 1rem;
+  width: 180px;
+  box-sizing: border-box;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 16px center !important;
+  background-size: 20px 20px;
   height: var(--spacing-lg);
 }
 
@@ -99,23 +137,19 @@
 }
 
 .contactPane .allGroupsButton--loading {
-  background-color: #ff8;
+  background-color: var(--color-primary);
 }
 
 .contactPane .allGroupsButton--active {
-  background-color: var(--color-text);
+  background-color: var(--color-primary);
   color: var(--color-background);
 }
 
 .contactPane .allGroupsButton--loaded {
-  background-color: #cfc;
+  background-color: var(--color-primary);
 }
 
 /* ── Selection & visibility states ───────────────────────────── */
-
-.contactPane .selected {
-  background-color: #cce;
-}
 
 .contactPane .group-loading {
   background-color: #ffe;
@@ -132,15 +166,14 @@
 }
 
 .contactPane .addressBook-grid {
-  max-width: max-content;
-
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 50%;
 }
 
 .contactPane .addressBookSection {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  margin-bottom: var(--spacing-md);
+  flex: 1 1 350px;
+  max-width: 450px;
   box-sizing: border-box;
   margin-bottom: var(--spacing-md);
 }
@@ -165,10 +198,6 @@
   border-radius: var(--border-radius-full);
   box-shadow: var(--box-shadow);
   padding: var(--spacing-md);
-}
-
-.contactPane td {
-  border: 1px dotted #999;
 }
 
 /* Primary Button */
@@ -232,4 +261,206 @@
   outline-offset: 2px !important;
   box-shadow: 0 0 0 2px var(--color-background), 0 0 0 5px rgba(124, 77, 255, 0.25) !important;
   z-index: 1;
+}
+
+/* ── Button section: horizontal scrollable row ──────────────── */
+
+.contactPane .buttonSection {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 14px;
+  padding-bottom: 0px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  margin-bottom: 0;
+}
+
+.contactPane .buttonSection::-webkit-scrollbar {
+  height: 6px;
+}
+
+.contactPane .buttonSection::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.contactPane .buttonSection::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.contactPane .groupButtonsList {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+}
+
+.contactPane .buttonSection .groupButtonsList {
+  margin-left: 4px;
+  margin-right: 4px;
+  padding-left: 0px;
+}
+
+.contactPane .groupButtonsList li {
+  flex-shrink: 0;
+}
+
+.contactPane .groupButtonsList button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: max-content;
+  margin-left: 0px;
+}
+
+/* Groups list in details section — flexible 2-column grid */
+.contactPane .detailsSectionContent .groupButtonsList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  max-width: 512px;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList li {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 250px;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList button {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  border-radius: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 899px) {
+  .contactPane .detailsSectionContent .groupButtonsList {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .contactPane .detailsSectionContent .groupButtonsList li {
+    max-width: 120px;
+  }
+
+  .contactPane .detailsSectionContent .groupButtonsList button {
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .contactPane .detailsSectionContent .newGroupBtn {
+    max-width: 100%;
+  }
+
+  .contactPane .detailsSectionContent .newGroupBtn {
+    max-width: 383px !important;
+  }
+}
+
+.contactPane .detailsSectionContent .newGroupBtn {
+  width: 100%;
+  max-width: 512px;
+  box-sizing: border-box;
+  margin-top: 12px;
+}
+
+.contactPane .detailsSectionContent h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+/* Delete confirmation popup — centered overlay in details section */
+.contactPane .detailSection {
+  position: relative;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div {
+  position: relative !important;
+  top: auto !important;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5em;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+/* Selected state for All contacts button */
+.contactPane .allGroupsButton--selected {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* ── Header section ──────────────────────────────────────────── */
+
+.contactPane .headerSection {
+  background: white;
+  padding: 14px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  margin-bottom: 0;
+}
+
+.contactPane .headerSection header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.contactPane .headerSection h2 {
+  margin-bottom: 0;
+}
+
+/* ── Dotted horizontal rule ─────────────────────────────────── */
+
+.contactPane .dottedHr {
+  border: none;
+  border-top: 1px dotted #888;
+  margin: 0;
+}
+
+.contactPane .dottedHr--thin {
+  border-top-width: 0.5px;
+}
+
+/* ── Search section ─────────────────────────────────────────── */
+
+.contactPane .searchSection {
+  padding: 14px;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+/* ── People list section ────────────────────────────────────── */
+
+.contactPane .peopleSection {
+  display: flex;
+  background: white;
+  padding: 14px;
+  border-top: 1px dotted #888;
+  margin-bottom: 0;
 }

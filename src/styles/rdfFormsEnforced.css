@@ -1,9 +1,7 @@
 /* Solid-UI form */
-.individualPane .hoverControl:not(:has(> img:first-child)) {
-  border: 0.1em solid rgb(136, 136, 136) !important;
-}
 
-.individualPane .hoverControl:has(> img:first-child) {
+.individualPane .hoverControl:has(> img:first-child),
+.contactPane .hoverControl:has(> img:first-child) {
   background-color: transparent !important;
   border: none !important;
   margin: 0 !important;
@@ -17,7 +15,8 @@
   justify-content: center;
 }
 
-.individualPane .hoverControlHide {
+.individualPane .hoverControlHide,
+.contactPane .hoverControlHide {
   width: 1.5em !important;
   height: 1.5em !important;
   display: block;
@@ -27,40 +26,49 @@
   margin-bottom: 0.3em !important;
 }
 
-.individualPane .hoverControl:has(> img:first-child) > span {
+.individualPane .hoverControl:has(> img:first-child) > span,
+.contactPane .hoverControl:has(> img:first-child) > span {
   display: inline-flex;
   align-items: center;
   margin-left: 0.3em;
 }
 
-.individualPane div[style*="padding: 0.5em"]:has(> img) {
+.individualPane div[style*="padding: 0.5em"]:has(> img),
+.contactPane div[style*="padding: 0.5em"]:has(> img) {
   display: inline-flex;
   align-items: center;
 }
 
-.individualPane div[style*="padding: 0.5em"]:has(> img) > span {
+.individualPane div[style*="padding: 0.5em"]:has(> img) > span,
+.contactPane div[style*="padding: 0.5em"]:has(> img) > span {
   margin-left: 0.3em;
 }
 
-.individualPane .hoverControl:has(> img:first-child):hover {
+.individualPane .hoverControl:has(> img:first-child):hover,
+.contactPane .hoverControl:has(> img:first-child):hover {
   background-color: transparent !important;
 }
 
-.individualPane button:has(> img[src$=".svg"]) {
+.individualPane button:has(> img[src$=".svg"]),
+.contactPane button:has(> img[src$=".svg"]) {
   background-color: transparent !important;
   border: none !important;
   margin: 0 !important;
   border-radius: 0 !important;
 }
 
-.individualPane button {
+.individualPane button,
+.contactPane button {
   min-height: var(--min-touch-target);
   min-width: var(--min-touch-target);
 }
 
 .individualPane input:not([type="color"]),
+.contactPane input:not([type="color"]),
 .individualPane textarea,
-.individualPane select {
+.contactPane textarea,
+.individualPane select,
+.contactPane select {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box ;
@@ -70,56 +78,75 @@
   border: 1px solid var(--color-border-pale);
 }
 
-.individualPane textarea {
+.individualPane textarea,
+.contactPane textarea {
   border-color: var(--color-border-pale) !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
 .individualPane input[type="date"],
+.contactPane input[type="date"],
 .individualPane input[type="month"],
+.contactPane input[type="month"],
 .individualPane input[type="week"],
+.contactPane input[type="week"],
 .individualPane input[type="time"],
-.individualPane input[type="datetime-local"] {
+.contactPane input[type="time"],
+.individualPane input[type="datetime-local"],
+.contactPane input[type="datetime-local"] {
   min-height: var(--min-touch-target);
 }
 
 .individualPane .hoverControl:has(> img:first-child):focus-visible,
+.contactPane .hoverControl:has(> img:first-child):focus-visible,
 .individualPane button:focus-visible,
+.contactPane button:focus-visible,
 .individualPane input:not([type="color"]):focus-visible,
+.contactPane input:not([type="color"]):focus-visible,
 .individualPane textarea:focus-visible,
-.individualPane select:focus-visible {
+.contactPane textarea:focus-visible,
+.individualPane select:focus-visible,
+.contactPane select:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-primary) !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 1px var(--color-background);
 }
 
-.individualPane input[type="url"] {
+.individualPane input[type="url"],
+.contactPane input[type="url"] {
   width: 100%;
 }
 
-.individualPane .formFieldValue {
+.individualPane .formFieldValue,
+.contactPane .formFieldValue {
   min-width: 0;
   margin-bottom: var(--spacing-sm);
 }
 
-.individualPane .formFieldValue table {
+.individualPane .formFieldValue table,
+.contactPane .formFieldValue table {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-.individualPane .formFieldValue td {
+.individualPane .formFieldValue td,
+.contactPane .formFieldValue td {
   padding: 0 !important;
 }
 
 .individualPane .formFieldValue input:not([type="color"]),
+.contactPane .formFieldValue input:not([type="color"]),
 .individualPane .formFieldValue textarea,
-.individualPane .formFieldValue select {
+.contactPane .formFieldValue textarea,
+.individualPane .formFieldValue select,
+.contactPane .formFieldValue select {
   width: 100%;
   max-width: 100%;
 }
 
-.individualPane select#formSelect {
+.individualPane select#formSelect,
+.contactPane select#formSelect {
   width: 100%;
   max-width: 97%;
   box-sizing: border-box;
@@ -127,50 +154,66 @@
   margin-right: 0 !important;
 }
 
-.individualPane span select {
+.individualPane span select,
+.contactPane span select {
   max-width: 96% !important;
   box-sizing: border-box;
   margin: 0 !important;
 }
 
-.individualPane .formFieldValue span select {
+.individualPane .formFieldValue span select,
+.contactPane .formFieldValue span select {
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
 
 /* Remove border/padding from the first wrapper div (and its first child wrapper). */
 .individualPane > div:first-of-type,
-.individualPane > div:first-of-type > div:first-of-type {
+.contactPane > div:first-of-type,
+.individualPane > div:first-of-type > div:first-of-type,
+.contactPane > div:first-of-type > div:first-of-type {
   border: none !important;
   padding: 0 !important;
 }
 
 /* Align schema.org, solid terms, FOAF, vCard, and org field labels with their input values. */
-.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) {
+.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue),
+.contactPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) {
   display: flex;
   align-items: baseline;
   margin-bottom: var(--spacing-sm);
 }
 
-.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue {
+.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue,
+.contactPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue {
   margin-bottom: 0;
 }
 
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]),
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]),
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]),
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]),
-.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) {
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]),
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
 }
 
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]) + .formFieldValue,
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]) + .formFieldValue,
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]) + .formFieldValue,
 .individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]) + .formFieldValue,
-.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) + .formFieldValue {
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]) + .formFieldValue,
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) + .formFieldValue {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
@@ -179,7 +222,9 @@
 }
 
 .individualPane textarea,
-.individualPane .formFieldValue textarea {
+.contactPane textarea,
+.individualPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
   appearance: none;
   -webkit-appearance: none;
   border: .05em solid #88c !important;
@@ -195,49 +240,65 @@
 }
 
 /* Center textarea label vertically in flex rows. */
-.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
+.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea),
+.contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
   align-items: flex-start;
 }
 
-.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a) {
+.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a),
+.contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a) {
   padding-left: var(--spacing-xs);
 }
 
 /* Keep autocomplete/table-based fields (e.g. Occupation) aligned to label text baseline. */
-.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) {
+.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]),
+.contactPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) {
   align-items: flex-start;
 }
 
-.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName {
+.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName,
+.contactPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName {
   padding-top: 0.55em !important;
 }
 
-.individualPane .formFieldValue:has(input[data-testid="autocomplete-input"]) {
+.individualPane .formFieldValue:has(input[data-testid="autocomplete-input"]),
+.contactPane .formFieldValue:has(input[data-testid="autocomplete-input"]) {
   align-self: flex-start;
 }
 
 .individualPane .formFieldValue table[data-testid="autocomplete-table"],
-.individualPane .formFieldValue input[data-testid="autocomplete-input"] {
+.contactPane .formFieldValue table[data-testid="autocomplete-table"],
+.individualPane .formFieldValue input[data-testid="autocomplete-input"],
+.contactPane .formFieldValue input[data-testid="autocomplete-input"] {
   margin: 0 !important;
 }
 
-.individualPane .formFieldValue table[data-testid="autocomplete-table"] {
+.individualPane .formFieldValue table[data-testid="autocomplete-table"],
+.contactPane .formFieldValue table[data-testid="autocomplete-table"] {
   vertical-align: baseline;
 }
 
-.individualPane input:not([type="color"]) {
+.individualPane input:not([type="color"]),
+.contactPane input:not([type="color"]) {
   width: 100%;
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
 
 .individualPane input:disabled,
+.contactPane input:disabled,
 .individualPane textarea:disabled,
+.contactPane textarea:disabled,
 .individualPane select:disabled,
+.contactPane select:disabled,
 .individualPane input[readonly],
+.contactPane input[readonly],
 .individualPane textarea[readonly],
+.contactPane textarea[readonly],
 .individualPane input:read-only,
-.individualPane textarea:read-only {
+.contactPane input:read-only,
+.individualPane textarea:read-only,
+.contactPane textarea:read-only {
   background-color: var(--color-background) !important;
   cursor: not-allowed;
   opacity: 0.75;
@@ -245,7 +306,9 @@
 }
 
 .individualPane textarea,
-.individualPane .formFieldValue textarea {
+.contactPane textarea,
+.individualPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
   padding: 0.5em !important;
 }
 

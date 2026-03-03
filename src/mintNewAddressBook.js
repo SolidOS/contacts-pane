@@ -53,10 +53,6 @@ export function mintNewAddressBook (dataBrowserContext, context) {
         }
         const appInstanceNoun = 'address book'
 
-        function complain (message) {
-          div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-        }
-
         let bookContents = `@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
   @prefix ab: <http://www.w3.org/ns/pim/ab#>.
   @prefix dc: <http://purl.org/dc/elements/1.1/>.

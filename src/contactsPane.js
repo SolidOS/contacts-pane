@@ -11,13 +11,16 @@ to change its state according to an ontology, comment on it, etc.
 */
 
 import { authn } from 'solid-logic'
-import { addPersonToGroup, saveNewContact, saveNewGroup, groupMembers, getDataModelIssues } from './contactLogic'
+import { saveNewContact, saveNewGroup } from './contactLogic'
 import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
-import { groupMembership } from './groupMembershipControl'
 import './styles/contactsPane.css'
+import { checkDataModel, ensureBookLoaded, renderGroupButtons, refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups, syncGroupUl, setActiveGroupButton } from './addressBookPresenter'
+import { complain, deleteThingAndDoc } from './localUtils'
+import * as debug from './debug'
+import './styles/rdfFormsEnforced.css'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -47,18 +50,7 @@ export default {
   render: function (subject, dataBrowserContext, paneOptions = {}) {
     const thisPane = this
 
-    // stick functions here
-    function complain (message) {
-      // console.log('contactsPane: ' + message)
-      div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-    }
-    function complainIfBad (ok, body) {
-      if (!ok) {
-        complain('Error: ' + body)
-      }
-    }
-
-    //  Reproduction: Spawn a new instance of this app
+    /*
     function newAddressBookButton (thisAddressBook) {
       return UI.login.newAppInstance(
         dom,
@@ -71,7 +63,7 @@ export default {
           })
         }
       )
-    } // newAddressBookButton
+    } */
 
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
@@ -83,8 +75,8 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     asyncRender().then(
-      () => console.log('contactsPane Rendered ' + subject),
-      err => complain('' + err))
+      () => debug.log('contactsPane rendered ' + subject),
+      err => complain(div, dom, '' + err))
     return div
 
     // Async part of render. Maybe API will later allow render to be async
@@ -103,20 +95,20 @@ export default {
         dom
       } // missing: statusRegion
 
-      //  Render a 3-column browser for an address book or a group
-      function renderThreeColumnBrowser (books, context, options) {
+      //  Render AddressBook instance
+      function renderAddressBook(books, options) {
         kb.fetcher
           .load(books)
           .then(function (_xhr) {
-            renderThreeColumnBrowser2(books, context, options)
+            renderAddressBookDetails(books, options)
           })
           .catch(function (err) {
-            complain(err)
+            complain(div, dom, '' + err)
           })
       }
-      function renderThreeColumnBrowser2 (books, context, options) {
+
+      function renderAddressBookDetails(books, options) {
         const classLabel = utils.label(ns.vcard('AddressBook'))
-        // const IndividualClassLabel = utils.label(ns.vcard('Individual'))
 
         let book = books[0] // for now
         const groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -125,577 +117,111 @@ export default {
 
         const target = options.foreignGroup || book
 
-        let title =
-          kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
-        if (paneOptions.solo && title && typeof document !== 'undefined') {
-          document.title = title.value // @@ only when the outermmost pane
-        }
-        title = title ? title.value : classLabel
+        let allGroupsLi = null
+        let newGroupLi = null
 
-        // The book could be the main subject, or linked from a group we are dealing with
-        function findBookFromGroups (book) {
-          if (book) {
-            return book
-          }
-          let g
-          for (const gu in selectedGroups) {
-            g = kb.sym(gu)
-            const b = kb.any(undefined, ns.vcard('includesGroup'), g)
-            if (b) return b
-          }
-          throw new Error(
-            'findBookFromGroups: Cant find address book which this group is part of'
-          )
-        }
-
-        //  Write a new contact to the web
-
-        // organization-name is a hack for Mac records with no FN which is mandatory.
-        function nameFor (x) {
-          const name =
-            kb.any(x, ns.vcard('fn')) ||
-            kb.any(x, ns.foaf('name')) ||
-            kb.any(x, ns.vcard('organization-name'))
-          return name ? name.value : '???'
-        }
-
-        function filterName (name) {
-          const filter = searchInput.value.trim().toLowerCase()
-          if (filter.length === 0) return true
-          const parts = filter.split(' ') // Each name part must be somewhere
-          for (let j = 0; j < parts.length; j++) {
-            const word = parts[j]
-            if (name.toLowerCase().indexOf(word) < 0) return false
-          }
-          return true
-        }
-
-        function selectPerson (person) {
-          cardMain.innerHTML = 'loading...'
-          selectedPeople = {}
-          selectedPeople[person.uri] = true
-          refreshFilteredPeople() // Color to remember which one you picked
-          const local = book ? localNode(person) : person
-          kb.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
-            ok,
-            message
-          ) {
-            cardMain.innerHTML = ''
-            if (!ok) {
-              return complainIfBad(
-                ok,
-                'Can\'t load card: ' + local + ': ' + message
-              )
-            }
-            // console.log("Loaded card " + local + '\n')
-            cardMain.appendChild(renderPane(dom, local, 'contact'))
-            cardMain.appendChild(dom.createElement('br'))
-
-            cardMain.appendChild(UI.widgets.linkIcon(dom, local)) // hoverHide
-
-            // Add in a delete button to delete from AB
-            const deleteButton = UI.widgets.deleteButtonWithCheck(
-              dom,
-              cardMain,
-              'contact',
-              async function () {
-                const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-                // alert('Container to delete is ' + container)
-                const pname = kb.any(person, ns.vcard('fn'))
-                if (
-                  confirm(
-                    'Delete contact ' + pname + ' completely?? ' + container
-                  )
-                ) {
-                  console.log('Deleting a contact ' + pname)
-                  await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-                  // load people.ttl
-                  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-                  await kb.fetcher.load(nameEmailIndex)
-
-                  //  - delete person's WebID's in each Group
-                  //  - delete the references to it in group files and save them back
-                  //  - delete the reference in people.ttl and save it back
-
-                  // find all Groups
-                  const groups = groupMembership(person)
-                  let removeFromGroups = []
-                  // find person WebID's
-                  groups.forEach(group => {
-                    const webids = getSameAs(kb, person, group.doc())
-                    // for each check in each Group that it is not used by an other person then delete
-                    webids.forEach(webid => {
-                      if (getSameAs(kb, webid, group.doc()).length === 1) {
-                        removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
-                      }
-                    })
-                  })
-                  // console.log(removeFromGroups)
-                  await kb.updater.updateMany(removeFromGroups)
-                  await deleteThingAndDoc(person)
-                  await deleteRecursive(kb, container)
-                  refreshNames() // "Doesn't work" -- maybe does now with waiting for async
-                  cardMain.innerHTML = 'Contact Data Deleted.'
-                }
-              }
-            )
-            deleteButton.classList.add('deleteButton')
+        // Centralized active-button tracking across all action buttons
+        const actionButtons = []
+        function setActiveActionButton (activeBtn) {
+          actionButtons.forEach(btn => {
+            btn.classList.remove('btn-primary')
+            btn.classList.add('btn-secondary')
           })
+          if (activeBtn) {
+            activeBtn.classList.remove('btn-secondary')
+            activeBtn.classList.add('btn-primary')
+          }
         }
 
-        function refreshFilteredPeople (active) {
-          let count = 0
-          let lastRow = null
-          for (let i = 0; i < peopleMainTable.children.length; i++) {
-            const row = peopleMainTable.children[i]
-            const matches = filterName(nameFor(row.subject))
-            if (matches) {
-              count++
-              lastRow = row
+        let title = ''
+        if (book) {
+          title = utils.label(book.dir())
+        } else {
+            utils.label(book.dir()) || kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
+            if (paneOptions.solo && title && typeof document !== 'undefined') {
+              document.title = title.value // @@ only when the outermmost pane
             }
-            row.classList.toggle('selected', matches && !!selectedPeople[row.subject.uri])
-            row.classList.toggle('hidden', !matches)
-          }
-          if (count === 1 && active) {
-            const unique = lastRow.subject
-            selectPerson(unique)
-          }
+            title = title ? title.value : classLabel
         }
-
-        function selectAllGroups (
-          selectedGroups,
-          groupsMainTable,
-          callbackFunction
-        ) {
-          function fetchGroupAndSelct (group, groupRow) {
-            groupRow.classList.add('group-loading')
-            kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
-              ok,
-              message
-            ) {
-              if (!ok) {
-                const msg = 'Can\'t load group file: ' + group + ': ' + message
-                badness.push(msg)
-                return complainIfBad(ok, msg)
-              }
-              groupRow.classList.remove('group-loading')
-              groupRow.classList.add('selected')
-              selectedGroups[group.uri] = true
-              refreshGroupsSelected()
-              refreshNames() // @@ every time??
-              todo -= 1
-              if (!todo) {
-                if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
-              }
-            })
-          }
-          let todo = groupsMainTable.children.length
-          var badness = [] /* eslint-disable-line no-var */
-          for (let k = 0; k < groupsMainTable.children.length; k++) {
-            const groupRow = groupsMainTable.children[k]
-            const group = groupRow.subject
-            fetchGroupAndSelct(group, groupRow)
-          } // for each row
-        }
-
-        async function loadAllGroups () {
-          await kb.fetcher.load(groupIndex)
-          const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
-          await kb.fetcher.load(gs)
-          return gs
-        }
-
-        function groupsInOrder () {
-          let sortMe = []
-          if (options.foreignGroup) {
-            sortMe.push([
-              '',
-              kb.any(options.foreignGroup, ns.vcard('fn')),
-              options.foreignGroup
-            ])
-          }
-          if (book) {
-            books.forEach(function (book) {
-              const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
-              const gs2 = gs.map(function (g) {
-                return [book, kb.any(g, ns.vcard('fn')), g]
-              })
-              sortMe = sortMe.concat(gs2)
-            })
-            sortMe.sort()
-          }
-          return sortMe.map(tuple => tuple[2])
-        }
-
-        function renderPane (dom, subject, paneName) {
-          const p = dataBrowserContext.session.paneRegistry.byName(paneName)
-          const d = p.render(subject, dataBrowserContext)
-          d.classList.add('renderPane')
-          return d
-        }
-
-        function compareForSort (self, other) {
-          let s = nameFor(self)
-          let o = nameFor(other)
-          if (s && o) {
-            s = s.toLowerCase()
-            o = o.toLowerCase()
-            if (s > o) return 1
-            if (s < o) return -1
-          }
-          if (self.uri > other.uri) return 1
-          if (self.uri < other.uri) return -1
-          return 0
-        }
-
-        // In a LDP work, deletes the whole document describing a thing
-        // plus patch out ALL mentiosn of it!    Use with care!
-        // beware of other data picked up from other places being smushed
-        // together and then deleted.
-
-        async function deleteThingAndDoc (x) {
-          console.log('deleteThingAndDoc: ' + x)
-          const ds = kb
-            .statementsMatching(x)
-            .concat(kb.statementsMatching(undefined, undefined, x))
-          try {
-            await kb.updater.updateMany(ds)
-            console.log('Deleting resoure ' + x.doc())
-            await kb.fetcher.delete(x.doc())
-            console.log('Delete thing ' + x + ': complete.')
-          } catch (err) {
-            complain('Error deleting thing ' + x + ': ' + err)
-          }
-        }
-
-        //  For deleting an addressbook sub-folder eg person - use with care!
-        // @@ move to solid-logic
-        function deleteRecursive (kb, folder) {
-          return new Promise(function (resolve) {
-            kb.fetcher.load(folder).then(function () {
-              const promises = kb.each(folder, ns.ldp('contains')).map(file => {
-                if (kb.holds(file, ns.rdf('type'), ns.ldp('BasicContainer'))) {
-                  return deleteRecursive(kb, file)
-                } else {
-                  console.log('deleteRecirsive file: ' + file)
-                  if (!confirm(' Really DELETE File ' + file)) {
-                    throw new Error('User aborted delete file')
-                  }
-                  return kb.fetcher.webOperation('DELETE', file.uri)
-                }
-              })
-              console.log('deleteRecirsive folder: ' + folder)
-              if (!confirm(' Really DELETE folder ' + folder)) {
-                throw new Error('User aborted delete file')
-              }
-              promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
-              Promise.all(promises).then(_res => {
-                resolve()
-              })
-            })
-          })
-        }
-
-        function localNode (person, _div) {
-          const aliases = kb.allAliases(person)
-          const prefix = book.dir().uri
-          for (let i = 0; i < aliases.length; i++) {
-            if (aliases[i].uri.slice(0, prefix.length) === prefix) {
-              return aliases[i]
-            }
-          }
-          throw new Error('No local URI for ' + person)
-        }
-
-        /** Refresh the list of names
-        */
-        function refreshNames () {
-          function setPersonListener (personRow, person) {
-            personRow.addEventListener('click', function (event) {
-              event.preventDefault()
-              selectPerson(person)
-            })
-          }
-
-          let cards = []
-          const groups = Object.keys(selectedGroups).map(groupURI => kb.sym(groupURI))
-          groups.forEach(group => {
-            if (selectedGroups[group.value]) {
-              cards = cards.concat(groupMembers(kb, group))
-            }
-          })
-          cards.sort(compareForSort) // @@ sort by name not UID later
-          for (let k = 0; k < cards.length - 1;) {
-            if (cards[k].uri === cards[k + 1].uri) {
-              cards.splice(k, 1) // Eliminate duplicates from more than one group
-            } else {
-              k++
-            }
-          }
-
-          peopleHeader.textContent = 'Contact name'
-
-          function renderNameInGroupList (person) {
-            const personRow = dom.createElement('tr')
-            personRow.setAttribute('role', 'listitem')
-            personRow.setAttribute('tabindex', '0')
-            personRow.setAttribute('aria-label', nameFor(person))
-            personRow.classList.add('personRow')
-            personRow.subject = person
-            const personLeft = personRow.appendChild(dom.createElement('td'))
-            personLeft.classList.add('dataCell')
-            // Visually hidden span for screen readers
-            const srOnly = dom.createElement('span')
-            srOnly.classList.add('visually-hidden')
-            srOnly.textContent = 'Contact: '
-            personLeft.appendChild(srOnly)
-            personLeft.appendChild(dom.createTextNode(nameFor(person)))
-            UI.widgets.makeDraggable(personRow, person)
-
-            // Keyboard selection
-            personRow.addEventListener('keydown', function (event) {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                selectPerson(person)
-              }
-            })
-            setPersonListener(personRow, person)
-            return personRow
-          }
-
-          utils.syncTableToArrayReOrdered(peopleMainTable, cards, renderNameInGroupList)
-          refreshFilteredPeople()
-        } // refreshNames
-
-        function refreshThingsSelected (table, selectionArray) {
-          for (let i = 0; i < table.children.length; i++) {
-            const row = table.children[i]
-            if (row.subject) {
-              row.classList.toggle('selected', !!selectionArray[row.subject.uri])
-            }
-          }
-        }
-
-        function refreshGroupsSelected () {
-          return refreshThingsSelected(groupsMainTable, selectedGroups)
-        }
-
-        // Check every group is in the list and add it if not.
-
-        function syncGroupTable () {
-          function renderGroupRow (group) {
-            async function handleURIsDroppedOnGroup (uris) {
-              uris.forEach(function (u) {
-                console.log('Dropped on group: ' + u)
-                const thing = kb.sym(u)
-                try {
-                  addPersonToGroup(thing, group)
-                } catch (e) {
-                  complain(e)
-                }
-                refreshNames()
-              })
-            }
-            function groupRowClickListener (event) {
-              event.preventDefault()
-              const groupList = kb.sym(group.uri.split('#')[0])
-              if (!event.metaKey) {
-                selectedGroups = {} // If Command key pressed, accumulate multiple
-              }
-              selectedGroups[group.uri] = !selectedGroups[group.uri]
-              refreshGroupsSelected()
-              peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
-
-              kb.fetcher.nowOrWhenFetched(
-                groupList.uri,
-                undefined,
-                function (ok, message) {
-                  if (!ok) {
-                    return complainIfBad(
-                      ok,
-                      'Can\'t load group file: ' + groupList + ': ' + message
-                    )
-                  }
-                  refreshNames()
-
-                  if (!event.metaKey) {
-                    // If only one group has been selected, show ACL
-                    cardMain.innerHTML = ''
-                    let visible = false
-                    const aclControl = UI.aclControl.ACLControlBox5(
-                      group,
-                      dataBrowserContext,
-                      'group',
-                      kb,
-                      function (ok, body, response) {
-                        if (!ok) {
-                          if (response && response.status && response.status === 403) {
-                            cardMain.innerHTML = 'No control access.'
-                          } else {
-                            cardMain.innerHTML = 'Failed to load access control: ' + body
-                          }
-                        }
-                      }
-                    )
-                    const sharingButton = cardMain.appendChild(
-                      dom.createElement('button')
-                    )
-                    sharingButton.classList.add('sharingButton')
-                    sharingButton.setAttribute('aria-label', 'Toggle group sharing settings')
-                    const img = sharingButton.appendChild(
-                      dom.createElement('img')
-                    )
-                    img.classList.add('sharingButtonIcon')
-                    img.setAttribute(
-                      'src',
-                      UI.icons.iconBase + 'noun_123691.svg'
-                    )
-                    img.setAttribute('alt', 'Sharing icon')
-                    sharingButton.addEventListener('click', function () {
-                      visible = !visible
-                      if (visible) {
-                        cardMain.appendChild(aclControl)
-                      } else {
-                        cardMain.removeChild(aclControl)
-                      }
-                    })
-                  }
-                }
-              )
-            }
-
-            // Body of renderGroupRow
-            const name = kb.any(group, ns.vcard('fn'))
-            const groupRow = dom.createElement('tr')
-            groupRow.setAttribute('role', 'listitem')
-            groupRow.setAttribute('tabindex', '0')
-            groupRow.setAttribute('aria-label', name ? name.value : 'Group')
-            groupRow.subject = group
-            UI.widgets.makeDraggable(groupRow, group)
-
-            groupRow.classList.add('dataCell')
-            // Visually hidden span for screen readers
-            const srOnly = dom.createElement('span')
-            srOnly.classList.add('visually-hidden')
-            srOnly.textContent = 'Group: '
-            groupRow.appendChild(srOnly)
-            groupRow.appendChild(dom.createTextNode(name))
-
-            // Keyboard selection
-            groupRow.addEventListener('keydown', function (event) {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                groupRowClickListener(event)
-              }
-            })
-
-            UI.widgets.makeDropTarget(groupRow, handleURIsDroppedOnGroup)
-            UI.widgets.deleteButtonWithCheck(
-              dom,
-              groupRow,
-              'group ' + name,
-              async function () {
-                await deleteThingAndDoc(group)
-                syncGroupTable()
-              }
-            )
-            groupRow.addEventListener('click', groupRowClickListener, true)
-            return groupRow
-          } // renderGroupRow
-
-          const groups = groupsInOrder()
-          utils.syncTableToArrayReOrdered(groupsMainTable, groups, renderGroupRow)
-          refreshGroupsSelected()
-        } // syncGroupTable
-
-        async function checkDataModel () {
-          // await kb.fetcher.load(groups) // asssume loaded already
-          const groups = await loadAllGroups()
-
-          const { del, ins } = await getDataModelIssues(groups)
-
-          if (del.length && confirm(`Groups data model need to be updated? (${del.length})`)) {
-            await kb.updater.updateMany(del, ins)
-            alert('Update done')
-          }
-        } // checkDataModel
 
         // Click on New Group button
-        async function newGroupClickHandler (_event) {
-          cardMain.innerHTML = ''
+        async function newGroupClickHandler(_event) {
+          showDetailsSection()
+          detailsSectionContent.innerHTML = ''
           const groupIndex = kb.any(book, ns.vcard('groupIndex'))
           try {
             await kb.fetcher.load(groupIndex)
           } catch (e) {
-            console.log('Error: Group index  NOT loaded:' + e + '\n')
+            debug.log('Error: Group index  NOT loaded:' + e + '\n')
           }
-          console.log(' Group index has been loaded\n')
+          debug.log(' Group index has been loaded\n')
 
           const name = await UI.widgets.askName(
-            dom, kb, cardMain, UI.ns.foaf('name'), ns.vcard('Group'), 'group')
+            dom, kb, detailsSectionContent, UI.ns.foaf('name'), ns.vcard('Group'), 'group')
           if (!name) return // cancelled by user
           let group
           try {
             group = await saveNewGroup(book, name)
           } catch (err) {
-            console.log('Error: can\'t save new group:' + err)
-            cardMain.innerHTML = 'Failed to save group' + err
+            debug.log('Error: can\'t save new group:' + err)
+            detailsSectionContent.innerHTML = 'Failed to save group' + err
             return
           }
-          selectedGroups = {}
+          for (const key in selectedGroups) delete selectedGroups[key]
           selectedGroups[group.uri] = true
-          syncGroupTable() // Refresh list of groups
 
-          cardMain.innerHTML = ''
-          cardMain.appendChild(UI.aclControl.ACLControlBox5(
+          // Refresh the group buttons list
+          if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+          if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+          syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput)
+          ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild)
+          ulGroups.appendChild(newGroupLi)
+          refreshThingsSelected(ulGroups, selectedGroups)
+          // Highlight the new group button in ulGroups and show empty people list
+          const matchingLi = Array.from(ulGroups.children).find(li => li.subject && li.subject.uri === group.uri)
+          setActiveGroupButton(ulGroups, matchingLi ? matchingLi.querySelector('button') : null)
+          refreshNames(ulPeople, null, false)
+
+          detailsSectionContent.innerHTML = ''
+          detailsSectionContent.appendChild(UI.aclControl.ACLControlBox5(
             group.doc(), dataBrowserContext, 'group', kb,
             function (ok, body) {
               if (!ok) {
-                cardMain.innerHTML =
+                detailsSectionContent.innerHTML =
                     'Group sharing setup failed: ' + body
               }
             }))
         } // newGroupClickHandler
 
-        async function craeteNewCard (klass) {
-          cardMain.innerHTML = ''
-          const ourBook = findBookFromGroups(book)
-          try {
-            await kb.fetcher.load(ourBook)
-          } catch (err) {
-            throw new Error('Book won\'t load:' + ourBook)
-          }
-
-          const nameEmailIndex = kb.any(ourBook, ns.vcard('nameEmailIndex'))
-          if (!nameEmailIndex) throw new Error('Wot no nameEmailIndex?')
-          await kb.fetcher.load(nameEmailIndex)
-          // console.log('Name index loaded async' + nameEmailIndex)
-
-          const name = await UI.widgets
-            .askName(dom, kb, cardMain, UI.ns.foaf('name'), klass) // @@ was, 'person'
-
-          if (!name) return // cancelled by user
-          cardMain.innerHTML = 'indexing...'
-          book = findBookFromGroups(book)
-          let person
-          try {
-            person = await saveNewContact(book, name, selectedGroups, klass)
-          } catch (err) {
-            const msg = 'Error: can\'t save new contact: ' + err
-            console.log(msg)
-            alert(msg)
-          }
-
-          selectedPeople = {}
-          selectedPeople[person.uri] = true
-          refreshNames() // Add name to list of group
-          cardMain.innerHTML = '' // Clear 'indexing'
-          cardMain.appendChild(renderPane(dom, person, 'contact'))
+        // Render the askName form for the given klass into formContainer
+        function createNewPersonOrOrganization(formContainer, klass) {
+          formContainer.innerHTML = ''
+          UI.widgets
+            .askName(dom, kb, formContainer, UI.ns.foaf('name'), klass)
+            .then(async (name) => {
+              if (!name) return // cancelled by user
+              detailsSectionContent.innerHTML = 'indexing...'
+              let person
+              try {
+                person = await saveNewContact(book, name, selectedGroups, klass)
+              } catch (err) {
+                const msg = 'Error: can\'t save new contact: ' + err
+                debug.log(msg)
+                alert(msg)
+                return
+              }
+              selectedPeople = {}
+              selectedPeople[person.uri] = true
+              refreshNames(ulPeople, null) // Add name to list of group
+              detailsSectionContent.innerHTML = '' // Clear 'indexing'
+              const contactPane = dataBrowserContext.session.paneRegistry.byName('contact')
+              const paneDiv = contactPane.render(person, dataBrowserContext)
+              paneDiv.classList.add('renderPane')
+              detailsSectionContent.appendChild(paneDiv)
+            })
         }
 
-        // //////////////////////////// Three-column Contact Browser  - Body
-        // //////////////////   Body of 3-column browser
-
+        // //////////////////////////// Contact Browser  - Body
         // Main wrapper for accessibility and style
         const main = dom.createElement('main')
         main.id = 'main-content'
@@ -713,184 +239,16 @@ export default {
         section.setAttribute('tabindex', '-1')
         main.appendChild(section)
 
+        // Create a section for the header with white background
+        const headerSection = dom.createElement('section')
+        headerSection.classList.add('headerSection')
+
         const header = dom.createElement('header')
-        header.classList.add('text-center', 'mb-md')
+        header.classList.add('mb-md')
         const h2 = dom.createElement('h2')
         h2.id = 'addressBook-heading'
         h2.setAttribute('tabindex', '-1')
         h2.textContent = title
-        header.appendChild(h2)
-        section.appendChild(header)
-
-        // Accessible table structure
-        const bookTable = dom.createElement('table')
-        bookTable.classList.add('bookTable')
-        bookTable.setAttribute('role', 'table')
-        bookTable.setAttribute('aria-label', 'Contacts browser')
-        section.appendChild(bookTable)
-
-        // Table caption for screen readers
-        const caption = dom.createElement('caption')
-        caption.textContent = 'Contacts three-column browser'
-        caption.classList.add('visually-hidden')
-        bookTable.appendChild(caption)
-
-        // Table head
-        const thead = dom.createElement('thead')
-        const bookHeader = dom.createElement('tr')
-        thead.appendChild(bookHeader)
-        bookTable.appendChild(thead)
-
-        // Table body
-        const tbody = dom.createElement('tbody')
-        const bookMain = dom.createElement('tr')
-        tbody.appendChild(bookMain)
-        bookTable.appendChild(tbody)
-
-        // Table footer
-        const tfoot = dom.createElement('tfoot')
-        const bookFooter = dom.createElement('tr')
-        tfoot.appendChild(bookFooter)
-        bookTable.appendChild(tfoot)
-
-        // Headers
-        const groupsHeader = dom.createElement('th')
-        groupsHeader.setAttribute('scope', 'col')
-        groupsHeader.setAttribute('id', 'groupsHeader')
-        groupsHeader.textContent = 'Groups'
-        groupsHeader.classList.add('groupsHeader')
-        bookHeader.appendChild(groupsHeader)
-
-        const peopleHeader = dom.createElement('th')
-        peopleHeader.setAttribute('scope', 'col')
-        peopleHeader.setAttribute('id', 'peopleHeader')
-        peopleHeader.textContent = 'Name'
-        peopleHeader.classList.add('peopleHeader')
-        bookHeader.appendChild(peopleHeader)
-
-        const cardHeader = dom.createElement('th')
-        cardHeader.setAttribute('scope', 'col')
-        cardHeader.setAttribute('id', 'cardHeader')
-        cardHeader.textContent = 'Search for name'
-        cardHeader.classList.add('cardHeader')
-        bookHeader.appendChild(cardHeader)
-
-        // Main columns
-        const groupsMain = dom.createElement('td')
-        groupsMain.classList.add('groupsMain')
-        groupsMain.setAttribute('role', 'region')
-        groupsMain.setAttribute('aria-labelledby', 'groupsHeader')
-        const groupsMainTable = dom.createElement('table')
-        groupsMainTable.setAttribute('role', 'list')
-        groupsMainTable.setAttribute('aria-label', 'Groups list')
-        groupsMain.appendChild(groupsMainTable)
-        bookMain.appendChild(groupsMain)
-
-        const peopleMain = dom.createElement('td')
-        peopleMain.classList.add('peopleMain')
-        peopleMain.setAttribute('role', 'region')
-        peopleMain.setAttribute('aria-labelledby', 'peopleHeader')
-        const peopleMainTable = dom.createElement('table')
-        peopleMainTable.setAttribute('role', 'list')
-        peopleMainTable.setAttribute('aria-label', 'People list')
-        peopleMain.appendChild(peopleMainTable)
-        bookMain.appendChild(peopleMain)
-
-        const cardMain = dom.createElement('td')
-        cardMain.classList.add('cardMain')
-        cardMain.setAttribute('role', 'region')
-        cardMain.setAttribute('aria-labelledby', 'cardHeader')
-        bookMain.appendChild(cardMain)
-
-        // Footer columns
-        const groupsFooter = dom.createElement('td')
-        groupsFooter.classList.add('groupsFooter')
-        bookFooter.appendChild(groupsFooter)
-
-        const peopleFooter = dom.createElement('td')
-        bookFooter.appendChild(peopleFooter)
-
-        const cardFooter = dom.createElement('td')
-        bookFooter.appendChild(cardFooter)
-
-        // Search input
-        const searchDiv = dom.createElement('div')
-        searchDiv.classList.add('searchDiv')
-        cardHeader.appendChild(searchDiv)
-        const searchInput = dom.createElement('input')
-        searchInput.setAttribute('type', 'text')
-        searchInput.setAttribute('aria-label', 'Search contacts')
-        searchInput.classList.add('searchInput')
-        searchDiv.appendChild(searchInput)
-        searchInput.addEventListener('input', function (_event) {
-          refreshFilteredPeople(true)
-        })
-
-        // Accessibility: keyboard navigation for peopleMainTable rows
-        peopleMainTable.addEventListener('keydown', function (event) {
-          const rows = Array.from(peopleMainTable.children)
-          const current = document.activeElement
-          const idx = rows.indexOf(current)
-          if (event.key === 'ArrowDown' && idx < rows.length - 1) {
-            rows[idx + 1].focus()
-            event.preventDefault()
-          } else if (event.key === 'ArrowUp' && idx > 0) {
-            rows[idx - 1].focus()
-            event.preventDefault()
-          }
-        })
-
-        // ...existing code...
-        function setGroupListVisibility (visible) {
-          groupsHeader.classList.toggle('hidden', !visible)
-          groupsMain.classList.toggle('hidden', !visible)
-          groupsFooter.classList.toggle('hidden', !visible)
-        }
-        setGroupListVisibility(true)
-
-        if (options.foreignGroup) {
-          selectedGroups[options.foreignGroup.uri] = true
-        }
-        if (book) {
-          const allGroups = groupsHeader.appendChild(dom.createElement('button'))
-          allGroups.textContent = 'All'
-          allGroups.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
-          allGroups.addEventListener('click', function (_event) {
-            allGroups.state = allGroups.state ? 0 : 1
-            peopleMainTable.innerHTML = '' // clear in case refreshNames doesn't work for unknown reason
-            if (allGroups.state) {
-              allGroups.classList.add('allGroupsButton--loading')
-              selectAllGroups(selectedGroups, groupsMainTable, function (
-                ok,
-                message
-              ) {
-                if (!ok) return complain(message)
-                allGroups.classList.remove('allGroupsButton--loading')
-                allGroups.classList.add('allGroupsButton--active')
-                refreshGroupsSelected()
-              })
-            } else {
-              allGroups.classList.remove('allGroupsButton--loading', 'allGroupsButton--active')
-              allGroups.classList.add('allGroupsButton--loaded') // pale green hint groups loaded
-              selectedGroups = {}
-              refreshGroupsSelected()
-            }
-          }) // on button click
-          kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
-            if (!ok) return console.log('Cannot load group index: ' + body)
-            syncGroupTable()
-            refreshNames()
-          })
-        } else {
-          syncGroupTable()
-          refreshNames()
-          console.log('No book, only one group -> hide list of groups')
-          setGroupListVisibility(false) // If no books involved, hide group list
-        } // if not book
-
-        peopleHeader.textContent = 'Contact name'
-        peopleHeader.classList.add('peopleHeader')
-        peopleMain.classList.add('peopleMain')
 
         // New Contact button
         const newContactButton = dom.createElement('button')
@@ -904,53 +262,410 @@ export default {
           }
         })
         container.appendChild(newContactButton)
-        newContactButton.innerHTML = 'New contact' // + IndividualClassLabel
-        newContactButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
-        peopleFooter.appendChild(container)
-        newContactButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Individual')), false)
+        newContactButton.innerHTML = '+ New contact'
+        newContactButton.classList.add('actionButton', 'btn-primary', 'action-button-focus')
+        let newContactClickGeneration = 0
+        newContactButton.addEventListener('click', async function (_event) {
+          setActiveActionButton(null)
+          const thisGeneration = ++newContactClickGeneration
+          showDetailsSection()
+          detailsSectionContent.innerHTML = ''
+          await ensureBookLoaded()
+          // Bail out if a newer click has taken over
+          if (thisGeneration !== newContactClickGeneration) return
+          detailsSectionContent.innerHTML = ''
 
-        // New Organization button
-        const newOrganizationButton = dom.createElement('button')
-        const container2 = dom.createElement('div')
-        newOrganizationButton.setAttribute('type', 'button')
-        if (!me) newOrganizationButton.setAttribute('disabled', 'true')
-        authn.checkUser().then(webId => {
-          if (webId) {
-            me = webId
-            newOrganizationButton.removeAttribute('disabled')
+          const chooserDiv = dom.createElement('div')
+          chooserDiv.classList.add('contactTypeChooser')
+
+          const selectLabel = dom.createElement('label')
+          selectLabel.textContent = 'Contact type: '
+          selectLabel.setAttribute('for', 'contactTypeSelect')
+          chooserDiv.appendChild(selectLabel)
+
+          const select = dom.createElement('select')
+          select.id = 'contactTypeSelect'
+          select.classList.add('contactTypeSelect')
+          const optIndividual = dom.createElement('option')
+          optIndividual.value = 'Individual'
+          optIndividual.textContent = 'New person'
+          select.appendChild(optIndividual)
+          const optOrganization = dom.createElement('option')
+          optOrganization.value = 'Organization'
+          optOrganization.textContent = 'New organization'
+          select.appendChild(optOrganization)
+          chooserDiv.appendChild(select)
+
+          detailsSectionContent.appendChild(chooserDiv)
+
+          const remark = dom.createElement('p')
+          remark.classList.add('contactCreationRemark')
+          remark.textContent = 'The new contact is added to the already selected group.'
+          detailsSectionContent.appendChild(remark)
+
+
+          // Container for the askName form, placed below the select
+          const formContainer = dom.createElement('div')
+          formContainer.classList.add('contactFormContainer')
+          detailsSectionContent.appendChild(formContainer)
+
+          function currentKlass () {
+            return select.value === 'Organization'
+              ? ns.vcard('Organization')
+              : ns.vcard('Individual')
           }
-        })
-        container2.appendChild(newOrganizationButton)
-        newOrganizationButton.innerHTML = 'New organization' // + IndividualClassLabel
-        newOrganizationButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
-        peopleFooter.appendChild(container2)
-        newOrganizationButton.addEventListener('click', async _event => craeteNewCard(ns.vcard('Organization')), false)
 
-        // New Group button
+          // Render person form immediately as default
+          createNewPersonOrOrganization(formContainer, currentKlass())
+
+          // Switch form when dropdown changes
+          select.addEventListener('change', function () {
+            createNewPersonOrOrganization(formContainer, currentKlass())
+          })
+        }, false)
+
+        //TODO we should also add if it is public or private
+        header.appendChild(h2)
+        header.appendChild(container)
+        headerSection.appendChild(header)
+        section.appendChild(headerSection)
+
+        // Add a dotted horizontal rule after the header section
+        const dottedHr = dom.createElement('hr')
+        dottedHr.classList.add('dottedHr')
+        section.appendChild(dottedHr)
+
+         // Search input
+        const searchSection = dom.createElement('section')
+        searchSection.classList.add('searchSection')
+        const searchDiv = dom.createElement('div')
+        searchDiv.classList.add('searchDiv')
+        searchSection.appendChild(searchDiv)
+        const searchInput = dom.createElement('input')
+        searchInput.setAttribute('type', 'text')
+        searchInput.setAttribute('aria-label', 'Search contacts')
+        searchInput.classList.add('searchInput')
+        searchInput.setAttribute('placeholder', 'Search by name')
+        searchDiv.appendChild(searchInput)
+        searchInput.addEventListener('input', function (_event) {
+          refreshFilteredPeople(true)
+        })
+        section.appendChild(searchSection)
+
+        // Create a section for the buttons
+        const buttonSection = dom.createElement('section')
+        buttonSection.classList.add('buttonSection')
+
+        // People list (created early so it can be passed to presenter functions)
+        let ulPeople = dom.createElement('ul')
+        ulPeople.setAttribute('role', 'list')
+        ulPeople.setAttribute('aria-label', 'People list')
+
+        // Card main (created early so it can be passed to presenter functions)
+        const detailsSectionContent = dom.createElement('div')
+        detailsSectionContent.classList.add('detailsSectionContent')
+        detailsSectionContent.setAttribute('role', 'region')
+        detailsSectionContent.setAttribute('aria-labelledby', 'detailsSectionContent')
+
+        if (options.foreignGroup) {
+          selectedGroups[options.foreignGroup.uri] = true
+        }
+
+        // Groups list (all buttons inside ul > li)
+        let ulGroups = dom.createElement('ul')
+        ulGroups.classList.add('groupButtonsList')
+        ulGroups.setAttribute('role', 'list')
+        ulGroups.setAttribute('aria-label', 'Groups list')
+
         if (book) {
-          const newGroupButton = groupsFooter.appendChild(
-            dom.createElement('button')
-          )
+          // All groups button — leftmost, initially selected
+          allGroupsLi = dom.createElement('li')
+          const allGroupsButton = dom.createElement('button')
+          allGroupsButton.textContent = 'All groups'
+          allGroupsButton.classList.add('allGroupsButton', 'actionButton', 'btn-primary', 'action-button-focus', 'allGroupsButton--selected')
+          allGroupsButton.addEventListener('click', function (_event) {
+            setActiveGroupButton(ulGroups, allGroupsButton)
+            setActiveActionButton(null)
+            // Check if all groups are currently selected
+            const allSelected = Array.from(ulGroups.children).every(function (li) {
+              if (!li.subject) return true // skip non-group items (All groups, New group)
+              return !!selectedGroups[li.subject.uri]
+            })
+
+            if (!allSelected) {
+              allGroupsButton.classList.add('allGroupsButton--loading')
+              selectAllGroups(selectedGroups, ulGroups, function (
+                ok,
+                message
+              ) {
+                if (!ok) return complain(div, dom, message)
+                allGroupsButton.classList.remove('allGroupsButton--loading')
+                allGroupsButton.classList.add('allGroupsButton--active')
+                refreshThingsSelected(ulGroups, selectedGroups)
+                refreshNames(ulPeople, null)
+              })
+            } else {
+              allGroupsButton.classList.remove('allGroupsButton--loading', 'allGroupsButton--active')
+              allGroupsButton.classList.add('allGroupsButton--loaded') // pale green hint groups loaded
+              for (const key in selectedGroups) delete selectedGroups[key]
+              refreshThingsSelected(ulGroups, selectedGroups)
+              refreshNames(ulPeople, null)
+            }
+          }) // on button click
+          allGroupsLi.appendChild(allGroupsButton)
+          ulGroups.appendChild(allGroupsLi) // First item in the list
+
+          // New group button — rightmost (appended after group buttons are rendered)
+          newGroupLi = dom.createElement('li')
+          const newGroupButton = dom.createElement('button')
           newGroupButton.setAttribute('type', 'button')
-          newGroupButton.innerHTML = 'New group' // + IndividualClassLabel
-          newGroupButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
+          newGroupButton.innerHTML = '+ New group'
+          newGroupButton.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+          actionButtons.push(newGroupButton)
           newGroupButton.addEventListener(
-            'click', newGroupClickHandler,
+            'click', function (event) {
+              setActiveGroupButton(ulGroups, newGroupButton)
+              setActiveActionButton(null)
+              newGroupClickHandler(event)
+            },
             false
           )
+          newGroupLi.appendChild(newGroupButton)
 
-          // Tools button
+          // Append ulGroups to buttonSection, then add New group at the end
+          buttonSection.appendChild(ulGroups)
+
+          kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
+            if (!ok) return complain(div, dom, 'Cannot load group index: ' + body)
+            // Remove special items before sync (syncTableToArrayReOrdered expects .subject on all children)
+            if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+            if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+            syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput) // Refresh list of groups
+            ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild) // Keep All contacts first
+            ulGroups.appendChild(newGroupLi) // Keep New group last
+
+            // Auto-select all groups and display all contacts on load
+            allGroupsButton.classList.add('allGroupsButton--loading')
+            selectAllGroups(selectedGroups, ulGroups, function (loadOk, message) {
+              if (!loadOk) return complain(div, dom, message)
+              allGroupsButton.classList.remove('allGroupsButton--loading')
+              allGroupsButton.classList.add('allGroupsButton--active')
+              refreshThingsSelected(ulGroups, selectedGroups)
+              refreshNames(ulPeople, null)
+            })
+          })
+
+          // Remove special items before initial render too
+          if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+          if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+          renderGroupButtons(book, ulGroups, options, kb, dom, selectedGroups, ulPeople, searchInput, detailsSectionContent, div, dataBrowserContext, function () {
+            setActiveActionButton(null)
+            // Keep the New contact form open when switching groups
+            if (!detailsSectionContent.querySelector('.contactTypeChooser, .contactFormContainer')) {
+              detailsSectionContent.innerHTML = ''
+              detailsSection.classList.add('hidden')
+            }
+          })
+          ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild) // Keep All contacts first
+          ulGroups.appendChild(newGroupLi) // Ensure New group is last after initial render
+        } else {
+          syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput) // Refresh list of groups (will be empty)
+          refreshNames(ulPeople, null)
+          debug.log('No book, only one group -> hide list of groups')
+        } // if not book
+
+        section.appendChild(buttonSection)
+
+        //List of contacts
+        const peopleListSection = dom.createElement('section')
+        peopleListSection.classList.add('peopleSection')
+        section.appendChild(peopleListSection)
+
+        peopleListSection.appendChild(ulPeople)
+
+
+        // Accessible table structure — rendered beside the addressBook section
+        const detailsSection = dom.createElement('section')
+        detailsSection.classList.add('detailSection')
+        detailsSection.setAttribute('role', 'region')
+        detailsSection.setAttribute('aria-label', 'Details section')
+        detailsSection.classList.add('hidden')
+        main.appendChild(detailsSection)
+
+        function showDetailsSection () {
+          detailsSection.classList.remove('hidden')
+        }
+
+        detailsSection.appendChild(detailsSectionContent)
+
+        // Footer area for action buttons
+        const cardFooter = dom.createElement('div')
+        cardFooter.classList.add('cardFooter')
+        section.appendChild(cardFooter)
+
+        if (book) {
+          // Groups button
+          const groupsButton = cardFooter.appendChild(dom.createElement('button'))
+          groupsButton.setAttribute('type', 'button')
+          groupsButton.innerHTML = 'Groups'
+          groupsButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
+          actionButtons.push(groupsButton)
+          groupsButton.addEventListener('click', async function (_event) {
+            setActiveActionButton(groupsButton)
+            showDetailsSection()
+            detailsSectionContent.innerHTML = ''
+
+            // Header
+            const groupsHeader = dom.createElement('h3')
+            groupsHeader.textContent = 'Your groups'
+            detailsSectionContent.appendChild(groupsHeader)
+
+            const groupRemark = dom.createElement('p')
+            groupRemark.classList.add('contactCreationRemark')
+            groupRemark.textContent = 'When deleting a group, all its contacts are deleted too.'
+            detailsSectionContent.appendChild(groupRemark)
+
+            // Load all groups and display them in a list
+            let groups
+            try {
+              groups = await loadAllGroups(book)
+            } catch (err) {
+              detailsSectionContent.appendChild(dom.createTextNode('Failed to load groups: ' + err))
+              return
+            }
+
+            const groupsList = dom.createElement('ul')
+            groupsList.setAttribute('role', 'list')
+            groupsList.setAttribute('aria-label', 'All groups')
+            groupsList.classList.add('groupButtonsList')
+
+            // Sort groups by name
+            groups.sort((a, b) => {
+              const nameA = (kb.any(a, ns.vcard('fn')) || '').toString().toLowerCase()
+              const nameB = (kb.any(b, ns.vcard('fn')) || '').toString().toLowerCase()
+              return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+            })
+
+            groups.forEach(function (group) {
+              const name = kb.any(group, ns.vcard('fn'))
+              const groupLi = dom.createElement('li')
+              groupLi.setAttribute('role', 'listitem')
+              groupLi.setAttribute('tabindex', '0')
+              groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
+              groupLi.subject = group
+
+              const groupBtn = groupLi.appendChild(dom.createElement('button'))
+              groupBtn.setAttribute('type', 'button')
+              groupBtn.innerHTML = name ? name.value : 'Some group'
+              groupBtn.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+              groupBtn.addEventListener('click', function (event) {
+                event.preventDefault()
+                if (!event.metaKey) {
+                  for (const key in selectedGroups) delete selectedGroups[key]
+                }
+                selectedGroups[group.uri] = !selectedGroups[group.uri]
+                refreshThingsSelected(ulGroups, selectedGroups)
+                // Highlight the matching group button in the sidebar ulGroups
+                const matchingLi = Array.from(ulGroups.children).find(li => li.subject && li.subject.uri === group.uri)
+                setActiveGroupButton(ulGroups, matchingLi ? matchingLi.querySelector('button') : null)
+                kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
+                  if (ok) {
+                    refreshNames(ulPeople, null, false)
+                  }
+                })
+              }, false)
+
+              UI.widgets.makeDraggable(groupLi, group)
+              UI.widgets.deleteButtonWithCheck(
+                dom,
+                groupLi,
+                'group ' + name,
+                async function () {
+                  await deleteThingAndDoc(group)
+                  delete selectedGroups[group.uri]
+                  // Refresh the group buttons list
+                  if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+                  if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+                  syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput)
+                  ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild)
+                  ulGroups.appendChild(newGroupLi)
+                  refreshThingsSelected(ulGroups, selectedGroups)
+                  // Refresh the people list to reflect the deleted group
+                  refreshNames(ulPeople, null, false)
+                  // Refresh the groups detail view
+                  groupsButton.click()
+                }
+              )
+
+              groupsList.appendChild(groupLi)
+            })
+
+            detailsSectionContent.appendChild(groupsList)
+
+            // New group button at the bottom
+            const newGroupBtn = dom.createElement('button')
+            newGroupBtn.setAttribute('type', 'button')
+            newGroupBtn.innerHTML = '+ New group'
+            newGroupBtn.classList.add('actionButton', 'btn-primary', 'action-button-focus', 'newGroupBtn')
+            newGroupBtn.addEventListener('click', newGroupClickHandler, false)
+            detailsSectionContent.appendChild(newGroupBtn)
+          })
+
+          // Sharing button
+          const sharingButton = cardFooter.appendChild(dom.createElement('button'))
+          sharingButton.setAttribute('type', 'button')
+          sharingButton.innerHTML = 'Sharing'
+          sharingButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
+          actionButtons.push(sharingButton)
+          sharingButton.addEventListener('click', function (_event) {
+            setActiveActionButton(sharingButton)
+            showDetailsSection()
+            detailsSectionContent.innerHTML = ''
+
+            const sharingHeader = dom.createElement('h3')
+            sharingHeader.textContent = 'Sharing'
+            detailsSectionContent.appendChild(sharingHeader)
+
+            detailsSectionContent.appendChild(
+              UI.aclControl.ACLControlBox5(
+                book.dir(),
+                dataBrowserContext,
+                'book',
+                kb,
+                function (ok, body) {
+                  if (!ok) detailsSectionContent.innerHTML = 'ACL control box Failed: ' + body
+                }
+              )
+            )
+
+            const sharingContext = {
+              target: book,
+              me,
+              noun: 'address book',
+              div: detailsSectionContent,
+              dom,
+              statusRegion: div
+            }
+            UI.login.registrationControl(sharingContext, book, ns.vcard('AddressBook'))
+              .then(() => console.log('Registration control finished.'))
+              .catch(e => UI.widgets.complain(sharingContext, 'registrationControl: ' + e))
+          })
+
+          // Settings button
           const toolsButton = cardFooter.appendChild(dom.createElement('button'))
           toolsButton.setAttribute('type', 'button')
           toolsButton.innerHTML = 'Tools'
           toolsButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
+          actionButtons.push(toolsButton)
           toolsButton.addEventListener('click', function (_event) {
-            cardMain.innerHTML = ''
-            cardMain.appendChild(
+            setActiveActionButton(toolsButton)
+            showDetailsSection()
+            detailsSectionContent.innerHTML = ''
+            detailsSectionContent.appendChild(
               toolsPane(
                 selectAllGroups,
                 selectedGroups,
-                groupsMainTable,
+                ulGroups,
                 book,
                 dataBrowserContext,
                 me
@@ -959,22 +674,17 @@ export default {
           })
         } // if book
 
+        /*
         const newBookBtn = newAddressBookButton(book)
         if (newBookBtn && newBookBtn.classList) {
           newBookBtn.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
         }
         cardFooter.appendChild(newBookBtn)
+        */
+       
+        checkDataModel(book).then(() => { debug.log('async checkDataModel done.') })
 
-        // })
-
-        div.appendChild(dom.createElement('hr'))
-
-        // const groups = await loadAllGroups()   @@@
-        checkDataModel().then(() => { console.log('async checkDataModel done.') })
-
-        //  div.appendChild(newAddressBookButton(book))       // later
-        // end of AddressBook instance
-      } // renderThreeColumnBrowser
+      } 
 
       // ///////////////////////////////////////////////////////////////////////////////////
 
@@ -987,7 +697,7 @@ export default {
         t[ns.vcard('Organization').uri] ||
         t[ns.schema('Organization').uri]
       ) {
-        renderIndividual(dom, div, subject, dataBrowserContext).then(() => console.log('(individual rendered)'))
+        renderIndividual(dom, div, subject, dataBrowserContext).then(() => debug.log('(individual rendered)'))
 
         //          Render a Group instance
       } else if (t[ns.vcard('Group').uri]) {
@@ -999,21 +709,21 @@ export default {
             const options = { foreignGroup: subject }
             if (addressBooks.length > 0) {
               // const book = addressBooks[0]
-              renderThreeColumnBrowser(addressBooks, context, options)
+              renderAddressBook(addressBooks, options)
             } else {
-              renderThreeColumnBrowser([], context, options)
+              renderAddressBook([], options)
               // @@ button to Make a new addressBook
             }
           })
           .catch(function (e) {
-            UI.widgets.complain(context, e)
+            complain(div, dom, '' + e)
           })
 
         // Render a AddressBook instance
       } else if (t[ns.vcard('AddressBook').uri]) {
-        renderThreeColumnBrowser([subject], context, {})
+        renderAddressBook([subject], {})
       } else {
-        console.log(
+        debug.log(
           'Error: Contact pane: No evidence that ' +
             subject +
             ' is anything to do with contacts.'
@@ -1028,15 +738,10 @@ export default {
         ('' + document.location).slice(0, 16) === 'http://localhost'
       ) {
         me = kb.any(subject, UI.ns.acl('owner')) // when testing on plane with no webid
-        console.log('Assuming user is ' + me)
+        debug.log('Assuming user is ' + me)
       }
       return div
     } // asyncRender
   } // render function
 } // pane object
 // ends
-
-export function getSameAs (kb, item, doc) {
-  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
-    kb.each(null, ns.owl('sameAs'), item, doc))
-}
