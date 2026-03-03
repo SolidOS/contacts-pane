@@ -25,26 +25,16 @@ export function toolsPane (
   book = bookParam
   selectedGroups = selectedGroupsParam
   const dom = dataBrowserContext.dom
-  const div = dom.createElement('div')
 
   const pane = dom.createElement('div')
   pane.classList.add('toolsPane')
-  
+
   const settingsHeader = dom.createElement('h3')
   settingsHeader.textContent = 'Tools'
   pane.appendChild(settingsHeader)
 
   const divStatistics = pane.appendChild(dom.createElement('div'))
   divStatistics.classList.add('statsLog')
-
-  const context = {
-    target: book,
-    me,
-    noun: 'address book',
-    div: pane,
-    dom,
-    statusRegion: div
-  }
 
   logSpace = divStatistics.appendChild(dom.createElement('pre'))
   logSpace.setAttribute('id', 'logSpace')
@@ -92,7 +82,7 @@ export function toolsPane (
     checkAcces(event)
   })
 
-  //DUPLICATES CHECK
+  // DUPLICATES CHECK
   const checkDuplicates = buttonsContainer.appendChild(dom.createElement('button'))
   checkDuplicates.textContent = 'Find duplicate contacts'
   checkDuplicates.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
@@ -493,7 +483,7 @@ export function toolsPane (
                 )
               }
               const sz = new $rdf.Serializer(kb).setBase(stats.nameEmailIndex.uri)
-              log(logSpace,'Serializing index of uniques...')
+              log(logSpace, 'Serializing index of uniques...')
               const data = sz.statementsToN3(sts)
 
               return kb.fetcher.webOperation('PUT', cleanPeople, {
@@ -630,7 +620,7 @@ async function checkAcces (_event) {
       if (ok) {
         log(logSpace, 'Success for ' + UI.utils.label(card))
       } else {
-        log(logSpace,'Failure for ' + UI.utils.label(card) + ': ' + message)
+        log(logSpace, 'Failure for ' + UI.utils.label(card) + ': ' + message)
       }
     })
   }
@@ -651,12 +641,12 @@ async function checkAcces (_event) {
   }
 }
 
-function log(logSpace, message) {
+function log (logSpace, message) {
   console.log(message)
   logSpace.textContent += message + '\n'
 }
 
-function stats(logSpace) {
+function stats (logSpace) {
   const totalContacts = kb.each(undefined, VCARD('inAddressBook'), book).length
   log(logSpace, '' + totalContacts + ' contacts loaded. ')
   let groups = kb.each(book, VCARD('includesGroup'))
@@ -671,89 +661,88 @@ function stats(logSpace) {
 }
 
 async function loadIndexHandler (loadIndexButton, logSpace) {
-    loadIndexButton.classList.add('toolsButton--loading')
-    loadIndexButton.classList.remove('toolsButton--error', 'toolsButton--success')
-    const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-    try {
-      await kb.fetcher.load(nameEmailIndex)
-    } catch (e) {
-      loadIndexButton.classList.remove('toolsButton--loading')
-      loadIndexButton.classList.add('toolsButton--error')
-      log(logSpace, 'Error: People index has NOT been loaded' + e + '\n')
-    }
+  loadIndexButton.classList.add('toolsButton--loading')
+  loadIndexButton.classList.remove('toolsButton--error', 'toolsButton--success')
+  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+  try {
+    await kb.fetcher.load(nameEmailIndex)
+  } catch (e) {
     loadIndexButton.classList.remove('toolsButton--loading')
-    loadIndexButton.classList.add('toolsButton--success')
-    log(logSpace, ' People index has been loaded\n')
-  } // loadIndexHandler
-   
-  async function fixGroupless (book) {
-      const groupless = await getGroupless(book)
-      if (groupless.length === 0) {
-        log(logSpace, 'No groupless contacts found.')
-        return
+    loadIndexButton.classList.add('toolsButton--error')
+    log(logSpace, 'Error: People index has NOT been loaded' + e + '\n')
+  }
+  loadIndexButton.classList.remove('toolsButton--loading')
+  loadIndexButton.classList.add('toolsButton--success')
+  log(logSpace, ' People index has been loaded\n')
+} // loadIndexHandler
+
+async function fixGroupless (book) {
+  const groupless = await getGroupless(book)
+  if (groupless.length === 0) {
+    log(logSpace, 'No groupless contacts found.')
+    return
+  }
+  const groupOfUngrouped = await saveNewGroup(book, 'No group')
+  const dom = logSpace.ownerDocument
+  return new Promise(function (resolve) {
+    const msg = dom.createElement('p')
+    msg.textContent = `Add the ${groupless.length} contacts without groups to a 'No group' group?`
+    logSpace.parentNode.appendChild(msg)
+    const confirmButton = UI.widgets.continueButton(dom, async function () {
+      msg.remove()
+      confirmButton.remove()
+      for (const person of groupless) {
+        log(logSpace, '   adding ' + UI.utils.label(person))
+        await addPersonToGroup(person, groupOfUngrouped)
       }
-      const groupOfUngrouped = await saveNewGroup(book, 'No group')
-      const dom = logSpace.ownerDocument
-      return new Promise(function (resolve) {
-        const msg = dom.createElement('p')
-        msg.textContent = `Add the ${groupless.length} contacts without groups to a 'No group' group?`
-        logSpace.parentNode.appendChild(msg)
-        const confirmButton = UI.widgets.continueButton(dom, async function () {
-          msg.remove()
-          confirmButton.remove()
-          for (const person of groupless) {
-            log(logSpace, '   adding ' + UI.utils.label(person))
-            await addPersonToGroup(person, groupOfUngrouped)
-          }
-          log(logSpace, 'People moved to group.')
-          resolve()
-        })
-        logSpace.parentNode.appendChild(confirmButton)
+      log(logSpace, 'People moved to group.')
+      resolve()
+    })
+    logSpace.parentNode.appendChild(confirmButton)
+  })
+}
+
+async function getGroupless (book) {
+  const groupIndex = kb.any(book, ns.vcard('groupIndex'))
+  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+  try {
+    await kb.fetcher.load([nameEmailIndex, groupIndex])
+    const groups = kb.each(book, ns.vcard('includesGroup'))
+    await kb.fetcher.load(groups)
+  } catch (e) {
+    complain('Error loading stuff:' + e)
+  }
+
+  const reverseIndex = {}
+  const groupless = []
+  let groups = kb.each(book, VCARD('includesGroup'))
+  const strings = new Set(groups.map(group => group.uri)) // remove dups
+  groups = [...strings].map(uri => kb.sym(uri))
+  log(logSpace, '' + groups.length + ' total groups. ')
+
+  for (let i = 0; i < groups.length; i++) {
+    const g = groups[i]
+    const a = groupMembers(kb, g)
+
+    log(logSpace, UI.utils.label(g) + ': ' + a.length + ' members')
+    for (let j = 0; j < a.length; j++) {
+      kb.allAliases(a[j]).forEach(function (y) {
+        reverseIndex[y.uri] = g
       })
     }
+  }
 
-    async function getGroupless (book) {
-      const groupIndex = kb.any(book, ns.vcard('groupIndex'))
-      const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-      try {
-        await kb.fetcher.load([nameEmailIndex, groupIndex])
-        const groups = kb.each(book, ns.vcard('includesGroup'))
-        await kb.fetcher.load(groups)
-      } catch (e) {
-        complain('Error loading stuff:' + e)
-      }
-
-      const reverseIndex = {}
-      const groupless = []
-      let groups = kb.each(book, VCARD('includesGroup'))
-      const strings = new Set(groups.map(group => group.uri)) // remove dups
-      groups = [...strings].map(uri => kb.sym(uri))
-      log(logSpace, '' + groups.length + ' total groups. ')
-
-      for (let i = 0; i < groups.length; i++) {
-        const g = groups[i]
-        const a = groupMembers(kb, g)
-
-        log(logSpace, UI.utils.label(g) + ': ' + a.length + ' members')
-        for (let j = 0; j < a.length; j++) {
-          kb.allAliases(a[j]).forEach(function (y) {
-            reverseIndex[y.uri] = g
-          })
-        }
-      }
-
-      const cards = kb.each(undefined, VCARD('inAddressBook'), book)
-      log(logSpace, '' + cards.length + ' total contatcs')
-      for (let c = 0; c < cards.length; c++) {
-        if (!reverseIndex[cards[c].uri]) {
-          groupless.push(cards[c])
-          log(logSpace, '   groupless ' + UI.utils.label(cards[c]))
-        }
-      }
-      log(logSpace, '' + groupless.length + ' groupless contacts.')
-      return groupless
+  const cards = kb.each(undefined, VCARD('inAddressBook'), book)
+  log(logSpace, '' + cards.length + ' total contatcs')
+  for (let c = 0; c < cards.length; c++) {
+    if (!reverseIndex[cards[c].uri]) {
+      groupless.push(cards[c])
+      log(logSpace, '   groupless ' + UI.utils.label(cards[c]))
     }
-
+  }
+  log(logSpace, '' + groupless.length + ' groupless contacts.')
+  return groupless
+}
 
 async function fixToOldDataModel (book) {
   async function updateToOldDataModel (groups) {
@@ -793,8 +782,8 @@ async function fixToOldDataModel (book) {
         })
         logSpace.parentNode.appendChild(confirmButton)
       })
-    } else { 
-      log(logSpace, 'Nothing to update.\nAll groups already use the old data model.') 
+    } else {
+      log(logSpace, 'Nothing to update.\nAll groups already use the old data model.')
     }
   }
   let groups = kb.each(book, VCARD('includesGroup'))

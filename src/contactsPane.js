@@ -17,7 +17,11 @@ import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
 import './styles/contactsPane.css'
-import { checkDataModel, ensureBookLoaded, renderGroupButtons, refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups, syncGroupUl, setActiveGroupButton } from './addressBookPresenter'
+import {
+  checkDataModel, ensureBookLoaded, renderGroupButtons,
+  refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
+  syncGroupUl, setActiveGroupButton, refreshFilteredPeople
+} from './addressBookPresenter'
 import { complain, deleteThingAndDoc } from './localUtils'
 import * as debug from './debug'
 import './styles/rdfFormsEnforced.css'
@@ -48,8 +52,6 @@ export default {
 
   //  Render the pane
   render: function (subject, dataBrowserContext, paneOptions = {}) {
-    const thisPane = this
-
     /*
     function newAddressBookButton (thisAddressBook) {
       return UI.login.newAppInstance(
@@ -68,7 +70,6 @@ export default {
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
     const div = dom.createElement('div')
-    const me = authn.currentUser() // If already logged on
 
     UI.aclControl.preventBrowserDropEvents(dom) // protect drag and drop
 
@@ -96,7 +97,7 @@ export default {
       } // missing: statusRegion
 
       //  Render AddressBook instance
-      function renderAddressBook(books, options) {
+      function renderAddressBook (books, options) {
         kb.fetcher
           .load(books)
           .then(function (_xhr) {
@@ -107,12 +108,12 @@ export default {
           })
       }
 
-      function renderAddressBookDetails(books, options) {
+      function renderAddressBookDetails (books, options) {
         const classLabel = utils.label(ns.vcard('AddressBook'))
 
-        let book = books[0] // for now
+        const book = books[0] // for now
         const groupIndex = kb.any(book, ns.vcard('groupIndex'))
-        let selectedGroups = {}
+        const selectedGroups = {}
         let selectedPeople = {} // Actually prob max 1
 
         const target = options.foreignGroup || book
@@ -137,15 +138,15 @@ export default {
         if (book) {
           title = utils.label(book.dir())
         } else {
-            utils.label(book.dir()) || kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
-            if (paneOptions.solo && title && typeof document !== 'undefined') {
-              document.title = title.value // @@ only when the outermmost pane
-            }
-            title = title ? title.value : classLabel
+          utils.label(book.dir()) || kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
+          if (paneOptions.solo && title && typeof document !== 'undefined') {
+            document.title = title.value // @@ only when the outermmost pane
+          }
+          title = title ? title.value : classLabel
         }
 
         // Click on New Group button
-        async function newGroupClickHandler(_event) {
+        async function newGroupClickHandler (_event) {
           showDetailsSection()
           detailsSectionContent.innerHTML = ''
           const groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -194,7 +195,7 @@ export default {
         } // newGroupClickHandler
 
         // Render the askName form for the given klass into formContainer
-        function createNewPersonOrOrganization(formContainer, klass) {
+        function createNewPersonOrOrganization (formContainer, klass) {
           formContainer.innerHTML = ''
           UI.widgets
             .askName(dom, kb, formContainer, UI.ns.foaf('name'), klass)
@@ -303,7 +304,6 @@ export default {
           remark.textContent = 'The new contact is added to the already selected group.'
           detailsSectionContent.appendChild(remark)
 
-
           // Container for the askName form, placed below the select
           const formContainer = dom.createElement('div')
           formContainer.classList.add('contactFormContainer')
@@ -324,7 +324,7 @@ export default {
           })
         }, false)
 
-        //TODO we should also add if it is public or private
+        // TODO we should also add if it is public or private
         header.appendChild(h2)
         header.appendChild(container)
         headerSection.appendChild(header)
@@ -335,7 +335,7 @@ export default {
         dottedHr.classList.add('dottedHr')
         section.appendChild(dottedHr)
 
-         // Search input
+        // Search input
         const searchSection = dom.createElement('section')
         searchSection.classList.add('searchSection')
         const searchDiv = dom.createElement('div')
@@ -348,7 +348,7 @@ export default {
         searchInput.setAttribute('placeholder', 'Search by name')
         searchDiv.appendChild(searchInput)
         searchInput.addEventListener('input', function (_event) {
-          refreshFilteredPeople(true)
+          refreshFilteredPeople(ulPeople, true, detailsSectionContent)
         })
         section.appendChild(searchSection)
 
@@ -357,7 +357,7 @@ export default {
         buttonSection.classList.add('buttonSection')
 
         // People list (created early so it can be passed to presenter functions)
-        let ulPeople = dom.createElement('ul')
+        const ulPeople = dom.createElement('ul')
         ulPeople.setAttribute('role', 'list')
         ulPeople.setAttribute('aria-label', 'People list')
 
@@ -372,7 +372,7 @@ export default {
         }
 
         // Groups list (all buttons inside ul > li)
-        let ulGroups = dom.createElement('ul')
+        const ulGroups = dom.createElement('ul')
         ulGroups.classList.add('groupButtonsList')
         ulGroups.setAttribute('role', 'list')
         ulGroups.setAttribute('aria-label', 'Groups list')
@@ -476,13 +476,12 @@ export default {
 
         section.appendChild(buttonSection)
 
-        //List of contacts
+        // List of contacts
         const peopleListSection = dom.createElement('section')
         peopleListSection.classList.add('peopleSection')
         section.appendChild(peopleListSection)
 
         peopleListSection.appendChild(ulPeople)
-
 
         // Accessible table structure — rendered beside the addressBook section
         const detailsSection = dom.createElement('section')
@@ -681,10 +680,9 @@ export default {
         }
         cardFooter.appendChild(newBookBtn)
         */
-       
-        checkDataModel(book).then(() => { debug.log('async checkDataModel done.') })
 
-      } 
+        checkDataModel(book).then(() => { debug.log('async checkDataModel done.') })
+      }
 
       // ///////////////////////////////////////////////////////////////////////////////////
 

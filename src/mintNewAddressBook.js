@@ -1,6 +1,7 @@
 import * as UI from 'solid-ui'
 import { solidLogicSingleton } from 'solid-logic'
 import * as $rdf from 'rdflib'
+import { complain } from './localUtils'
 
 const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
