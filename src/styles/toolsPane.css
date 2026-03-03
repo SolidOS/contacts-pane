@@ -34,13 +34,13 @@
 .contactPane .toolsPane {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
 .contactPane .toolsButtonsContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
 /* ── Tools buttons ───────────────────────────────────────────── */

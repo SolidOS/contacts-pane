@@ -12,7 +12,7 @@
 
 /* Focus indicator for keyboard navigation */
 .personRow:focus, .dataCell:focus, tr[tabindex="0"]:focus {
-  outline: 2px solid #1976d2;
+  outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: 2px;
   background: #e3f2fd;
 }
@@ -32,13 +32,13 @@
 
 .contactPane .detailsSectionContent {
   min-height: 200px;
-  padding: 25px;
+  padding: var(--spacing-lg);
 }
 
 .contactPane .cardFooter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--spacing-xs);
   padding-top: var(--spacing-md);
   margin-top: var(--spacing-md);
 }
@@ -65,7 +65,7 @@
 .contactPane .contactTypeChooser {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-sm);
   max-width: 360px;
 }
 
@@ -76,11 +76,11 @@
 
 .contactPane .contactTypeSelect {
   height: 38px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-pale);
+  border-radius: var(--border-radius-base);
   padding: 0 10px;
-  font-size: 0.95em;
-  background: #fafafa;
+  font-size: var(--font-size-sm);
+  background: var(--color-section-bg);
 }
 
 .contactPane .groupsMain,
@@ -95,12 +95,12 @@
   /* existing styles */
 }
 .contactPane .searchInput {
-  height: 44px;
-  border: 1px solid #e0e0e0;
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 0 12px;
-  font-size: 1rem;
+  height: var(--min-touch-target);
+  border: 1px solid var(--color-border-pale);
+  background: var(--color-section-bg);
+  border-radius: var(--border-radius-base);
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-base);
   width: 100%;
   box-sizing: border-box;
 }
@@ -114,12 +114,12 @@
 /* ── Delete button ───────────────────────────────────────────── */
 
 .contactPane .deleteButton {
-  height: 44px;
-  border: 1px solid #e0e0e0;
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 0 12px 0 44px;
-  font-size: 1rem;
+  height: var(--min-touch-target);
+  border: 1px solid var(--color-border-pale);
+  background-color: var(--color-section-bg);
+  border-radius: var(--border-radius-base);
+  padding: 0 var(--spacing-sm) 0 var(--min-touch-target);
+  font-size: var(--font-size-base);
   width: 180px;
   box-sizing: border-box;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
@@ -186,7 +186,7 @@
 
 /* Section Title - primary colored heading */
 .contactPane .section-title {
-  font-size: 1.25em;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--color-primary);
   margin: 0;
@@ -195,8 +195,6 @@
 /* Card Section Background */
 .contactPane .section-bg {
   background: var(--color-section-bg);
-  border-radius: var(--border-radius-full);
-  box-shadow: var(--box-shadow);
   padding: var(--spacing-md);
 }
 
@@ -207,7 +205,7 @@
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius-base);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-background);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--animation-duration) ease;
@@ -269,8 +267,8 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  padding: 14px;
-  padding-bottom: 0px;
+  padding: var(--spacing-sm);
+  padding-bottom: 0;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -283,7 +281,7 @@
 }
 
 .contactPane .buttonSection::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--color-border-pale);
   border-radius: 3px;
 }
 
@@ -295,7 +293,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
   list-style: none;
 }
 
@@ -320,7 +318,7 @@
 .contactPane .detailsSectionContent .groupButtonsList {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--spacing-sm);
   list-style: none;
   padding: 0;
   max-width: 512px;
@@ -344,7 +342,7 @@
 @media (max-width: 899px) {
   .contactPane .detailsSectionContent .groupButtonsList {
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: var(--spacing-xs);
     max-width: 100%;
   }
 
@@ -370,12 +368,12 @@
   width: 100%;
   max-width: 512px;
   box-sizing: border-box;
-  margin-top: 12px;
+  margin-top: var(--spacing-sm);
 }
 
 .contactPane .detailsSectionContent h3 {
   font-size: 1.5rem;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Delete confirmation popup — centered overlay in details section */
@@ -401,9 +399,9 @@
 .contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div {
   position: relative !important;
   top: auto !important;
-  background: white;
-  border-radius: 12px;
-  padding: 1.5em;
+  background: var(--color-background);
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-lg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   z-index: 1001;
 }
@@ -411,16 +409,16 @@
 /* Selected state for All contacts button */
 .contactPane .allGroupsButton--selected {
   background-color: var(--color-primary);
-  color: white;
+  color: var(--color-background);
 }
 
 /* ── Header section ──────────────────────────────────────────── */
 
 .contactPane .headerSection {
-  background: white;
-  padding: 14px;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  background: var(--color-background);
+  padding: var(--spacing-sm);
+  border-top-left-radius: var(--border-radius-full);
+  border-top-right-radius: var(--border-radius-full);
   margin-bottom: 0;
 }
 
@@ -439,7 +437,7 @@
 
 .contactPane .dottedHr {
   border: none;
-  border-top: 1px dotted #888;
+  border-top: 1px dotted var(--color-text-muted);
   margin: 0;
 }
 
@@ -450,7 +448,7 @@
 /* ── Search section ─────────────────────────────────────────── */
 
 .contactPane .searchSection {
-  padding: 14px;
+  padding: var(--spacing-sm);
   padding-bottom: 0;
   margin-bottom: 0;
 }
@@ -459,8 +457,8 @@
 
 .contactPane .peopleSection {
   display: flex;
-  background: white;
-  padding: 14px;
-  border-top: 1px dotted #888;
+  background: var(--color-background);
+  padding: var(--spacing-sm);
+  border-top: 1px dotted var(--color-text-muted);
   margin-bottom: 0;
 }

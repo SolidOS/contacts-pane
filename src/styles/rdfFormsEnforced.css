@@ -302,14 +302,14 @@
   background-color: var(--color-background) !important;
   cursor: not-allowed;
   opacity: 0.75;
-  border: 0.05em solid white !important;
+  border: 0.05em solid var(--color-background) !important;
 }
 
 .individualPane textarea,
 .contactPane textarea,
 .individualPane .formFieldValue textarea,
 .contactPane .formFieldValue textarea {
-  padding: 0.5em !important;
+  padding: var(--spacing-xs) !important;
 }
 
 .webidControl table td div.contactPane.namedPane {

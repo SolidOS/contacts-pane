@@ -11,8 +11,8 @@
 /* ── WebID / Public ID outer container ───────────────────────── */
 
 .contactPane .webidControl {
-  border-radius: 0.3em;
-  border: 0.1em solid #888;
+  border-radius: var(--border-radius-base);
+  border: 0.1em solid var(--color-text-muted);
 }
 
 /* ── Persona row ─────────────────────────────────────────────── */
@@ -56,4 +56,14 @@
   border: none;
   font-size: var(--font-size-base);
   white-space: pre-wrap;
+}
+
+/* ── Visibility / display helpers ────────────────────────────── */
+
+.contactPane .hidden {
+  display: none;
+}
+
+.contactPane .collapsed {
+  visibility: collapse;
 }

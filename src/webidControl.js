@@ -202,7 +202,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   function renderPersona (dom, persona, kb) {
     function profileOpenHandler (_event) {
       profileIsVisible = !profileIsVisible
-      main.style.visibility = profileIsVisible ? 'visible' : 'collapse'
+      main.classList.toggle('collapsed', !profileIsVisible)
       openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
     }
     function renderNewRow (webidObject) {
@@ -272,7 +272,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
     console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
-    prompt.style.display = personas.length ? 'none' : ''
+    prompt.classList.toggle('hidden', personas.length > 0)
     utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
   }
   async function addOneIdAndRefresh (person, webid) {
@@ -291,7 +291,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   div.classList.add('webidControl')
 
   if (getPersonas(kb, person).length === 0 && !options.editable) {
-    div.style.display = 'none'
+    div.classList.add('hidden')
     return div // No point listing an empty list you can't change
   }
 

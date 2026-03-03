@@ -6,5 +6,5 @@
 .contactPane .mugshotImage {
   max-height: 10em;
   border-radius: var(--border-radius-full);
-  margin: 0.7em;
+  margin: var(--spacing-sm);
 }
