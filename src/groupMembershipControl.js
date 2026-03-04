@@ -1,9 +1,9 @@
 // Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
+import './styles/groupMembership.css'
 
 const ns = UI.ns
-const utils = UI.utils
 const kb = store
 
 // Groups the person is a member of
@@ -49,40 +49,70 @@ export async function renderGroupMemberships (person, context) {
       kb.updater.update(del, [], function (uri, ok, err) {
         if (!ok) {
           const message = 'Error removing member from group ' + group + ': ' + err
-          groupList.parentNode.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
+          container.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
         }
       })
       console.log('Removed ' + pname + ' from group ' + gname)
       // to allow refresh of card groupList
       kb.fetcher.unload(group.doc())
       await kb.fetcher.load(group.doc())
-      syncGroupList()
+      syncGroupPills()
     }
   }
 
-  function newRowForGroup (group) {
-    const options = {
-      deleteFunction: function () {
+  function createGroupItem (group) {
+    const gname = kb.any(group, ns.vcard('fn'))
+    const label = gname ? gname.value : group.uri
+
+    const li = dom.createElement('li')
+    li.classList.add('group-membership-item')
+
+    // Main group button
+    const btn = dom.createElement('button')
+    btn.setAttribute('type', 'button')
+    btn.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+    btn.textContent = label
+    btn.title = label
+    li.appendChild(btn)
+
+    // Toolbar below the button: link icon + delete button
+    const toolbar = dom.createElement('div')
+    toolbar.classList.add('group-membership-toolbar')
+
+    // Link icon
+    const linkEl = UI.widgets.linkIcon(dom, group)
+    linkEl.setAttribute('title', 'Link to ' + label)
+    toolbar.appendChild(linkEl)
+
+    // Delete button
+    UI.widgets.deleteButtonWithCheck(
+      dom,
+      toolbar,
+      'membership in ' + label,
+      function () {
         removeFromGroup(person, group)
-      },
-      noun: 'membership'
-    }
-    const tr = UI.widgets.personTR(dom, null, group, options)
-    return tr
+      }
+    )
+
+    li.appendChild(toolbar)
+    return li
   }
 
-  // find all groups where person has membership
-  function syncGroupList () {
-    // person and/or WebIDs to be changed
-    utils.syncTableToArray(groupList, groupMembership(person), newRowForGroup)
+  function syncGroupPills () {
+    const groups = groupMembership(person)
+    const pillsWrapper = container.querySelector('.group-pills-wrapper')
+    pillsWrapper.innerHTML = ''
+
+    groups.forEach(group => {
+      pillsWrapper.appendChild(createGroupItem(group))
+    })
   }
 
   async function loadGroupsFromBook (book = null) {
     if (!book) {
       book = kb.any(undefined, ns.vcard('includesGroup'))
       if (!book) {
-        // throw new Error('findBookFromGroups: Cant find address book which this group is part of')
-        return  // no book => no groups
+        return // no book => no groups
       }
     }
     const groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -92,12 +122,24 @@ export async function renderGroupMemberships (person, context) {
 
   const { dom } = context
   const kb = context.session.store
-  const groupList = dom.createElement('table')
+
+  const container = dom.createElement('div')
+  container.classList.add('group-membership-container')
+
+  // Header
+  const header = dom.createElement('h3')
+  header.classList.add('group-membership-header')
+  header.textContent = 'Part of groups'
+  container.appendChild(header)
+
+  const pillsWrapper = dom.createElement('ul')
+  pillsWrapper.classList.add('group-pills-wrapper')
+  container.appendChild(pillsWrapper)
 
   // find book any group and load all groups
   await loadGroupsFromBook()
 
-  groupList.refresh = syncGroupList
-  syncGroupList()
-  return groupList
+  container.refresh = syncGroupPills
+  syncGroupPills()
+  return container
 }

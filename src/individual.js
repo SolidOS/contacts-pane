@@ -8,6 +8,7 @@ import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 import './styles/individual.css'
 import './styles/rdfFormsEnforced.css'
 import { renderForm, loadDocument } from './rdfFormsHelper'
+import { complain } from './localUtils'
 
 const ns = UI.ns
 const kb = store
@@ -19,12 +20,6 @@ const vcardName = 'vcard.ttl' // The name of the vcard file
 export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   // ////////////////////  DRAG and Drop for mugshot image
 
-  function complain (message) {
-    console.log(message)
-    div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-  }
-
-  /// ///////////////////////////
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)
@@ -54,27 +49,10 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
 
-  // Auto complete searches in a table
-  // Prefer the fom below renderPublicIdControl
-  /*
-  if (isOrganization) {
-    const publicDataTable = div.appendChild(dom.createElement('table'))
-    async function publicDataSearchRow (name) {
-      async function autoCompleteDone (object, _name) {
-        right.innerHTML = ''
-        right.appendchild(UI.widgets.personTR(dom, object))
-      }
-      const row = dom.createElement('tr')
-      const left = row.appendChild(dom.createElement('td'))
-      left.textContent = name
-      const right = row.appendChild(dom.createElement('td'))
-      right.appendChild(await renderAutoComplete(dom, subject, ns.owl('sameAs'), autoCompleteDone))
-      return row
-    }
-    publicDataTable.appendChild(await publicDataSearchRow('dbpedia'))
-  }
-*/
   // Allow to attach documents etc to the contact card
+  const h3 = div.appendChild(dom.createElement('h3'))
+  h3.textContent = "Attach any document to this contact"
+  h3.classList.add('webidHeading')
 
   UI.widgets.attachmentList(dom, subject, div, {
     modify: editable
@@ -85,7 +63,9 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
   } else {
-    div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
+    //if we are already displaying a WebID, we do not need to add one
+    if (!kb.holds(subject, ns.rdf('type'), ns.foaf('PersonalProfileDocument'))) {
+      div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
+    }
   }
-  // div.appendChild(dom.createElement('hr'))
 } // renderIndividual

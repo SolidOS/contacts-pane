@@ -8,13 +8,6 @@
   border-radius: var(--border-radius-base);
 }
 
-/* ── WebID / Public ID outer container ───────────────────────── */
-
-.contactPane .webidControl {
-  border-radius: var(--border-radius-base);
-  border: 0.1em solid var(--color-text-muted);
-}
-
 /* ── Persona row ─────────────────────────────────────────────── */
 
 .contactPane .personaRow {

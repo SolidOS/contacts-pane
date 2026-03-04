@@ -14,8 +14,8 @@ const kb = store
 const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
 const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
 
-const WEBID_NOUN = 'Solid ID'
-const PUBLICID_NOUN = 'In public data'
+const WEBID_NOUN = 'WebID'
+const PUBLICID_NOUN = 'WikiData link'
 const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
 const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
 
@@ -159,9 +159,7 @@ export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
 
 export async function renderWebIdControl (person, dataBrowserContext) {
   const options = {
-    longPrompt: `If you know someone's ${WEBID_NOUN}, you can do more stuff with them.
-    To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus
-    to enter it by hand.`,
+    longPrompt: `Does this person have a ${WEBID_NOUN}?`,
     idNoun: WEBID_NOUN,
     urlType: ns.vcard('WebID')
   }
@@ -179,9 +177,7 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
     }
   }
   const options = {
-    longPrompt: `If you know the ${PUBLICID_NOUN} of this ${orgClassId}, you can do more stuff with it.
-    To record its ${PUBLICID_NOUN}, drag it onto the plus, or click the magnifyinng glass
-    to search for it in WikiData.`,
+    longPrompt: `Does this ${orgClassId} have a ${PUBLICID_NOUN}?`,
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
     dbLookup: true,
@@ -295,9 +291,9 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     return div // No point listing an empty list you can't change
   }
 
-  const h4 = div.appendChild(dom.createElement('h4'))
-  h4.textContent = options.idNoun
-  h4.classList.add('webidHeading')
+  const h3 = div.appendChild(dom.createElement('h3'))
+  h3.textContent = options.idNoun
+  h3.classList.add('webidHeading')
 
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.classList.add('webidPrompt')
