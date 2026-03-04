@@ -51,7 +51,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   // Allow to attach documents etc to the contact card
   const h3 = div.appendChild(dom.createElement('h3'))
-  h3.textContent = "Attach any document to this contact"
+  h3.textContent = 'Attach any document to this contact'
   h3.classList.add('webidHeading')
 
   UI.widgets.attachmentList(dom, subject, div, {
@@ -63,7 +63,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
   } else {
-    //if we are already displaying a WebID, we do not need to add one
+    // if we are already displaying a WebID, we do not need to add one
     if (!kb.holds(subject, ns.rdf('type'), ns.foaf('PersonalProfileDocument'))) {
       div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
     }
