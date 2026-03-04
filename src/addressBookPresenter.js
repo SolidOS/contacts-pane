@@ -33,8 +33,7 @@ export function setActiveGroupButton (groupsUl, activeBtn) {
   }
 }
 
-export function renderGroupButtons (currentBook, groupsUl, options, store, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, divEl, context, groupClickCallback) {
-  kb = store
+export function renderGroupButtons(currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, divEl, context, groupClickCallback) {
   dom = domElement
   selectedGroups = groupsSelected || {}
   if (peopleUl) ulPeople = peopleUl
@@ -241,12 +240,61 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     const personLi = dom.createElement('li')
     personLi.setAttribute('role', 'listitem')
     personLi.setAttribute('tabindex', '0')
-    const name = nameFor(person)
-    personLi.setAttribute('aria-label', name)
-    personLi.textContent = name
     personLi.classList.add('personLi')
     personLi.subject = person
     UI.widgets.makeDraggable(personLi, person)
+
+    // Container for the row
+    const rowDiv = dom.createElement('div')
+    rowDiv.classList.add('personLi-row')
+
+    // Left: Avatar
+    const avatarDiv = dom.createElement('div')
+    avatarDiv.classList.add('personLi-avatar')
+    // Placeholder avatar (shown initially while person doc loads)
+    const placeholderEl = dom.createElement('div')
+    placeholderEl.classList.add('avatar-placeholder')
+    placeholderEl.innerHTML = `<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#888" font-size="16" font-family="Arial" dy=".3em">?</text></svg>`
+    avatarDiv.appendChild(placeholderEl)
+
+    // Try to set avatar from already-loaded data, or fetch the person's doc
+    function trySetAvatar () {
+      const avatarUrl = kb.any(person, ns.vcard('hasPhoto'))
+      if (avatarUrl && avatarUrl.value) {
+        const img = dom.createElement('img')
+        img.src = avatarUrl.value
+        img.alt = 'Avatar'
+        avatarDiv.replaceChild(img, avatarDiv.firstChild)
+      }
+    }
+    trySetAvatar() // check if already in store
+    // Load person's own document in background to get hasPhoto
+    kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok) {
+      if (ok) trySetAvatar()
+    })
+
+    // Center: Name
+    const infoDiv = dom.createElement('div')
+    infoDiv.classList.add('personLi-info')
+
+    const name = nameFor(person) || 'Unknown Name'
+    personLi.setAttribute('aria-label', name)
+    const nameDiv = dom.createElement('div')
+    nameDiv.classList.add('personLi-name')
+    nameDiv.textContent = name
+
+    infoDiv.appendChild(nameDiv)
+
+    // Right: Arrow icon
+    const arrowDiv = dom.createElement('div')
+    arrowDiv.classList.add('personLi-arrow')
+    arrowDiv.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5L11.25 9L6 13.5" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+
+    // Assemble
+    rowDiv.appendChild(avatarDiv)
+    rowDiv.appendChild(infoDiv)
+    rowDiv.appendChild(arrowDiv)
+    personLi.appendChild(rowDiv)
 
     setPersonListener(personLi, person)
     return personLi

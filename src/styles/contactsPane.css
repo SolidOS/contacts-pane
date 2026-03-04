@@ -24,7 +24,6 @@
 .contactPane .detailSection {
   flex: 1 1 400px;
   min-width: 300px;
-  max-height: 9in;
   overflow-y: auto;
   background: var(--color-section-bg);
   box-sizing: border-box;
@@ -97,9 +96,13 @@
 .contactPane .searchInput {
   height: var(--min-touch-target);
   border: 1px solid var(--color-border-pale);
-  background: var(--color-section-bg);
+  background-color: var(--color-section-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 20px 20px;
   border-radius: var(--border-radius-base);
-  padding: 0 var(--spacing-sm);
+  padding: 0 var(--spacing-sm) 0 34px;
   font-size: var(--font-size-base);
   width: 100%;
   box-sizing: border-box;
@@ -169,6 +172,7 @@
   display: flex;
   flex-wrap: wrap;
   min-width: 50%;
+  align-items: stretch;
 }
 
 .contactPane .addressBookSection {
@@ -458,7 +462,70 @@
 .contactPane .peopleSection {
   display: flex;
   background: var(--color-background);
-  padding: var(--spacing-sm);
   border-top: 1px dotted var(--color-text-muted);
   margin-bottom: 0;
+}
+
+.contactPane .peopleSection ul {
+  list-style: none;
+  padding: 0;
+  m6argin: 0;
+  width: 100%;
+}
+
+.contactPane .peopleSection li {
+  border-top: 1px solid var(--color-border-pale);
+  padding: 5px;
+}
+
+/* ── Person list item (addressBookPresenter) ─────────────────── */
+
+.contactPane .personLi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contactPane .personLi-avatar {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactPane .personLi-avatar .avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactPane .personLi-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.contactPane .personLi-info {
+  flex: 1;
+  margin-left: 12px;
+  overflow: hidden;
+}
+
+.contactPane .personLi-name {
+  font-weight: bold;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contactPane .personLi-arrow {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }

@@ -134,6 +134,7 @@ export default {
           }
         }
 
+        // the title of a adddress book has a default value, reason why if we take the name from the document
         let title = ''
         if (book) {
           title = utils.label(book.dir())
@@ -458,7 +459,7 @@ export default {
           // Remove special items before initial render too
           if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
           if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
-          renderGroupButtons(book, ulGroups, options, kb, dom, selectedGroups, ulPeople, searchInput, detailsSectionContent, div, dataBrowserContext, function () {
+          renderGroupButtons(book, ulGroups, options, dom, selectedGroups, ulPeople, searchInput, detailsSectionContent, div, dataBrowserContext, function () {
             setActiveActionButton(null)
             // Keep the New contact form open when switching groups
             if (!detailsSectionContent.querySelector('.contactTypeChooser, .contactFormContainer')) {
