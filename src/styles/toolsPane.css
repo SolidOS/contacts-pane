@@ -11,6 +11,11 @@
 
 .contactPane .statsLog pre {
   padding: var(--spacing-md);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 /* ── Tools header row ────────────────────────────────────────── */

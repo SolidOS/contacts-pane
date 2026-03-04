@@ -307,7 +307,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
 function selectPerson (ulPeople, person, detailsView) {
   if (!detailsView) return
   if (detailsView.parentNode) detailsView.parentNode.classList.remove('hidden')
-  detailsView.innerHTML = 'loading...'
+  detailsView.innerHTML = 'Loading...'
   selectedPeople = {}
   selectedPeople[person.uri] = true
   refreshFilteredPeople(ulPeople, false, detailsView) // Color to remember which one you picked
@@ -322,16 +322,15 @@ function selectPerson (ulPeople, person, detailsView) {
     }
     // console.log("Loaded card " + local + '\n')
 
-    detailsView.appendChild(renderPane(local, 'contact'))
-    const personHr = dom.createElement('hr')
-    personHr.classList.add('dottedHr', 'dottedHr--thin')
-    detailsView.appendChild(personHr)
-
-    detailsView.appendChild(UI.widgets.linkIcon(dom, local)) // hoverHide
+    // Top-right toolbar with link icon and delete button
+    const toolbar = dom.createElement('div')
+    toolbar.classList.add('contact-toolbar')
+    const linkEl = UI.widgets.linkIcon(dom, local)
+    linkEl.setAttribute('title', 'Uri of contact')
+    toolbar.appendChild(linkEl)
 
     // Add in a delete button to delete from AB
     const deleteButton = UI.widgets.deleteButtonWithCheck(
-
       dom,
       detailsView,
       'contact',
@@ -373,6 +372,10 @@ function selectPerson (ulPeople, person, detailsView) {
       }
     )
     deleteButton.classList.add('deleteButton')
+    toolbar.appendChild(deleteButton)
+    detailsView.appendChild(toolbar)
+
+    detailsView.appendChild(renderPane(local, 'contact'))
   })
 }
 

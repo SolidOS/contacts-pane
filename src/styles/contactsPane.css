@@ -114,22 +114,25 @@
   padding: 0.1em;
 }
 
+/* ── Contact toolbar (top-right link + delete) ──────────────── */
+
+.contactPane .contact-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.contactPane .contact-toolbar a img {
+  width: 1.3em;
+  height: 1em;
+  margin: 0;
+}
+
 /* ── Delete button ───────────────────────────────────────────── */
 
 .contactPane .deleteButton {
-  height: var(--min-touch-target);
-  border: 1px solid var(--color-border-pale);
-  background-color: var(--color-section-bg);
-  border-radius: var(--border-radius-base);
-  padding: 0 var(--spacing-sm) 0 var(--min-touch-target);
-  font-size: var(--font-size-base);
-  width: 180px;
-  box-sizing: border-box;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 16px center !important;
-  background-size: 20px 20px;
-  height: var(--spacing-lg);
 }
 
 /* ── "All" groups button ─────────────────────────────────────── */
@@ -469,8 +472,10 @@
 .contactPane .peopleSection ul {
   list-style: none;
   padding: 0;
-  m6argin: 0;
+  margin: 0;
   width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .contactPane .peopleSection li {

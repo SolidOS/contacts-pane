@@ -202,7 +202,7 @@ export default {
             .askName(dom, kb, formContainer, UI.ns.foaf('name'), klass)
             .then(async (name) => {
               if (!name) return // cancelled by user
-              detailsSectionContent.innerHTML = 'indexing...'
+              detailsSectionContent.innerHTML = 'Indexing...'
               let person
               try {
                 person = await saveNewContact(book, name, selectedGroups, klass)
