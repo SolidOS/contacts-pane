@@ -647,7 +647,7 @@ export default {
               statusRegion: div
             }
             UI.login.registrationControl(sharingContext, book, ns.vcard('AddressBook'))
-              .then(() => console.log('Registration control finished.'))
+              .then(() => debug.log('Registration control finished.'))
               .catch(e => UI.widgets.complain(sharingContext, 'registrationControl: ' + e))
           })
 

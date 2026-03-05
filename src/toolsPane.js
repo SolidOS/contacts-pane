@@ -5,6 +5,7 @@ import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import './styles/toolsPane.css'
 import * as $rdf from 'rdflib'
 import { complain } from './localUtils'
+import * as debug from './debug'
 
 const kb = store
 const ns = UI.ns
@@ -235,7 +236,7 @@ export function toolsPane (
                   return resolve(false)
                 }
               }
-              console.log('Group check done -- exact duplicate: ' + card)
+              debug.log('Group check done -- exact duplicate: ' + card)
               stats.exactDuplicates.push(card)
               resolve(true)
             }).catch(function (e) {
@@ -312,7 +313,7 @@ export function toolsPane (
                       return resolve(false)
                     }
                   }
-                  console.log('Group check done -- exact duplicate: ' + card)
+                  debug.log('Group check done -- exact duplicate: ' + card)
                 } else {
                   log(logSpace, 'First nameless like: ' + card.doc())
                   log(logSpace, '___________________________________________')
@@ -642,7 +643,7 @@ async function checkAcces (_event) {
 }
 
 function log (logSpace, message) {
-  console.log(message)
+  debug.log(message)
   logSpace.textContent += message + '\n'
 }
 

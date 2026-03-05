@@ -2,6 +2,7 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import * as $rdf from 'rdflib'
 import './styles/mugshotGallery.css'
+import * as debug from './debug'
 
 // Lightweight MIME helpers replacing the heavy mime-types/mime-db packages (~170 KiB)
 const mimeMap = {
@@ -38,7 +39,7 @@ const kb = store
 */
 export function renderMugshotGallery (dom, subject) {
   function complain (message) {
-    console.log(message)
+    debug.log(message)
     galleryDiv.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
   }
 
@@ -54,7 +55,7 @@ export function renderMugshotGallery (dom, subject) {
       }
     } catch (err) {
       const msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
-      console.log(msg)
+      debug.log(msg)
       alert(msg)
     }
   }
@@ -62,13 +63,13 @@ export function renderMugshotGallery (dom, subject) {
   function handleDroppedThing (thing) {
     kb.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
       if (!ok) {
-        console.log('Error looking up dropped thing ' + thing + ': ' + mess)
+        debug.log('Error looking up dropped thing ' + thing + ': ' + mess)
       } else {
         const types = kb.findTypeURIs(thing)
         for (const ty in types) {
-          console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+          debug.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
         }
-        console.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
+        debug.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
         kb.add(subject, ns.wf('attachment'), thing, subject.doc())
         // @@ refresh UI
       }
@@ -80,7 +81,7 @@ export function renderMugshotGallery (dom, subject) {
     const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
-      console.log('MIME TYPE MISMATCH -- adding extension: ' + filename)
+      debug.log('MIME TYPE MISMATCH -- adding extension: ' + filename)
     }
     let prefix, predicate
     const isImage = contentType.startsWith('image')
@@ -101,7 +102,7 @@ export function renderMugshotGallery (dom, subject) {
       }
       filename = prefix + n + '.' + extension
     }
-    console.log(
+    debug.log(
       'Putting ' +
         data.byteLength +
         ' bytes of ' +
@@ -119,7 +120,7 @@ export function renderMugshotGallery (dom, subject) {
           complain('Error uploading ' + pic + ':' + response.status)
           return
         }
-        console.log(' Upload: put OK: ' + pic)
+        debug.log(' Upload: put OK: ' + pic)
         kb.add(subject, predicate, pic, subject.doc())
         kb.fetcher
           .putBack(subject.doc(), { contentType: 'text/turtle' })
@@ -130,7 +131,7 @@ export function renderMugshotGallery (dom, subject) {
               }
             },
             function (err) {
-              console.log(
+              debug.log(
                 ' Write back image link FAIL ' + pic + ', Error: ' + err
               )
             }
@@ -142,7 +143,7 @@ export function renderMugshotGallery (dom, subject) {
   async function handleURIsDroppedOnMugshot (uris) {
     for (const u of uris) {
       let thing = $rdf.sym(u) // Attachment needs text label to disinguish I think not icon.
-      console.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
+      debug.log('Dropped on mugshot thing ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
       if (u.startsWith('http') && u.indexOf('#') < 0) {
         // Plain document
         // Take a copy of a photo on the web:
@@ -184,7 +185,7 @@ export function renderMugshotGallery (dom, subject) {
   function droppedFileHandler (files) {
     for (let i = 0; i < files.length; i++) {
       const f = files[i]
-      console.log(
+      debug.log(
         ' contacts: Filename: ' +
           f.name +
           ', type: ' +
@@ -202,7 +203,7 @@ export function renderMugshotGallery (dom, subject) {
       reader.onload = (function (theFile) {
         return function (e) {
           const data = e.target.result
-          console.log(' File read byteLength : ' + data.byteLength)
+          debug.log(' File read byteLength : ' + data.byteLength)
           const filename = encodeURIComponent(theFile.name)
           const contentType = theFile.type
           uploadFileToContact(filename, contentType, data)
@@ -281,10 +282,10 @@ export function renderMugshotGallery (dom, subject) {
           return
         }
         if (confirm(`Permanently DELETE image ${uri} completely?`)) {
-          console.log('Unlinking image file ' + uri)
+          debug.log('Unlinking image file ' + uri)
           await linkToPicture(subject, kb.sym(uri), true)
           try {
-            console.log('Deleting image file ' + uri)
+            debug.log('Deleting image file ' + uri)
             await kb.fetcher.webOperation('DELETE', uri)
           } catch (err) {
             alert('Unable to delete picture! ' + err)
@@ -312,7 +313,7 @@ export function renderMugshotGallery (dom, subject) {
         UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler)
       )
     } catch (e) {
-      console.log('ignore fileUploadButtonDiv error for now', e)
+      debug.log('ignore fileUploadButtonDiv error for now', e)
     }
     right.appendChild(trashCan())
     return imageToolTable

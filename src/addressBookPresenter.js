@@ -320,7 +320,7 @@ function selectPerson (ulPeople, person, detailsView) {
     if (!ok) {
       return complainIfBad(div, dom, ok, 'Can\'t load card: ' + local + ': ' + message)
     }
-    // console.log("Loaded card " + local + '\n')
+    // debug.log("Loaded card " + local + '\n')
 
     // Top-right toolbar with link icon and delete button
     const toolbar = dom.createElement('div')
@@ -362,7 +362,7 @@ function selectPerson (ulPeople, person, detailsView) {
               }
             })
           })
-          // console.log(removeFromGroups)
+          // debug.log(removeFromGroups)
           await kb.updater.updateMany(removeFromGroups)
           await deleteThingAndDoc(person)
           await deleteRecursive(kb, container)

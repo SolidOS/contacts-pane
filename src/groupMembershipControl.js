@@ -2,6 +2,7 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import './styles/groupMembership.css'
+import * as debug from './debug'
 
 const ns = UI.ns
 const kb = store
@@ -52,7 +53,7 @@ export async function renderGroupMemberships (person, context) {
           container.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
         }
       })
-      console.log('Removed ' + pname + ' from group ' + gname)
+      debug.log('Removed ' + pname + ' from group ' + gname)
       // to allow refresh of card groupList
       kb.fetcher.unload(group.doc())
       await kb.fetcher.load(group.doc())
@@ -101,7 +102,11 @@ export async function renderGroupMemberships (person, context) {
   function syncGroupPills () {
     const groups = groupMembership(person)
     const pillsWrapper = container.querySelector('.group-pills-wrapper')
-    pillsWrapper.innerHTML = ''
+    if (groups.length === 0) {
+      pillsWrapper.innerHTML = 'Not part of any Address Book groups.'
+    } else {
+      pillsWrapper.innerHTML = ''
+    }
 
     groups.forEach(group => {
       pillsWrapper.appendChild(createGroupItem(group))

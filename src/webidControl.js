@@ -5,6 +5,7 @@ import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 import * as $rdf from 'rdflib'
 import './styles/webidControl.css'
+import * as debug from './debug'
 
 const ns = UI.ns
 const widgets = UI.widgets
@@ -41,7 +42,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   }
 
   // create a person's webID
-  console.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
+  debug.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
   const vcardURLThing = kb.bnode()
   const insertables = [
     $rdf.st(person, ns.vcard('url'), vcardURLThing, person.doc()),
@@ -64,7 +65,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 }
 
 export async function removeWebIDFromContacts (person, webid, urlType, kb) {
-  console.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
+  debug.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
 
   // remove webID from card
   const existing = kb.each(person, ns.vcard('url'), null, person.doc())
@@ -110,13 +111,13 @@ export function getSameAs (kb, thing, doc) { // Should this recurse?
     kb.each(node, ns.owl('sameAs'), null, doc)
       .concat(kb.each(null, ns.owl('sameAs'), node, doc))
       .forEach(next => {
-        console.log('        OWL sameAs found ' + next)
+        debug.log('        OWL sameAs found ' + next)
         agenda.add(next.uri)
       })
     kb.each(node, ns.schema('sameAs'), null, doc)
       .concat(kb.each(null, ns.schema('sameAs'), node, doc))
       .forEach(next => {
-        console.log('        Schema sameAs found ' + next)
+        debug.log('        Schema sameAs found ' + next)
         agenda.add(next.uri)
       })
   }
@@ -173,7 +174,7 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
     if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
       orgClass = kb.sym(wikidataClasses[classId])
       orgClassId = classId
-      console.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
+      debug.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
   }
   const options = {
@@ -249,9 +250,9 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     // loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
-        console.log('main: ', main)
+        debug.log('main: ', main)
         main.classList.add('fullWidth')
-        console.log('renderIdControl: main element: ', main)
+        debug.log('renderIdControl: main element: ', main)
         // main.style.visibility = 'collapse'
         mainCell.appendChild(main)
       } catch (err) {
@@ -267,7 +268,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
-    console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
+    debug.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
     prompt.classList.toggle('hidden', personas.length > 0)
     utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
   }
@@ -315,7 +316,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     try {
       div.appendChild(await widgets.renderAutocompleteControl(dom, person, barOptions, acOptions, addOneIdAndRefresh))
     } catch (err) {
-      console.error('renderAutocompleteControl failed:', err)
+      debug.error('renderAutocompleteControl failed:', err)
       div.appendChild(widgets.errorMessageBlock(dom, 'Error rendering autocomplete: ' + err))
     }
   }
