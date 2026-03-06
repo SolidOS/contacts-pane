@@ -1,11 +1,11 @@
 /* ── Group Membership Section ──────────────────────────────── */
 
-.group-membership-container {
+.contactPane .group-membership-container {
   padding: var(--spacing-sm) 0;
 }
 
 /* Grid wrapper — matches detailsSectionContent groupButtonsList */
-.group-pills-wrapper {
+.contactPane .group-pills-wrapper {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--spacing-sm);
@@ -16,14 +16,14 @@
 }
 
 /* Each group item: button on top, toolbar below */
-.group-membership-item {
+.contactPane .group-membership-item {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   max-width: 256px;
 }
 
-.group-membership-item > button {
+.contactPane .group-membership-item > button {
   width: 100%;
   text-align: center;
   border-radius: var(--border-radius-base);
@@ -33,7 +33,7 @@
 }
 
 /* Toolbar with link icon and delete button below each group button */
-.group-membership-toolbar {
+.contactPane .group-membership-toolbar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -41,27 +41,27 @@
   padding: var(--spacing-xs) 0 0 0;
 }
 
-.group-membership-toolbar a img {
+.contactPane .group-membership-toolbar a img {
   width: 1.3em;
   height: 1em;
   margin: 0;
 }
 
 @media (max-width: 599px) {
-  .group-pills-wrapper {
+  .contactPane .group-pills-wrapper {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xs);
     max-width: 100%;
   }
 
-  .group-membership-item > button {
+  .contactPane .group-membership-item > button {
     font-size: var(--font-size-sm);
     border-radius: var(--border-radius-base);
   }
 }
 
 @media (min-width: 900px) {
-  .group-pills-wrapper {
+  .contactPane .group-pills-wrapper {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-sm);
   }

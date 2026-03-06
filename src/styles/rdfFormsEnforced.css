@@ -312,6 +312,6 @@
   padding: var(--spacing-xs) !important;
 }
 
-.webidControl table td div.contactPane.namedPane {
+.contactPane .webidControl table td div.contactPane.namedPane {
   border: none !important;
 }

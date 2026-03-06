@@ -1,5 +1,5 @@
 /* Focus indicator for keyboard navigation */
-tr[tabindex="0"]:focus {
+.contactPane table tr[tabindex="0"]:focus {
   outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: 2px;
   background: var(--color-info-bg);
@@ -178,7 +178,7 @@ tr[tabindex="0"]:focus {
 }
 
 /* Primary Button */
-.btn-primary {
+.contactPane .btn-primary {
   min-height: var(--min-touch-target);
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-primary);
@@ -190,23 +190,23 @@ tr[tabindex="0"]:focus {
   transition: all var(--animation-duration) ease;
 }
 
-.btn-primary:hover {
+.contactPane .btn-primary:hover {
   background: color-mix(in srgb, var(--color-primary) 90%, black);
   box-shadow: 0 2px 4px rgba(124, 77, 255, 0.2);
 }
 
-.btn-primary:active {
+.contactPane .btn-primary:active {
   box-shadow: 0 1px 2px rgba(124, 77, 255, 0.2);
 }
 
-.btn-primary:disabled {
+.contactPane .btn-primary:disabled {
   opacity: var(--opacity-disabled, 0.6);
   cursor: not-allowed;
   transform: none;
 }
 
 /* Secondary button */
-.btn-secondary {
+.contactPane .btn-secondary {
   min-height: var(--min-touch-target);
   padding: var(--spacing-sm) var(--spacing-md);
   border: var(--border-width-thin) solid var(--color-secondary);
@@ -222,18 +222,18 @@ tr[tabindex="0"]:focus {
   justify-content: center;
 }
 
-.btn-secondary:hover {
+.contactPane .btn-secondary:hover {
   background: color-mix(in srgb, var(--color-secondary) 85%, black);
 }
 
-.btn-secondary:disabled {
+.contactPane .btn-secondary:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
 /* Action Button Focus - used by ChatWithMe, ProfileCard */
-.action-button-focus:focus,
-.action-button-focus:focus-visible {
+.contactPane .action-button-focus:focus,
+.contactPane .action-button-focus:focus-visible {
   outline: 3px solid var(--color-primary) !important;
   outline-offset: 2px !important;
   box-shadow: 0 0 0 2px var(--color-background), 0 0 0 5px rgba(124, 77, 255, 0.25) !important;
