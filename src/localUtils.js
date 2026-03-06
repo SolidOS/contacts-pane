@@ -25,8 +25,8 @@ export function normalizeGroupUri (uri) {
 }
 
 export function complain (div, d, message) {
-  debug.log('contactsPane: ' + message)
-  UI.widgets.errorMessageBlock(dom, message, 'pink')
+  debug.error('contactsPane: ' + message)
+  UI.widgets.errorMessageBlock(d, message, 'pink')
 }
 export function complainIfBad (div, dom, ok, body) {
   if (!ok) {

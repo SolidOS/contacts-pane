@@ -187,10 +187,12 @@ function groupsInOrder (book, options) {
 
 export async function loadAllGroups (book) {
   const groupIndex = kb.any(book, ns.vcard('groupIndex'))
-  await kb.fetcher.load(groupIndex)
-  const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
-  await kb.fetcher.load(gs)
-  return gs
+  if (groupIndex) {
+    await kb.fetcher.load(groupIndex)
+    const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
+    await kb.fetcher.load(gs)
+    return gs
+  } else return
 }
 
 // The book could be the main subject, or linked from a group we are dealing with
@@ -445,18 +447,21 @@ export async function checkDataModel (book, detailsSectionContent) {
   // await kb.fetcher.load(groups) // asssume loaded already
   const groups = await loadAllGroups(book)
 
-  const { del, ins } = await getDataModelIssues(groups)
+  if (groups && groups.length > 0) {
 
-  if (del.length) {
-    UI.widgets.deleteButtonWithCheck(
-      dom,
-      detailsSectionContent, // where it appends it to
-      'contact',
-      async function () {
-        await kb.updater.updateMany(del, ins)
-        debug.log('Deleted ' + del.length + ' bad statements from groups')
-    })
-  }
+    const { del, ins } = await getDataModelIssues(groups)
+
+    if (del.length) {
+        UI.widgets.deleteButtonWithCheck(
+        dom,
+        detailsSectionContent, // where it appends it to
+        'contact',
+        async function () {
+            await kb.updater.updateMany(del, ins)
+            debug.log('Deleted ' + del.length + ' bad statements from groups')
+        })
+    }
+    }
 }
 
 // Prepare book data once so askName forms load instantly

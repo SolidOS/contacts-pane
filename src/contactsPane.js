@@ -112,12 +112,23 @@ export default {
       function renderAddressBookDetails (books, options) {
         const classLabel = utils.label(ns.vcard('AddressBook'))
 
-        const book = books[0] // for now
+        let book = options.foreignGroup // in case we have only a Grouo
+        let title = ''
+        if (books && books.length > 0) {
+          book = books[0] // if we have an Address Book, we prefer this     
+          title = utils.label(book.dir())
+        } else {
+          kb.any(book, ns.dc('title')) || kb.any(book, ns.vcard('fn'))
+          if (paneOptions.solo && title && typeof document !== 'undefined') {
+            document.title = title.value // @@ only when the outermmost pane
+          }
+          title = title ? title.value : classLabel
+        }
+       
         const groupIndex = kb.any(book, ns.vcard('groupIndex'))
+        console.log( '-----groupIndex ' + groupIndex)
         const selectedGroups = {}
         let selectedPeople = {} // Actually prob max 1
-
-        const target = options.foreignGroup || book
 
         let allGroupsLi = null
         let newGroupLi = null
@@ -133,18 +144,6 @@ export default {
             activeBtn.classList.remove('btn-secondary')
             activeBtn.classList.add('btn-primary')
           }
-        }
-
-        // the title of a adddress book has a default value, reason why if we take the name from the document
-        let title = ''
-        if (book) {
-          title = utils.label(book.dir())
-        } else {
-          utils.label(book.dir()) || kb.any(target, ns.dc('title')) || kb.any(target, ns.vcard('fn'))
-          if (paneOptions.solo && title && typeof document !== 'undefined') {
-            document.title = title.value // @@ only when the outermmost pane
-          }
-          title = title ? title.value : classLabel
         }
 
         // Click on New Group button
@@ -451,25 +450,27 @@ export default {
           // Append ulGroups to buttonSection, then add New group at the end
           buttonSection.appendChild(ulGroups)
 
-          kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
-            if (!ok) return complain(div, dom, 'Cannot load group index: ' + body)
-            // Remove special items before sync (syncTableToArrayReOrdered expects .subject on all children)
-            if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
-            if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
-            syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput) // Refresh list of groups
-            ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild) // Keep All contacts first
-            ulGroups.appendChild(newGroupLi) // Keep New group last
+          if (groupIndex) {
+            kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
+              if (!ok) return complain(div, dom, 'Cannot load group index: ' + body)
+              // Remove special items before sync (syncTableToArrayReOrdered expects .subject on all children)
+              if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+              if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+              syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput) // Refresh list of groups
+              ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild) // Keep All contacts first
+              ulGroups.appendChild(newGroupLi) // Keep New group last
 
-            // Auto-select all groups and display all contacts on load
-            allGroupsButton.classList.add('allGroupsButton--loading')
-            selectAllGroups(selectedGroups, ulGroups, function (loadOk, message) {
-              if (!loadOk) return complain(div, dom, message)
-              allGroupsButton.classList.remove('allGroupsButton--loading')
-              allGroupsButton.classList.add('allGroupsButton--active')
-              refreshThingsSelected(ulGroups, selectedGroups)
-              refreshNames(ulPeople, null)
+              // Auto-select all groups and display all contacts on load
+              allGroupsButton.classList.add('allGroupsButton--loading')
+              selectAllGroups(selectedGroups, ulGroups, function (loadOk, message) {
+                if (!loadOk) return complain(div, dom, message)
+                allGroupsButton.classList.remove('allGroupsButton--loading')
+                allGroupsButton.classList.add('allGroupsButton--active')
+                refreshThingsSelected(ulGroups, selectedGroups)
+                refreshNames(ulPeople, null)
+              })
             })
-          })
+          }
 
           // Remove special items before initial render too
           if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
@@ -545,65 +546,68 @@ export default {
             groupsList.classList.add('groupButtonsList')
 
             // Sort groups by name
-            groups.sort((a, b) => {
-              const nameA = (kb.any(a, ns.vcard('fn')) || '').toString().toLowerCase()
-              const nameB = (kb.any(b, ns.vcard('fn')) || '').toString().toLowerCase()
-              return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
-            })
+            if (groups) {
+              groups.sort((a, b) => {
+                const nameA = (kb.any(a, ns.vcard('fn')) || '').toString().toLowerCase()
+                const nameB = (kb.any(b, ns.vcard('fn')) || '').toString().toLowerCase()
+                return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
+              })
+              groups.forEach(function (group) {
+                const name = kb.any(group, ns.vcard('fn'))
+                const groupLi = dom.createElement('li')
+                groupLi.setAttribute('role', 'listitem')
+                groupLi.setAttribute('tabindex', '0')
+                groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
+                groupLi.subject = group
 
-            groups.forEach(function (group) {
-              const name = kb.any(group, ns.vcard('fn'))
-              const groupLi = dom.createElement('li')
-              groupLi.setAttribute('role', 'listitem')
-              groupLi.setAttribute('tabindex', '0')
-              groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
-              groupLi.subject = group
-
-              const groupBtn = groupLi.appendChild(dom.createElement('button'))
-              groupBtn.setAttribute('type', 'button')
-              groupBtn.innerHTML = name ? name.value : 'Some group'
-              groupBtn.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
-              groupBtn.addEventListener('click', function (event) {
-                event.preventDefault()
-                if (!event.metaKey) {
-                  for (const key in selectedGroups) delete selectedGroups[key]
-                }
-                selectedGroups[group.uri] = !selectedGroups[group.uri]
-                refreshThingsSelected(ulGroups, selectedGroups)
-                // Highlight the matching group button in the sidebar ulGroups
-                const matchingLi = Array.from(ulGroups.children).find(li => li.subject && li.subject.uri === group.uri)
-                setActiveGroupButton(ulGroups, matchingLi ? matchingLi.querySelector('button') : null)
-                kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
-                  if (ok) {
-                    refreshNames(ulPeople, null, false)
+                const groupBtn = groupLi.appendChild(dom.createElement('button'))
+                groupBtn.setAttribute('type', 'button')
+                groupBtn.innerHTML = name ? name.value : 'Some group'
+                groupBtn.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+                groupBtn.addEventListener('click', function (event) {
+                  event.preventDefault()
+                  if (!event.metaKey) {
+                    for (const key in selectedGroups) delete selectedGroups[key]
                   }
-                })
-              }, false)
-
-              UI.widgets.makeDraggable(groupLi, group)
-              UI.widgets.deleteButtonWithCheck(
-                dom,
-                groupLi,
-                'group ' + name,
-                async function () {
-                  await deleteThingAndDoc(group)
-                  delete selectedGroups[group.uri]
-                  // Refresh the group buttons list
-                  if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
-                  if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
-                  syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput)
-                  ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild)
-                  ulGroups.appendChild(newGroupLi)
+                  selectedGroups[group.uri] = !selectedGroups[group.uri]
                   refreshThingsSelected(ulGroups, selectedGroups)
-                  // Refresh the people list to reflect the deleted group
-                  refreshNames(ulPeople, null, false)
-                  // Refresh the groups detail view
-                  groupsButton.click()
-                }
-              )
+                  // Highlight the matching group button in the sidebar ulGroups
+                  const matchingLi = Array.from(ulGroups.children).find(li => li.subject && li.subject.uri === group.uri)
+                  setActiveGroupButton(ulGroups, matchingLi ? matchingLi.querySelector('button') : null)
+                  kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
+                    if (ok) {
+                      refreshNames(ulPeople, null, false)
+                    }
+                  })
+                }, false)
 
-              groupsList.appendChild(groupLi)
-            })
+                UI.widgets.makeDraggable(groupLi, group)
+                UI.widgets.deleteButtonWithCheck(
+                  dom,
+                  groupLi,
+                  'group ' + name,
+                  async function () {
+                    await deleteThingAndDoc(group)
+                    delete selectedGroups[group.uri]
+                    // Refresh the group buttons list
+                    if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+                    if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+                    syncGroupUl(book, options, ulGroups, dom, selectedGroups, ulPeople, searchInput)
+                    ulGroups.insertBefore(allGroupsLi, ulGroups.firstChild)
+                    ulGroups.appendChild(newGroupLi)
+                    refreshThingsSelected(ulGroups, selectedGroups)
+                    // Refresh the people list to reflect the deleted group
+                    refreshNames(ulPeople, null, false)
+                    // Refresh the groups detail view
+                    groupsButton.click()
+                  }
+                )
+
+                groupsList.appendChild(groupLi)
+              })
+            }
+
+          
 
             detailsSectionContent.appendChild(groupsList)
 
@@ -704,9 +708,10 @@ export default {
         t[ns.schema('Organization').uri]
       ) {
         renderIndividual(dom, div, subject, dataBrowserContext).then(() => debug.log('(individual rendered)'))
-
+      /*
         //          Render a Group instance
-      } else if (t[ns.vcard('Group').uri]) {
+      } 
+        else if (t[ns.vcard('Group').uri]) {
         // If we have a main address book, then render this group as a guest group within it
         UI.login
           .findAppInstances(context, ns.vcard('AddressBook'))
@@ -724,8 +729,8 @@ export default {
           .catch(function (e) {
             complain(div, dom, '' + e)
           })
-
-        // Render a AddressBook instance
+        */
+      // Render a AddressBook instance
       } else if (t[ns.vcard('AddressBook').uri]) {
         renderAddressBook([subject], {})
       } else {
