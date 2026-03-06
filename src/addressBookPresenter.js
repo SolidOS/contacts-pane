@@ -82,7 +82,6 @@ function renderGroupLi (group) {
   const name = kb.any(group, ns.vcard('fn'))
   const groupLi = dom.createElement('li')
   groupLi.setAttribute('role', 'listitem')
-  groupLi.setAttribute('tabindex', '0')
   groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
   groupLi.subject = group
   UI.widgets.makeDraggable(groupLi, group)
@@ -108,6 +107,7 @@ export function selectAllGroups (
 ) {
   function fetchGroupAndSelect (group, groupLi) {
     groupLi.classList.add('group-loading')
+    groupLi.setAttribute('aria-busy', 'true')
     kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
       ok,
       message
@@ -115,9 +115,11 @@ export function selectAllGroups (
       if (!ok) {
         const msg = 'Can\'t load group file: ' + group + ': ' + message
         badness.push(msg)
+        groupLi.setAttribute('aria-busy', 'false')
         return complainIfBad(div, dom, ok, msg)
       }
       groupLi.classList.remove('group-loading')
+      groupLi.setAttribute('aria-busy', 'false')
       groupLi.classList.add('selected')
       selectedGroups[group.uri] = true
       refreshThingsSelected(ulGroups, selectedGroups)
@@ -216,9 +218,16 @@ export function findBookFromGroups (book) {
 /** Refresh the list of names */
 export function refreshNames (ulPeople, detailsView, autoSelect = true) {
   function setPersonListener (personLi, person) {
-    personLi.addEventListener('click', function (event) {
+    function handleSelect (event) {
       event.preventDefault()
       selectPerson(ulPeople, person, cardMain)
+    }
+    personLi.addEventListener('click', handleSelect)
+    personLi.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        handleSelect(event)
+      }
     })
   }
 
@@ -256,7 +265,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     // Placeholder avatar (shown initially while person doc loads)
     const placeholderEl = dom.createElement('div')
     placeholderEl.classList.add('avatar-placeholder')
-    placeholderEl.innerHTML = '<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#888" font-size="16" font-family="Arial" dy=".3em">?</text></svg>'
+    placeholderEl.innerHTML = '<svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#888" font-size="16" font-family="Arial" dy=".3em">?</text></svg>'
     avatarDiv.appendChild(placeholderEl)
 
     // Try to set avatar from already-loaded data, or fetch the person's doc
@@ -265,7 +274,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
       if (avatarUrl && avatarUrl.value) {
         const img = dom.createElement('img')
         img.src = avatarUrl.value
-        img.alt = 'Avatar'
+        img.alt = name + ' avatar'
         avatarDiv.replaceChild(img, avatarDiv.firstChild)
       }
     }
@@ -290,7 +299,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     // Right: Arrow icon
     const arrowDiv = dom.createElement('div')
     arrowDiv.classList.add('personLi-arrow')
-    arrowDiv.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5L11.25 9L6 13.5" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    arrowDiv.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5L11.25 9L6 13.5" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
     // Assemble
     rowDiv.appendChild(avatarDiv)
@@ -310,6 +319,7 @@ function selectPerson (ulPeople, person, detailsView) {
   if (!detailsView) return
   if (detailsView.parentNode) detailsView.parentNode.classList.remove('hidden')
   detailsView.innerHTML = 'Loading...'
+  detailsView.setAttribute('aria-busy', 'true')
   detailsView.classList.add('detailsSectionContent--wide')
   selectedPeople = {}
   selectedPeople[person.uri] = true
@@ -320,6 +330,7 @@ function selectPerson (ulPeople, person, detailsView) {
     message
   ) {
     detailsView.innerHTML = ''
+    detailsView.setAttribute('aria-busy', 'false')
     if (!ok) {
       return complainIfBad(div, dom, ok, 'Can\'t load card: ' + local + ': ' + message)
     }

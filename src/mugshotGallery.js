@@ -216,6 +216,7 @@ export function renderMugshotGallery (dom, subject) {
   function elementForImage (image) {
     const img = dom.createElement('img')
     img.classList.add('mugshotImage')
+    img.setAttribute('alt', image ? 'Contact photo' : 'Drop photo here')
     UI.widgets.makeDropTarget(
       img,
       handleURIsDroppedOnMugshot,
@@ -270,7 +271,9 @@ export function renderMugshotGallery (dom, subject) {
     const button = UI.widgets.button(
       dom,
       UI.icons.iconBase + 'noun_925021.svg',
-      'Drag here to delete'
+      'Drag here to delete',
+      undefined,
+      { 'aria-label': 'Delete photo - drag image here' }
     )
     async function droppedURIHandler (uris) {
       const images = kb

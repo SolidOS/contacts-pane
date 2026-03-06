@@ -201,6 +201,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       profileIsVisible = !profileIsVisible
       main.classList.toggle('collapsed', !profileIsVisible)
       openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
+      openButton.setAttribute('aria-expanded', profileIsVisible ? 'true' : 'false')
+      openButton.setAttribute('aria-label', profileIsVisible ? 'Collapse profile' : 'Expand profile')
     }
     function renderNewRow (webidObject) {
       const webid = new $rdf.Literal(webidObject.uri)
@@ -244,6 +246,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     const rhs = nav.children[2]
     const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
     openButton.classList.add('personaOpenButton')
+    openButton.setAttribute('aria-expanded', 'true')
+    openButton.setAttribute('aria-label', 'Collapse profile')
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
     widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {

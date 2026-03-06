@@ -380,6 +380,7 @@ export default {
         detailsSectionContent.classList.add('detailsSectionContent')
         detailsSectionContent.setAttribute('role', 'region')
         detailsSectionContent.setAttribute('aria-labelledby', 'detailsSectionContent')
+        detailsSectionContent.setAttribute('aria-live', 'polite')
 
         if (options.foreignGroup) {
           selectedGroups[options.foreignGroup.uri] = true
@@ -408,18 +409,21 @@ export default {
 
             if (!allSelected) {
               allGroupsButton.classList.add('allGroupsButton--loading')
+              allGroupsButton.setAttribute('aria-busy', 'true')
               selectAllGroups(selectedGroups, ulGroups, function (
                 ok,
                 message
               ) {
                 if (!ok) return complain(div, dom, message)
                 allGroupsButton.classList.remove('allGroupsButton--loading')
+                allGroupsButton.setAttribute('aria-busy', 'false')
                 allGroupsButton.classList.add('allGroupsButton--active')
                 refreshThingsSelected(ulGroups, selectedGroups)
                 refreshNames(ulPeople, null)
               })
             } else {
               allGroupsButton.classList.remove('allGroupsButton--loading', 'allGroupsButton--active')
+              allGroupsButton.setAttribute('aria-busy', 'false')
               allGroupsButton.classList.add('allGroupsButton--loaded') // pale green hint groups loaded
               for (const key in selectedGroups) delete selectedGroups[key]
               refreshThingsSelected(ulGroups, selectedGroups)
@@ -461,9 +465,11 @@ export default {
 
               // Auto-select all groups and display all contacts on load
               allGroupsButton.classList.add('allGroupsButton--loading')
+              allGroupsButton.setAttribute('aria-busy', 'true')
               selectAllGroups(selectedGroups, ulGroups, function (loadOk, message) {
                 if (!loadOk) return complain(div, dom, message)
                 allGroupsButton.classList.remove('allGroupsButton--loading')
+                allGroupsButton.setAttribute('aria-busy', 'false')
                 allGroupsButton.classList.add('allGroupsButton--active')
                 refreshThingsSelected(ulGroups, selectedGroups)
                 refreshNames(ulPeople, null)
@@ -555,7 +561,6 @@ export default {
                 const name = kb.any(group, ns.vcard('fn'))
                 const groupLi = dom.createElement('li')
                 groupLi.setAttribute('role', 'listitem')
-                groupLi.setAttribute('tabindex', '0')
                 groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
                 groupLi.subject = group
 

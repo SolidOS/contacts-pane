@@ -21,15 +21,6 @@
 
 /* ── Layout: Three-column browser ────────────────────────────── */
 
-#main-content {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.contactPane .selected {
-
-}
-
 .contactPane .peopleSection .selected {
   background-color: var(--color-info-bg) !important;
 }

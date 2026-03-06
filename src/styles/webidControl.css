@@ -1,8 +1,4 @@
-/* webidControl.js styles — extracted from inline styles */
-/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
-
 /* ── Named pane (rendered sub-pane) ──────────────────────────── */
-
 .contactPane .namedPane {
   border: 0.1em solid var(--color-text-muted);
   border-radius: var(--border-radius-base);
