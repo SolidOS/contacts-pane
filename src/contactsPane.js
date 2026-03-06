@@ -531,11 +531,6 @@ export default {
             groupsHeader.textContent = 'Your groups'
             detailsSectionContent.appendChild(groupsHeader)
 
-            const groupRemark = dom.createElement('p')
-            groupRemark.classList.add('contactCreationRemark')
-            groupRemark.textContent = 'When deleting a group, all its contacts are deleted too.'
-            detailsSectionContent.appendChild(groupRemark)
-
             // Load all groups and display them in a list
             let groups
             try {

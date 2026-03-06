@@ -7,11 +7,11 @@
 /* ── Persona row ─────────────────────────────────────────────── */
 
 .contactPane .personaRow {
-  padding: 0.2em;
+  padding: var(--spacing-xs);
 }
 
 .contactPane .personaRow--webid {
-  background-color: #ffe6ff;
+  background-color: var(--color-info-bg);
 }
 
 /* ── Full-width elements ─────────────────────────────────────── */
@@ -31,17 +31,17 @@
 /* ── Section heading ─────────────────────────────────────────── */
 
 .contactPane .webidHeading {
-  font-size: 110%;
+  font-size: var(--font-size-lg);
   font-weight: bold;
   color: var(--color-primary);
-  padding: 0.2em;
-  margin: 0.7em 0;
+  padding: var(--spacing-xs);
+  margin: var(--spacing-sm) 0;
 }
 
 /* ── Prompt text ─────────────────────────────────────────────── */
 
 .contactPane .webidPrompt {
-  padding: 0.7em;
+  padding: var(--spacing-sm);
   border: none;
   font-size: var(--font-size-base);
   white-space: pre-wrap;

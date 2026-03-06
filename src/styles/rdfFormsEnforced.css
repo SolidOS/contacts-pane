@@ -227,11 +227,11 @@
 .contactPane .formFieldValue textarea {
   appearance: none;
   -webkit-appearance: none;
-  border: .05em solid #88c !important;
+  border: 0.05em solid var(--color-secondary) !important;
   border-style: solid !important;
-  border-width: .05em !important;
-  border-color: #88c !important;
-  border-radius: 0.2em !important;
+  border-width: 0.05em !important;
+  border-color: var(--color-secondary) !important;
+  border-radius: var(--border-radius-base) !important;
   width: 100%;
   box-sizing: border-box;
   margin-top: var(--spacing-xs);
@@ -258,7 +258,7 @@
 
 .individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName,
 .contactPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName {
-  padding-top: 0.55em !important;
+  padding-top: var(--spacing-xs) !important;
 }
 
 .individualPane .formFieldValue:has(input[data-testid="autocomplete-input"]),

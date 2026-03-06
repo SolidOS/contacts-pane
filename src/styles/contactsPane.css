@@ -14,7 +14,7 @@
 .personRow:focus, .dataCell:focus, tr[tabindex="0"]:focus {
   outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: 2px;
-  background: #e3f2fd;
+  background: var(--color-info-bg);
 }
 /* contactsPane styles — extracted from inline styles in contactsPane.js */
 /* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
@@ -55,7 +55,7 @@
 
 .contactPane .groupsHeader {
   min-width: 10em;
-  padding-bottom: 0.2em;
+  padding-bottom: var(--spacing-xs);
 }
 
 .contactPane .peopleHeader {
@@ -80,28 +80,28 @@
 }
 
 .contactPane .contactTypeChooser h3 {
-  margin: 0 0 4px 0;
-  font-size: 1.1em;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-lg);
 }
 
 .contactPane .contactTypeSelect {
-  height: 38px;
+  height: var(--min-touch-target);
   border: 1px solid var(--color-border-pale);
   border-radius: var(--border-radius-base);
-  padding: 0 10px;
+  padding: 0 var(--spacing-sm);
   font-size: var(--font-size-sm);
   background: var(--color-section-bg);
 }
 
 .contactPane .groupsMain,
 .contactPane .groupsFooter {
-  padding: 0.1em;
+  padding: var(--spacing-xs);
 }
 
 /* ── Search ──────────────────────────────────────────────────── */
 
 .contactPane .allGroupsButton {
-  border-radius: 22px !important;
+  border-radius: var(--border-radius-full) !important;
   /* existing styles */
 }
 .contactPane .searchInput {
@@ -122,7 +122,7 @@
 /* ── Data cells ──────────────────────────────────────────────── */
 
 .contactPane .dataCell {
-  padding: 0.1em;
+  padding: var(--spacing-xs);
 }
 
 /* ── Contact toolbar (top-right link + delete) ──────────────── */
@@ -139,11 +139,6 @@
   width: 1.3em;
   height: 1em;
   margin: 0;
-}
-
-/* ── Delete button ───────────────────────────────────────────── */
-
-.contactPane .deleteButton {
 }
 
 /* ── "All" groups button ─────────────────────────────────────── */
@@ -169,7 +164,7 @@
 /* ── Selection & visibility states ───────────────────────────── */
 
 .contactPane .group-loading {
-  background-color: #ffe;
+  background-color: var(--color-accent);
 }
 
 .contactPane .hidden {
@@ -179,7 +174,7 @@
 /* ── Mint new address book ───────────────────────────────────── */
 
 .contactPane .claimSuccess {
-  font-size: 140%;
+  font-size: var(--font-size-xl);
 }
 
 .contactPane .addressBook-grid {
@@ -249,7 +244,7 @@
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-disabled, 0.6);
   cursor: not-allowed;
   transform: none;
 }
@@ -310,7 +305,7 @@
 
 .contactPane .buttonSection::-webkit-scrollbar-thumb {
   background: var(--color-border-pale);
-  border-radius: 3px;
+  border-radius: var(--border-radius-base);
 }
 
 .contactPane .buttonSection::-webkit-scrollbar-track {
@@ -326,9 +321,9 @@
 }
 
 .contactPane .buttonSection .groupButtonsList {
-  margin-left: 4px;
-  margin-right: 4px;
-  padding-left: 0px;
+  margin-left: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
+  padding-left: 0;
 }
 
 .contactPane .groupButtonsList li {
@@ -339,7 +334,7 @@
   white-space: nowrap;
   flex-shrink: 0;
   min-width: max-content;
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 /* Groups list in details section — flexible 2-column grid */
@@ -362,7 +357,7 @@
   width: 100%;
   height: 100%;
   text-align: center;
-  border-radius: 12px;
+  border-radius: var(--border-radius-base);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -374,8 +369,8 @@
   }
 
   .contactPane .detailsSectionContent .groupButtonsList button {
-    font-size: 0.8rem;
-    border-radius: 8px;
+    font-size: var(--font-size-sm);
+    border-radius: var(--border-radius-base);
   }
 }
 
@@ -392,7 +387,7 @@
 }
 
 .contactPane .detailsSectionContent h3 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -498,7 +493,7 @@
 
 .contactPane .peopleSection li {
   border-top: 1px solid var(--color-border-pale);
-  padding: 5px;
+  padding: var(--spacing-xs);
 }
 
 /* ── Person list item (addressBookPresenter) ─────────────────── */
@@ -535,13 +530,13 @@
 
 .contactPane .personLi-info {
   flex: 1;
-  margin-left: 12px;
+  margin-left: var(--spacing-sm);
   overflow: hidden;
 }
 
 .contactPane .personLi-name {
   font-weight: bold;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

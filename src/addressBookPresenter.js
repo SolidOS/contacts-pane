@@ -268,6 +268,9 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     placeholderEl.innerHTML = '<svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#888" font-size="16" font-family="Arial" dy=".3em">?</text></svg>'
     avatarDiv.appendChild(placeholderEl)
 
+    // Get name early so it can be used in trySetAvatar
+    const name = nameFor(person) || 'Unknown Name'
+
     // Try to set avatar from already-loaded data, or fetch the person's doc
     function trySetAvatar () {
       const avatarUrl = kb.any(person, ns.vcard('hasPhoto'))
@@ -288,7 +291,6 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     const infoDiv = dom.createElement('div')
     infoDiv.classList.add('personLi-info')
 
-    const name = nameFor(person) || 'Unknown Name'
     personLi.setAttribute('aria-label', name)
     const nameDiv = dom.createElement('div')
     nameDiv.classList.add('personLi-name')

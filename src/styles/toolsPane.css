@@ -4,7 +4,7 @@
 /* ── Tools pane table ────────────────────────────────────────── */
 
 .contactPane .statsLog {
-  font-size: 120%;
+  font-size: var(--font-size-lg);
   margin: var(--spacing-md);
   background-color: var(--color-background);
 }
@@ -23,7 +23,7 @@
 .contactPane .toolsHeader {
   min-width: 20em;
   padding: var(--spacing-md);
-  font-size: 150%;
+  font-size: var(--font-size-xl);
   border-bottom: 0.1em solid var(--color-error);
   margin-bottom: var(--spacing-xl);
 }
@@ -52,18 +52,18 @@
 
 .contactPane .toolsButton {
   font-size: var(--font-size-base);
-  margin: 0.8em;
+  margin: var(--spacing-sm);
   padding: var(--spacing-xs);
 }
 
-/* ── Load index button states ────────────────────────────────── */
+/* ── Load index button states ──────────────────────────────── */
 
 .contactPane .toolsButton--loading {
-  background-color: #ffc;
+  background-color: var(--color-accent);
 }
 
 .contactPane .toolsButton--error {
-  background-color: #fcc;
+  background-color: var(--color-error);
 }
 
 .contactPane .toolsButton--success {

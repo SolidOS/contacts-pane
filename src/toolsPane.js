@@ -773,7 +773,7 @@ async function fixToOldDataModel (book) {
       return new Promise(function (resolve) {
         const msg = dom.createElement('p')
         msg.textContent = 'Groups can be updated to old data model?'
-        logSpace.parentNode.appendChild(msg)
+        logSpace.appendChild(msg)
         const confirmButton = UI.widgets.continueButton(dom, async function () {
           msg.remove()
           confirmButton.remove()
@@ -781,7 +781,7 @@ async function fixToOldDataModel (book) {
           log(logSpace, 'Update done')
           resolve()
         })
-        logSpace.parentNode.appendChild(confirmButton)
+        logSpace.appendChild(confirmButton)
       })
     } else {
       log(logSpace, 'Nothing to update.\nAll groups already use the old data model.')
