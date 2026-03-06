@@ -48,12 +48,13 @@ export async function renderGroupMemberships (person, context) {
           del = del.concat(kb.statementsMatching(undefined, undefined, webid, group.doc()))
         }
       })
-      kb.updater.update(del, [], function (uri, ok, err) {
-        if (!ok) {
-          const message = 'Error removing member from group ' + group + ': ' + err
-          container.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-        }
-      })
+      try {
+        await kb.updater.update(del, [])
+      } catch (err) {
+        const message = 'Error removing member from group ' + group + ': ' + err
+        container.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
+        return
+      }
       debug.log('Removed ' + pname + ' from group ' + gname)
       // to allow refresh of card groupList
       kb.fetcher.unload(group.doc())
