@@ -49,16 +49,18 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
 
-  // Allow to attach documents etc to the contact card
-  const h3 = div.appendChild(dom.createElement('h3'))
-  h3.textContent = 'Attach any document to this contact'
-  h3.classList.add('webidHeading')
+  if ( authn.currentUser()) {
+    // Allow to attach documents etc to the contact card
+    const h3 = div.appendChild(dom.createElement('h3'))
+    h3.textContent = 'Attach any document to this contact'
+    h3.classList.add('webidHeading')
 
-  UI.widgets.attachmentList(dom, subject, div, {
-    modify: editable
-    // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
-    // predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
-  })
+    UI.widgets.attachmentList(dom, subject, div, {
+      modify: editable
+      // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
+      // predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
+    })
+  }
 
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
