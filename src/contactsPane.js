@@ -126,7 +126,6 @@ export default {
         }
        
         const groupIndex = kb.any(book, ns.vcard('groupIndex'))
-        console.log( '-----groupIndex ' + groupIndex)
         const selectedGroups = {}
         let selectedPeople = {} // Actually prob max 1
 

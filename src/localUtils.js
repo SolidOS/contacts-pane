@@ -41,7 +41,7 @@ export function getSameAs (kb, item, doc) {
 //  For deleting an addressbook sub-folder eg person - use with care!
 // @@ move to solid-logic
 export function deleteRecursive (kb, folder) {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     kb.fetcher.load(folder).then(function () {
       const promises = kb.each(folder, ns.ldp('contains')).map(file => {
         if (kb.holds(file, ns.rdf('type'), ns.ldp('BasicContainer'))) {
@@ -55,8 +55,8 @@ export function deleteRecursive (kb, folder) {
       promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
       Promise.all(promises).then(_res => {
         resolve()
-      })
-    })
+      }).catch(reject)  
+    }).catch(reject)    
   })
 }
 
@@ -66,8 +66,8 @@ export function deleteRecursive (kb, folder) {
 // together and then deleted.
 export async function deleteThingAndDoc (x) {
   const name = nameFor(x)
-  if (!confirm('Really DELETE contact ' + name + '?')) {
-    throw new Error('User cancelled contact deletion')
+  if (!confirm('Really DELETE ' + name + '?')) {
+    return
   }
   debug.log('deleteThingAndDoc - to be deleted ' + x)
   const ds = kb.statementsMatching(x).concat(kb.statementsMatching(undefined, undefined, x))
@@ -76,7 +76,7 @@ export async function deleteThingAndDoc (x) {
     await kb.fetcher.delete(x.doc())
     debug.log('deleteThingAndDoc - deleted')
   } catch (err) {
-    complain(div, dom, 'Error deleting ' + x + ': ' + err)
+    UI.widgets.complain('Error deleting ' + x + ': ' + err)
     throw err
   }
 }
