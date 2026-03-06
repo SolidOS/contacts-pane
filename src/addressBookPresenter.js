@@ -412,6 +412,15 @@ function selectPerson (ulPeople, person, detailsView) {
   })
 }
 
+export function deselectAllPeople (ulPeople) {
+  selectedPeople = {}
+  if (ulPeople) {
+    for (let i = 0; i < ulPeople.children.length; i++) {
+      ulPeople.children[i].classList.remove('selected')
+    }
+  }
+}
+
 export function refreshFilteredPeople (ulPeople, active, detailsView) {
   let count = 0
   let lastRow = null

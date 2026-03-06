@@ -21,6 +21,7 @@ import {
   checkDataModel, ensureBookLoaded, renderGroupButtons,
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
   syncGroupUl, setActiveGroupButton, createGroupLi, refreshFilteredPeople,
+  deselectAllPeople,
 } from './addressBookPresenter'
 import { complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
@@ -407,6 +408,7 @@ function buildHeaderSection (ctx) {
   let newContactClickGeneration = 0
   newContactButton.addEventListener('click', async function (_event) {
     setActiveActionButton(null)
+    deselectAllPeople(ctx.ulPeople)
     const thisGeneration = ++newContactClickGeneration
     ctx.showDetailsSection()
     ctx.detailsSectionContent.innerHTML = ''
@@ -557,6 +559,7 @@ function buildGroupBar (ctx) {
       'click', function (event) {
         setActiveGroupButton(ulGroups, newGroupButton)
         setActiveActionButton(null)
+        deselectAllPeople(ctx.ulPeople)
         handleNewGroupClick(ctx)
       },
       false
@@ -595,8 +598,8 @@ function buildGroupBar (ctx) {
     if (ctx.newGroupLi.parentNode) ctx.newGroupLi.parentNode.removeChild(ctx.newGroupLi)
     renderGroupButtons(book, ulGroups, options, dom, selectedGroups, ctx.ulPeople, ctx.searchInput, ctx.detailsSectionContent, div, ctx.dataBrowserContext, function () {
       setActiveActionButton(null)
-      // Keep the New contact form open when switching groups
-      if (!ctx.detailsSectionContent.querySelector('.contactTypeChooser, .contactFormContainer')) {
+      // Keep the details section open when a contact or New contact form is showing
+      if (!ctx.detailsSectionContent.querySelector('.contactTypeChooser, .contactFormContainer, .renderPane')) {
         ctx.detailsSectionContent.innerHTML = ''
         ctx.detailsSection.classList.add('hidden')
       }
@@ -629,6 +632,7 @@ function buildFooterButtons (ctx) {
     actionButtons.push(groupsButton)
     groupsButton.addEventListener('click', async function (_event) {
       setActiveActionButton(groupsButton)
+      deselectAllPeople(ctx.ulPeople)
       ctx.showDetailsSection()
       ctx.detailsSectionContent.innerHTML = ''
       ctx.detailsSectionContent.classList.remove('detailsSectionContent--wide')
@@ -724,6 +728,7 @@ function buildFooterButtons (ctx) {
     actionButtons.push(sharingButton)
     sharingButton.addEventListener('click', function (_event) {
       setActiveActionButton(sharingButton)
+      deselectAllPeople(ctx.ulPeople)
       ctx.showDetailsSection()
       ctx.detailsSectionContent.innerHTML = ''
       ctx.detailsSectionContent.classList.remove('detailsSectionContent--wide')
@@ -765,6 +770,7 @@ function buildFooterButtons (ctx) {
     actionButtons.push(toolsButton)
     toolsButton.addEventListener('click', function (_event) {
       setActiveActionButton(toolsButton)
+      deselectAllPeople(ctx.ulPeople)
       ctx.showDetailsSection()
       ctx.detailsSectionContent.innerHTML = ''
       ctx.detailsSectionContent.classList.add('detailsSectionContent--wide')

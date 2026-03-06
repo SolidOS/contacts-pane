@@ -688,7 +688,7 @@ async function fixGroupless (book) {
   return new Promise(function (resolve) {
     const msg = dom.createElement('p')
     msg.textContent = `Add the ${groupless.length} contacts without groups to a 'No group' group?`
-    logSpace.parentNode.appendChild(msg)
+    logSpace.appendChild(msg)
     const confirmButton = UI.widgets.continueButton(dom, async function () {
       msg.remove()
       confirmButton.remove()
@@ -699,7 +699,7 @@ async function fixGroupless (book) {
       log(logSpace, 'People moved to group.')
       resolve()
     })
-    logSpace.parentNode.appendChild(confirmButton)
+    logSpace.appendChild(confirmButton)
   })
 }
 
