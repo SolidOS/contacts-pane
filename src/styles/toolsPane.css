@@ -35,7 +35,6 @@
 /* ── Load index button states ──────────────────────────────── */
 
 .contactPane .toolsButton--loading {
-  background-color: var(--color-accent);
 }
 
 .contactPane .toolsButton--error {

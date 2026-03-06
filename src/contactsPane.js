@@ -642,6 +642,10 @@ function buildFooterButtons (ctx) {
       groupsHeader.textContent = 'Your groups'
       ctx.detailsSectionContent.appendChild(groupsHeader)
 
+      const groupRemark = dom.createElement('p')
+      groupRemark.textContent = 'When you delete a group it can happen that some contacts end up groupless.'
+      ctx.detailsSectionContent.appendChild(groupRemark)
+
       // Load all groups and display them in a list
       let groups
       try {

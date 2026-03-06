@@ -128,7 +128,6 @@
 /* ── Selection & visibility states ───────────────────────────── */
 
 .contactPane .group-loading {
-  background-color: var(--color-accent);
 }
 
 .contactPane .hidden {
