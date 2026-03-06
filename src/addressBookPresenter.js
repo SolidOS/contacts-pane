@@ -270,7 +270,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     // Placeholder avatar (shown initially while person doc loads)
     const placeholderEl = dom.createElement('div')
     placeholderEl.classList.add('avatar-placeholder')
-    placeholderEl.innerHTML = '<svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#888" font-size="16" font-family="Arial" dy=".3em">?</text></svg>'
+    placeholderEl.innerHTML = '<svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#e0e0e0"/><text x="50%" y="58%" text-anchor="middle" fill="#595959" font-size="16" font-family="Arial" dy=".3em">?</text></svg>'
     avatarDiv.appendChild(placeholderEl)
 
     // Get name early so it can be used in trySetAvatar
@@ -306,7 +306,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     // Right: Arrow icon
     const arrowDiv = dom.createElement('div')
     arrowDiv.classList.add('personLi-arrow')
-    arrowDiv.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5L11.25 9L6 13.5" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    arrowDiv.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.5L11.25 9L6 13.5" stroke="#595959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
     // Assemble
     rowDiv.appendChild(avatarDiv)
