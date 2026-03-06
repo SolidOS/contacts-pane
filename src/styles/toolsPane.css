@@ -18,22 +18,6 @@
   max-width: 100%;
 }
 
-/* ── Tools header row ────────────────────────────────────────── */
-
-.contactPane .toolsHeader {
-  min-width: 20em;
-  padding: var(--spacing-md);
-  font-size: var(--font-size-xl);
-  border-bottom: 0.1em solid var(--color-error);
-  margin-bottom: var(--spacing-xl);
-}
-
-/* ── Status block ────────────────────────────────────────────── */
-
-.contactPane .toolsStatusBlock {
-  padding: var(--spacing-xl);
-}
-
 /* ── Tools pane layout ────────────────────────────────────────── */
 
 .contactPane .toolsPane {
@@ -46,14 +30,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-xs);
-}
-
-/* ── Tools buttons ───────────────────────────────────────────── */
-
-.contactPane .toolsButton {
-  font-size: var(--font-size-base);
-  margin: var(--spacing-sm);
-  padding: var(--spacing-xs);
 }
 
 /* ── Load index button states ──────────────────────────────── */
