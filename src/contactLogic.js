@@ -3,6 +3,7 @@ import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
 import * as debug from './debug'
+import { getSameAs } from './localUtils'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -199,11 +200,6 @@ export function isLocal (group, item) {
   const local = item.uri && item.uri.startsWith(tree.uri)
   // debug.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
   return local
-}
-
-export function getSameAs (kb, item, doc) {
-  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
-    kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
 export async function getDataModelIssues (groups) {

@@ -98,7 +98,7 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
 
 // Trace things the same as this - other IDs for same thing
 // returns as array of node
-export function getSameAs (kb, thing, doc) { // Should this recurse?
+function getSameAs (kb, thing, doc) { // Should this recurse?
   const found = new Set()
   const agenda = new Set([thing.uri])
 
