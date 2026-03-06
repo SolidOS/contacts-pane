@@ -50,16 +50,16 @@ export function renderGroupButtons (currentBook, groupsUl, options, domElement, 
 
 function renderGroupLi (group) {
   async function handleURIsDroppedOnGroup (uris) {
-    uris.forEach(function (u) {
+    for (const u of uris) {
       debug.log('Dropped on group: ' + u)
       const thing = kb.sym(u)
       try {
-        addPersonToGroup(thing, group)
+        await addPersonToGroup(thing, group)
       } catch (e) {
         complain(e)
       }
       refreshNames(ulPeople)
-    })
+    }
   }
   function groupLiClickListener (event) {
     event.preventDefault()

@@ -20,7 +20,7 @@ import './styles/contactsPane.css'
 import {
   checkDataModel, ensureBookLoaded, renderGroupButtons,
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
-  syncGroupUl, setActiveGroupButtohandleURIsDroppedOnGroup
+  syncGroupUl, setActiveGroupButton,
 } from './addressBookPresenter'
 import { complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
