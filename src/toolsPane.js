@@ -14,6 +14,7 @@ const VCARD = ns.vcard
 let book
 let selectedGroups
 let logSpace
+let refreshGroupsFn
 
 export function toolsPane (
   selectAllGroups,
@@ -21,10 +22,12 @@ export function toolsPane (
   groupsMainTable,
   bookParam,
   dataBrowserContext,
-  me
+  me,
+  refreshGroups
 ) {
   book = bookParam
   selectedGroups = selectedGroupsParam
+  refreshGroupsFn = refreshGroups
   const dom = dataBrowserContext.dom
 
   const pane = dom.createElement('div')
@@ -697,6 +700,7 @@ async function fixGroupless (book) {
         await addPersonToGroup(person, groupOfUngrouped)
       }
       log(logSpace, 'People moved to group.')
+      if (refreshGroupsFn) refreshGroupsFn()
       resolve()
     })
     logSpace.appendChild(confirmButton)

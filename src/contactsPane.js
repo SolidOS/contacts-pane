@@ -781,7 +781,15 @@ function buildFooterButtons (ctx) {
           ctx.ulGroups,
           book,
           dataBrowserContext,
-          me
+          me,
+          function refreshGroups () {
+            if (ctx.allGroupsLi.parentNode) ctx.allGroupsLi.parentNode.removeChild(ctx.allGroupsLi)
+            if (ctx.newGroupLi.parentNode) ctx.newGroupLi.parentNode.removeChild(ctx.newGroupLi)
+            syncGroupUl(book, options, ctx.ulGroups, dom, selectedGroups, ctx.ulPeople, ctx.searchInput)
+            ctx.ulGroups.insertBefore(ctx.allGroupsLi, ctx.ulGroups.firstChild)
+            ctx.ulGroups.appendChild(ctx.newGroupLi)
+            refreshThingsSelected(ctx.ulGroups, selectedGroups)
+          }
         )
       )
     })
