@@ -1,6 +1,8 @@
 import * as UI from 'solid-ui'
 import { solidLogicSingleton } from 'solid-logic'
 import * as $rdf from 'rdflib'
+import { complain } from './localUtils'
+import * as debug from './debug'
 
 const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
@@ -17,7 +19,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
     UI.login.ensureLoadedProfile(context).then(
       context => {
         // 20180713
-        console.log('Logged in as ' + context.me)
+        debug.log('Logged in as ' + context.me)
         const me = context.me
 
         const dom = context.dom
@@ -52,10 +54,6 @@ export function mintNewAddressBook (dataBrowserContext, context) {
           return
         }
         const appInstanceNoun = 'address book'
-
-        function complain (message) {
-          div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-        }
 
         let bookContents = `@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
   @prefix ab: <http://www.w3.org/ns/pim/ab#>.
@@ -94,9 +92,9 @@ export function mintNewAddressBook (dataBrowserContext, context) {
 
         function claimSuccess (newAppInstance, appInstanceNoun) {
           // @@ delete or grey other stuff
-          console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
+          debug.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
           const p = div.appendChild(dom.createElement('p'))
-          p.setAttribute('style', 'font-size: 140%;')
+          p.classList.add('claimSuccess')
           p.innerHTML =
             'Your <a href=\'' +
             newAppInstance.uri +
@@ -139,7 +137,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             claimSuccess(newAppInstance, appInstanceNoun)
           } else {
             var task = toBeWritten.shift() /* eslint-disable-line no-var */
-            console.log('Creating new file ' + task.to + ' in new instance ')
+            debug.log('Creating new file ' + task.to + ' in new instance ')
             var dest = $rdf.uri.join(task.to, newBase) /* eslint-disable-line no-var */
             var aclOptions = task.aclOptions || {} /* eslint-disable-line no-var */
 

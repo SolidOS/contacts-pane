@@ -3,25 +3,22 @@
 import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
-// import { renderAutoComplete } from './lib/autocompletePicker' // dbpediaParameters
-import { renderAutocompleteControl } from './autocompleteBar'
-// import { wikidataParameters, loadPublicDataThing, wikidataClasses } from './lib/publicData' // dbpediaParameters
 import * as $rdf from 'rdflib'
+import './styles/webidControl.css'
+import * as debug from './debug'
 
 const ns = UI.ns
 const widgets = UI.widgets
 const utils = UI.utils
 const kb = store
-const style = UI.style
 
 const wikidataClasses = widgets.publicData.wikidataClasses // @@ move to solid-logic
 const wikidataParameters = widgets.publicData.wikidataParameters // @@ move to solid-logic
 
-const WEBID_NOUN = 'Solid ID'
-const PUBLICID_NOUN = 'In public data'
+const WEBID_NOUN = 'WebID'
+const PUBLICID_NOUN = 'WikiData link'
 const DOWN_ARROW = UI.icons.iconBase + 'noun_1369241.svg'
 const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
-const webidPanelBackgroundColor = '#ffe6ff'
 
 /// ///////////////////////// Logic
 
@@ -45,7 +42,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   }
 
   // create a person's webID
-  console.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
+  debug.log(`Adding to ${person} a ${WEBID_NOUN}: ${webid}.`)
   const vcardURLThing = kb.bnode()
   const insertables = [
     $rdf.st(person, ns.vcard('url'), vcardURLThing, person.doc()),
@@ -68,7 +65,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 }
 
 export async function removeWebIDFromContacts (person, webid, urlType, kb) {
-  console.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
+  debug.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
 
   // remove webID from card
   const existing = kb.each(person, ns.vcard('url'), null, person.doc())
@@ -101,7 +98,7 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
 
 // Trace things the same as this - other IDs for same thing
 // returns as array of node
-export function getSameAs (kb, thing, doc) { // Should this recurse?
+function getSameAs (kb, thing, doc) { // Should this recurse?
   const found = new Set()
   const agenda = new Set([thing.uri])
 
@@ -114,13 +111,13 @@ export function getSameAs (kb, thing, doc) { // Should this recurse?
     kb.each(node, ns.owl('sameAs'), null, doc)
       .concat(kb.each(null, ns.owl('sameAs'), node, doc))
       .forEach(next => {
-        console.log('        OWL sameAs found ' + next)
+        debug.log('        OWL sameAs found ' + next)
         agenda.add(next.uri)
       })
     kb.each(node, ns.schema('sameAs'), null, doc)
       .concat(kb.each(null, ns.schema('sameAs'), node, doc))
       .forEach(next => {
-        console.log('        Schema sameAs found ' + next)
+        debug.log('        Schema sameAs found ' + next)
         agenda.add(next.uri)
       })
   }
@@ -157,18 +154,13 @@ export function isOrganization (agent) {
 export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
   const p = dataBrowserContext.session.paneRegistry.byName(paneName)
   const d = p.render(subject, dataBrowserContext) // @@@ change some bits of context!
-  d.setAttribute(
-    'style',
-    'border: 0.1em solid #444; border-radius: 0.5em'
-  )
+  d.classList.add('namedPane')
   return d
 }
 
 export async function renderWebIdControl (person, dataBrowserContext) {
   const options = {
-    longPrompt: `If you know someone's ${WEBID_NOUN}, you can do more stuff with them.
-    To record their ${WEBID_NOUN}, drag it onto the plus, or click the plus
-    to enter it by hand.`,
+    longPrompt: `Does this person have a ${WEBID_NOUN}?`,
     idNoun: WEBID_NOUN,
     urlType: ns.vcard('WebID')
   }
@@ -182,13 +174,11 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
     if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
       orgClass = kb.sym(wikidataClasses[classId])
       orgClassId = classId
-      console.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
+      debug.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
   }
   const options = {
-    longPrompt: `If you know the ${PUBLICID_NOUN} of this ${orgClassId}, you can do more stuff with it.
-    To record its ${PUBLICID_NOUN}, drag it onto the plus, or click the magnifyinng glass
-    to search for it in WikiData.`,
+    longPrompt: `Does this ${orgClassId} have a ${PUBLICID_NOUN}?`,
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
     dbLookup: true,
@@ -209,8 +199,10 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   function renderPersona (dom, persona, kb) {
     function profileOpenHandler (_event) {
       profileIsVisible = !profileIsVisible
-      main.style.visibility = profileIsVisible ? 'visible' : 'collapse'
+      main.classList.toggle('collapsed', !profileIsVisible)
       openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
+      openButton.setAttribute('aria-expanded', profileIsVisible ? 'true' : 'false')
+      openButton.setAttribute('aria-label', profileIsVisible ? 'Collapse profile' : 'Expand profile')
     }
     function renderNewRow (webidObject) {
       const webid = new $rdf.Literal(webidObject.uri)
@@ -232,18 +224,18 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       const row = widgets.personTR(dom, UI.ns.foaf('knows'), webidObject, opts)
       if (isWebId) {
         row.children[1].textConent = opts.title // @@ will be overwritten
-        row.style.backgroundColor = webidPanelBackgroundColor
+        row.classList.add('personaRow--webid')
       }
-      row.style.padding = '0.2em'
+      row.classList.add('personaRow')
       return row
     }
 
     const div = dom.createElement('div')
-    div.style.width = '100%'
+    div.classList.add('fullWidth')
     const personaTable = div.appendChild(dom.createElement('table'))
-    personaTable.style.width = '100%'
+    personaTable.classList.add('fullWidth')
     const nav = personaTable.appendChild(renderNewRow(persona))
-    nav.style.width = '100%'
+    nav.classList.add('fullWidth')
     const mainRow = personaTable.appendChild(dom.createElement('tr'))
     const mainCell = mainRow.appendChild(dom.createElement('td'))
     mainCell.setAttribute('colspan', 3)
@@ -253,18 +245,18 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
     const rhs = nav.children[2]
     const openButton = rhs.appendChild(widgets.button(dom, DOWN_ARROW, 'View', profileOpenHandler))
-    openButton.style.float = 'right'
-    delete openButton.style.backgroundColor
-    delete openButton.style.border
+    openButton.classList.add('personaOpenButton')
+    openButton.setAttribute('aria-expanded', 'true')
+    openButton.setAttribute('aria-label', 'Collapse profile')
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
     widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
     // loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
-        console.log('main: ', main)
-        main.style.width = '100%'
-        console.log('renderIdControl: main element: ', main)
+        debug.log('main: ', main)
+        main.classList.add('fullWidth')
+        debug.log('renderIdControl: main element: ', main)
         // main.style.visibility = 'collapse'
         mainCell.appendChild(main)
       } catch (err) {
@@ -280,8 +272,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
-    console.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
-    prompt.style.display = personas.length ? 'none' : ''
+    debug.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
+    prompt.classList.toggle('hidden', personas.length > 0)
     utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
   }
   async function addOneIdAndRefresh (person, webid) {
@@ -297,29 +289,40 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
-  div.style = 'border-radius:0.3em; border: 0.1em solid #888;' // padding: 0.8em;
+  div.classList.add('webidControl')
 
   if (getPersonas(kb, person).length === 0 && !options.editable) {
-    div.style.display = 'none'
+    div.classList.add('hidden')
     return div // No point listing an empty list you can't change
   }
 
-  const h4 = div.appendChild(dom.createElement('h4'))
-  h4.textContent = options.idNoun
-  h4.style = style.formHeadingStyle
-  h4.style.color = style.highlightColor
+  const h3 = div.appendChild(dom.createElement('h3'))
+  h3.textContent = options.idNoun
+  h3.classList.add('webidHeading')
 
   const prompt = div.appendChild(dom.createElement('p'))
-  prompt.style = style.commentStyle
+  prompt.classList.add('webidPrompt')
   prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
-  table.style.width = '100%'
+  table.classList.add('fullWidth')
 
   if (options.editable) { // test
-    options.manualURIEntry = true // introduced in solid-ui 2.4.2
-    options.queryParams = options.queryParams || wikidataParameters
-    div.appendChild(await renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
-    // div.appendChild(await widgets.renderAutocompleteControl(dom, person, options, addOneIdAndRefresh))
+    const barOptions = {
+      editable: options.editable,
+      manualURIEntry: true, // introduced in solid-ui 2.4.2
+      idNoun: options.idNoun,
+      dbLookup: options.dbLookup
+    }
+    const acOptions = {
+      queryParams: options.queryParams || wikidataParameters,
+      targetClass: options.class
+    }
+    try {
+      div.appendChild(await widgets.renderAutocompleteControl(dom, person, barOptions, acOptions, addOneIdAndRefresh))
+    } catch (err) {
+      debug.error('renderAutocompleteControl failed:', err)
+      div.appendChild(widgets.errorMessageBlock(dom, 'Error rendering autocomplete: ' + err))
+    }
   }
   const profileArea = div.appendChild(dom.createElement('div'))
   await refreshWebIDTable()

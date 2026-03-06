@@ -1,0 +1,10 @@
+/* mugshotGallery.js styles — extracted from inline styles */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Mugshot image ───────────────────────────────────────────── */
+
+.contactPane .mugshotImage {
+  max-height: 10em;
+  border-radius: var(--border-radius-full);
+  margin: var(--spacing-sm);
+}

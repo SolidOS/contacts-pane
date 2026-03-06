@@ -1,0 +1,68 @@
+/* ── Group Membership Section ──────────────────────────────── */
+
+.contactPane .group-membership-container {
+  padding: var(--spacing-sm) 0;
+}
+
+/* Grid wrapper — matches detailsSectionContent groupButtonsList */
+.contactPane .group-pills-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+/* Each group item: button on top, toolbar below */
+.contactPane .group-membership-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 256px;
+}
+
+.contactPane .group-membership-item > button {
+  width: 100%;
+  text-align: center;
+  border-radius: var(--border-radius-base);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-height: var(--min-touch-target);
+}
+
+/* Toolbar with link icon and delete button below each group button */
+.contactPane .group-membership-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0 0 0;
+}
+
+.contactPane .group-membership-toolbar a img {
+  width: 1.3em;
+  height: 1em;
+  margin: 0;
+}
+
+@media (max-width: 599px) {
+  .contactPane .group-pills-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xs);
+    max-width: 100%;
+  }
+
+  .contactPane .group-membership-item > button {
+    font-size: var(--font-size-sm);
+    border-radius: var(--border-radius-base);
+  }
+}
+
+@media (min-width: 900px) {
+  .contactPane .group-pills-wrapper {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+  }
+}

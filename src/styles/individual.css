@@ -1,0 +1,7 @@
+/* individual.js styles — extracted from inline styles */
+
+/* ── Individual pane container ───────────────────────────────── */
+
+.contactPane .individualPane {
+  padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-md) var(--spacing-lg);
+}

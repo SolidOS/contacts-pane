@@ -114,7 +114,7 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     it('returns a good label contact if Organization', () => {
       const thing = sym(base + 'thing1')
       store.add(thing, ns.rdf('type'), ns.vcard('Organization'), doc)
-      expect(pane.label(thing, context)).toEqual('contact')
+      expect(pane.label(thing, context)).toEqual('Contact')
     })
 
     it('returns a good label Contact for Individual', () => {

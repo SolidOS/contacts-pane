@@ -1,9 +1,9 @@
-// Logic for solid contacts
-
 import * as UI from 'solid-ui'
 import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
+import * as debug from './debug'
+import { getSameAs } from './localUtils'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -64,7 +64,7 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
   try {
     await updater.updateMany([], agenda) // @@ in future, updater.updateMany
   } catch (e) {
-    console.error('Error: can\'t update ' + person + ' as new contact:' + e)
+    debug.error('Error: can\'t update ' + person + ' as new contact:' + e)
     throw new Error('Updating new contact: ' + e)
   }
   return person
@@ -86,7 +86,7 @@ export async function saveNewGroup (book, name) {
   const gname = sanitizeToAlpha(name)
   const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
   const doc = group.doc()
-  // console.log(' New group will be: ' + group + '\n')
+  // debug.log(' New group will be: ' + group + '\n')
   try {
     await kb.fetcher.load(gix)
   } catch (err) {
@@ -124,12 +124,13 @@ export async function addPersonToGroup (thing, group) {
   try {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
+    //complain(dom, 'Error loading data for ' + thing + ' or ' + group + ': ' + e)
     throw new Error('addPersonToGroup: ' + e)
   }
 
   const types = kb.findTypeURIs(thing)
   // for (const ty in types) {
-  // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+  // debug.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
   // }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
@@ -197,13 +198,8 @@ export function groupMembers (kb, group) {
 export function isLocal (group, item) {
   const tree = group.dir().dir().dir()
   const local = item.uri && item.uri.startsWith(tree.uri)
-  // console.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
+  // debug.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
   return local
-}
-
-export function getSameAs (kb, item, doc) {
-  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
-    kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
 export async function getDataModelIssues (groups) {
@@ -221,7 +217,7 @@ export async function getDataModelIssues (groups) {
             ins.push($rdf.st(group, ns.vcard('hasMember'), other, group.doc()))
             break
           }
-          // console.log('getDataModelIssues: ??? expected id not to be local ' + other)
+          // debug.log('getDataModelIssues: ??? expected id not to be local ' + other)
         } // other
       } // if
     }) // member
