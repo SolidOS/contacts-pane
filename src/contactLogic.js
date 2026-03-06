@@ -1,5 +1,3 @@
-// Logic for solid contacts
-
 import * as UI from 'solid-ui'
 import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
@@ -125,6 +123,7 @@ export async function addPersonToGroup (thing, group) {
   try {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
+    //complain(dom, 'Error loading data for ' + thing + ' or ' + group + ': ' + e)
     throw new Error('addPersonToGroup: ' + e)
   }
 

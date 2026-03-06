@@ -22,7 +22,7 @@ import {
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
   syncGroupUl, setActiveGroupButton, refreshFilteredPeople
 } from './addressBookPresenter'
-import { complain, deleteThingAndDoc } from './localUtils'
+import { complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
 import './styles/rdfFormsEnforced.css'
 
@@ -70,6 +70,7 @@ export default {
     const dom = dataBrowserContext.dom
     const kb = dataBrowserContext.session.store
     const div = dom.createElement('div')
+    setDom(dom) // set dom for ana error handling in other modules
 
     UI.aclControl.preventBrowserDropEvents(dom) // protect drag and drop
 
@@ -216,6 +217,7 @@ export default {
               selectedPeople[person.uri] = true
               refreshNames(ulPeople, null) // Add name to list of group
               detailsSectionContent.innerHTML = '' // Clear 'indexing'
+              detailsSectionContent.classList.add('detailsSectionContent--wide')
               const contactPane = dataBrowserContext.session.paneRegistry.byName('contact')
               const paneDiv = contactPane.render(person, dataBrowserContext)
               paneDiv.classList.add('renderPane')
@@ -223,7 +225,7 @@ export default {
             })
         }
 
-        // //////////////////////////// Contact Browser  - Body
+        // //////////////////////////// Address Book  - Body
         // Main wrapper for accessibility and style
         const main = dom.createElement('main')
         main.id = 'main-content'
@@ -234,12 +236,24 @@ export default {
         div.appendChild(main)
 
         // Section wrapper for accessibility and style
-        const section = dom.createElement('section')
-        section.setAttribute('aria-labelledby', 'addressBook-section')
-        section.classList.add('addressBookSection', 'section-bg')
-        section.setAttribute('role', 'region')
-        section.setAttribute('tabindex', '-1')
-        main.appendChild(section)
+        const addressBookSection = dom.createElement('section')
+        addressBookSection.setAttribute('aria-labelledby', 'addressBook-section')
+        addressBookSection.classList.add('addressBookSection', 'section-bg')
+        addressBookSection.setAttribute('role', 'region')
+        addressBookSection.setAttribute('tabindex', '-1')
+        main.appendChild(addressBookSection)
+
+        // Accessible details section — rendered beside the addressBook section
+        const detailsSection = dom.createElement('section')
+        detailsSection.classList.add('detailSection')
+        detailsSection.setAttribute('role', 'region')
+        detailsSection.setAttribute('aria-label', 'Details section')
+        detailsSection.classList.add('hidden')
+        main.appendChild(detailsSection)
+
+        function showDetailsSection () {
+          detailsSection.classList.remove('hidden')
+        }
 
         // Create a section for the header with white background
         const headerSection = dom.createElement('section')
@@ -272,6 +286,7 @@ export default {
           const thisGeneration = ++newContactClickGeneration
           showDetailsSection()
           detailsSectionContent.innerHTML = ''
+          detailsSectionContent.classList.remove('detailsSectionContent--wide')
           await ensureBookLoaded()
           // Bail out if a newer click has taken over
           if (thisGeneration !== newContactClickGeneration) return
@@ -329,12 +344,12 @@ export default {
         header.appendChild(h2)
         header.appendChild(container)
         headerSection.appendChild(header)
-        section.appendChild(headerSection)
+        addressBookSection.appendChild(headerSection)
 
         // Add a dotted horizontal rule after the header section
         const dottedHr = dom.createElement('hr')
         dottedHr.classList.add('dottedHr')
-        section.appendChild(dottedHr)
+        addressBookSection.appendChild(dottedHr)
 
         // Search input
         const searchSection = dom.createElement('section')
@@ -351,7 +366,7 @@ export default {
         searchInput.addEventListener('input', function (_event) {
           refreshFilteredPeople(ulPeople, true, detailsSectionContent)
         })
-        section.appendChild(searchSection)
+        addressBookSection.appendChild(searchSection)
 
         // Create a section for the buttons
         const buttonSection = dom.createElement('section')
@@ -475,33 +490,22 @@ export default {
           debug.log('No book, only one group -> hide list of groups')
         } // if not book
 
-        section.appendChild(buttonSection)
+        addressBookSection.appendChild(buttonSection)
 
         // List of contacts
         const peopleListSection = dom.createElement('section')
         peopleListSection.classList.add('peopleSection')
-        section.appendChild(peopleListSection)
+        addressBookSection.appendChild(peopleListSection)
 
         peopleListSection.appendChild(ulPeople)
 
-        // Accessible table structure — rendered beside the addressBook section
-        const detailsSection = dom.createElement('section')
-        detailsSection.classList.add('detailSection')
-        detailsSection.setAttribute('role', 'region')
-        detailsSection.setAttribute('aria-label', 'Details section')
-        detailsSection.classList.add('hidden')
-        main.appendChild(detailsSection)
-
-        function showDetailsSection () {
-          detailsSection.classList.remove('hidden')
-        }
-
+        // Details content section
         detailsSection.appendChild(detailsSectionContent)
 
         // Footer area for action buttons
         const cardFooter = dom.createElement('div')
         cardFooter.classList.add('cardFooter')
-        section.appendChild(cardFooter)
+        addressBookSection.appendChild(cardFooter)
 
         if (book) {
           // Groups button
@@ -514,6 +518,7 @@ export default {
             setActiveActionButton(groupsButton)
             showDetailsSection()
             detailsSectionContent.innerHTML = ''
+            detailsSectionContent.classList.remove('detailsSectionContent--wide')
 
             // Header
             const groupsHeader = dom.createElement('h3')
@@ -621,6 +626,7 @@ export default {
             setActiveActionButton(sharingButton)
             showDetailsSection()
             detailsSectionContent.innerHTML = ''
+            detailsSectionContent.classList.remove('detailsSectionContent--wide')
 
             const sharingHeader = dom.createElement('h3')
             sharingHeader.textContent = 'Sharing'
@@ -661,6 +667,7 @@ export default {
             setActiveActionButton(toolsButton)
             showDetailsSection()
             detailsSectionContent.innerHTML = ''
+            detailsSectionContent.classList.add('detailsSectionContent--wide')
             detailsSectionContent.appendChild(
               toolsPane(
                 selectAllGroups,
@@ -682,7 +689,7 @@ export default {
         cardFooter.appendChild(newBookBtn)
         */
 
-        checkDataModel(book).then(() => { debug.log('async checkDataModel done.') })
+        checkDataModel(book, detailsSectionContent).then(() => { debug.log('async checkDataModel done.') })
       }
 
       // ///////////////////////////////////////////////////////////////////////////////////

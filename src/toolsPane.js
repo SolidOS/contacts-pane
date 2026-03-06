@@ -4,7 +4,7 @@ import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import './styles/toolsPane.css'
 import * as $rdf from 'rdflib'
-import { complain } from './localUtils'
+import { complain, normalizeGroupUri } from './localUtils'
 import * as debug from './debug'
 
 const kb = store
@@ -651,7 +651,7 @@ function stats (logSpace) {
   const totalContacts = kb.each(undefined, VCARD('inAddressBook'), book).length
   log(logSpace, '' + totalContacts + ' contacts loaded. ')
   let groups = kb.each(book, VCARD('includesGroup'))
-  const strings = new Set(groups.map(group => group.uri)) // remove dups
+  const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
   groups = [...strings].map(uri => kb.sym(uri))
   log(logSpace, '' + groups.length + ' total groups. ')
   const gg = []
@@ -717,7 +717,7 @@ async function getGroupless (book) {
   const reverseIndex = {}
   const groupless = []
   let groups = kb.each(book, VCARD('includesGroup'))
-  const strings = new Set(groups.map(group => group.uri)) // remove dups
+  const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
   groups = [...strings].map(uri => kb.sym(uri))
   log(logSpace, '' + groups.length + ' total groups. ')
 
@@ -788,7 +788,7 @@ async function fixToOldDataModel (book) {
     }
   }
   let groups = kb.each(book, VCARD('includesGroup'))
-  const strings = new Set(groups.map(group => group.uri)) // remove dups
+  const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
   groups = [...strings].map(uri => kb.sym(uri))
   updateToOldDataModel(groups)
 }

@@ -21,17 +21,37 @@
 
 /* ── Layout: Three-column browser ────────────────────────────── */
 
+#main-content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contactPane .selected {
+
+}
+
+.contactPane .peopleSection .selected {
+  background-color: var(--color-info-bg) !important;
+}
+
 .contactPane .detailSection {
   flex: 1 1 400px;
   min-width: 300px;
   overflow-y: auto;
-  background: var(--color-section-bg);
   box-sizing: border-box;
+  background: var(--color-section-bg);
 }
 
 .contactPane .detailsSectionContent {
   min-height: 200px;
   padding: var(--spacing-lg);
+  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contactPane .detailsSectionContent--wide {
+  max-width: 900px;
 }
 
 .contactPane .cardFooter {
@@ -176,18 +196,28 @@
   flex-wrap: wrap;
   min-width: 50%;
   align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .contactPane .addressBookSection {
   flex: 1 1 350px;
-  max-width: 450px;
+  max-width: 485px;
   box-sizing: border-box;
-  margin-bottom: var(--spacing-md);
 }
 
-@media (min-width: 900px) {
+@media ((min-width: 500px) and (max-width: 900px)) {
   .contactPane .addressBookSection {
-    margin-bottom: 0;
+    max-width: 900px;
+  }
+  .contactPane .addressBookSection section {
+    max-width: 485px;
+  }
+}
+
+@media (max-width: 500px) {
+  .contactPane .addressBookSection {
+    max-width: 485px;
   }
 }
 
@@ -324,17 +354,17 @@
 /* Groups list in details section — flexible 2-column grid */
 .contactPane .detailsSectionContent .groupButtonsList {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--spacing-sm);
   list-style: none;
   padding: 0;
-  max-width: 512px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .contactPane .detailsSectionContent .groupButtonsList li {
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 250px;
 }
 
 .contactPane .detailsSectionContent .groupButtonsList button {
@@ -346,34 +376,26 @@
   overflow-wrap: break-word;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 599px) {
   .contactPane .detailsSectionContent .groupButtonsList {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xs);
-    max-width: 100%;
-  }
-
-  .contactPane .detailsSectionContent .groupButtonsList li {
-    max-width: 120px;
   }
 
   .contactPane .detailsSectionContent .groupButtonsList button {
     font-size: 0.8rem;
     border-radius: 8px;
   }
+}
 
-  .contactPane .detailsSectionContent .newGroupBtn {
-    max-width: 100%;
-  }
-
-  .contactPane .detailsSectionContent .newGroupBtn {
-    max-width: 383px !important;
+@media (min-width: 900px) {
+  .contactPane .detailsSectionContent .groupButtonsList {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .contactPane .detailsSectionContent .newGroupBtn {
   width: 100%;
-  max-width: 512px;
   box-sizing: border-box;
   margin-top: var(--spacing-sm);
 }
@@ -383,12 +405,15 @@
   margin-bottom: var(--spacing-sm);
 }
 
-/* Delete confirmation popup — centered overlay in details section */
+/* Delete confirmation POPUP — centered overlay in details section */
 .contactPane .detailSection {
   position: relative;
 }
 
-.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] {
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"],
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"],
+.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"],
+.contactPane .detailsSectionContent .group-membership-toolbar > div[style*="position: relative"] {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -402,8 +427,10 @@
   background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }
-
-.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div {
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .group-membership-toolbar > div[style*="position: relative"] > div {
   position: relative !important;
   top: auto !important;
   background: var(--color-background);

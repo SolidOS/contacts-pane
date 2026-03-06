@@ -308,6 +308,7 @@ function selectPerson (ulPeople, person, detailsView) {
   if (!detailsView) return
   if (detailsView.parentNode) detailsView.parentNode.classList.remove('hidden')
   detailsView.innerHTML = 'Loading...'
+  detailsView.classList.add('detailsSectionContent--wide')
   selectedPeople = {}
   selectedPeople[person.uri] = true
   refreshFilteredPeople(ulPeople, false, detailsView) // Color to remember which one you picked
@@ -332,49 +333,61 @@ function selectPerson (ulPeople, person, detailsView) {
     // Add in a delete button to delete from AB
     const deleteButton = UI.widgets.deleteButtonWithCheck(
       dom,
-      detailsView,
+      toolbar, // appends it to toolbar.appendChild(deleteButton)
       'contact',
       async function () {
         const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-        // alert('Container to delete is ' + container)
+    
         const pname = kb.any(person, ns.vcard('fn'))
-        if (confirm('Delete contact ' + pname + ' completely?? ' + container)) {
-          debug.log('Deleting a contact ' + pname)
-          await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-          // load people.ttl
-          const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-          await kb.fetcher.load(nameEmailIndex)
+        debug.log('We are about to delete the contact ' + pname)
+        await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
+        // load people.ttl
+        let nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+        await kb.fetcher.load(nameEmailIndex)
 
-          //  - delete person's WebID's in each Group
-          //  - delete the references to it in group files and save them back
-          //  - delete the reference in people.ttl and save it back
+        //  - delete person's WebID's in each Group
+        //  - delete the references to it in group files and save them back
+        //  - delete the reference in people.ttl and save it back
 
-          // find all Groups
-          const groups = groupMembership(person)
-          let removeFromGroups = []
-          // find person WebID's
-          groups.forEach(group => {
-            const webids = getSameAs(kb, person, group.doc())
-            // for each check in each Group that it is not used by an other person then delete
-            webids.forEach(webid => {
-              if (getSameAs(kb, webid, group.doc()).length === 1) {
-                removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
-              }
-            })
-          })
-          // debug.log(removeFromGroups)
-          await kb.updater.updateMany(removeFromGroups)
-          await deleteThingAndDoc(person)
-          await deleteRecursive(kb, container)
-          refreshNames(ulPeople, person) // "Doesn't work" -- maybe does now with waiting for async
-          detailsView.innerHTML = 'Contact data deleted.'
+        // find all Groups
+        const groups = groupMembership(person)
+        let removeFromGroups = []
+        // find person WebID's
+        groups.forEach(group => {
+        const webids = getSameAs(kb, person, group.doc())
+        // for each check in each Group that it is not used by an other person then delete
+        webids.forEach(webid => {
+            if (getSameAs(kb, webid, group.doc()).length === 1) {
+            removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
+            }
+        })
+        })
+
+        // Only if folder deletion succeeds, proceed with person deletion
+        await kb.updater.updateMany(removeFromGroups)
+        
+        try {
+            await deleteThingAndDoc(person)
+        } catch (err) {
+            debug.log('Contact deletion cancelled or failed: ' + err.message)
+            return // Stop - don't run deleteRecursive
         }
+
+        try {
+            await deleteRecursive(kb, container, toolbar, dom)
+        } catch (err) {
+            debug.log('Deletion cancelled: ' + err.message)
+            return // Exit without continuing with other deletions
+        }
+        complain(div, dom, "Contact data deleted.")
+        refreshNames(ulPeople, detailsView)
+        detailsView.innerHTML = 'Contact data deleted.'
       }
     )
     deleteButton.classList.add('deleteButton')
-    toolbar.appendChild(deleteButton)
     detailsView.appendChild(toolbar)
 
+    detailsView.classList.add('detailsSectionContent--wide')
     detailsView.appendChild(renderPane(local, 'contact'))
   })
 }
@@ -428,15 +441,21 @@ function localNode (person) {
 }
 
 // Check every group is in the list and add it if not.
-export async function checkDataModel (book) {
+export async function checkDataModel (book, detailsSectionContent) {
   // await kb.fetcher.load(groups) // asssume loaded already
   const groups = await loadAllGroups(book)
 
   const { del, ins } = await getDataModelIssues(groups)
 
-  if (del.length && confirm(`Groups data model need to be updated? (${del.length})`)) {
-    await kb.updater.updateMany(del, ins)
-    alert('Update done')
+  if (del.length) {
+    UI.widgets.deleteButtonWithCheck(
+      dom,
+      detailsSectionContent, // where it appends it to
+      'contact',
+      async function () {
+        await kb.updater.updateMany(del, ins)
+        debug.log('Deleted ' + del.length + ' bad statements from groups')
+    })
   }
 }
 

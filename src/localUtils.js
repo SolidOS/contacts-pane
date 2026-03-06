@@ -4,10 +4,29 @@ import { store } from 'solid-logic'
 
 const kb = store
 const ns = UI.ns
+let dom
 
-export function complain (div, dom, message) {
+export function setDom (d) {
+  dom = d
+}
+
+/**
+ * Normalize group URIs to ensure consistent representation.
+ * Groups should be referenced with fragment #this, e.g., ...Group/AnotherGroup.ttl#this
+ * If a group URI ends with .ttl (without #this), add #this
+ * @param {string} uri - The group URI to normalize
+ * @returns {string} The normalized group URI
+ */
+export function normalizeGroupUri (uri) {
+  if (uri && uri.endsWith('.ttl')) {
+    return uri + '#this'
+  }
+  return uri
+}
+
+export function complain (div, d, message) {
   debug.log('contactsPane: ' + message)
-  div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
+  UI.widgets.errorMessageBlock(dom, message, 'pink')
 }
 export function complainIfBad (div, dom, ok, body) {
   if (!ok) {
@@ -28,17 +47,11 @@ export function deleteRecursive (kb, folder) {
         if (kb.holds(file, ns.rdf('type'), ns.ldp('BasicContainer'))) {
           return deleteRecursive(kb, file)
         } else {
-          debug.log('deleteRecursive file: ' + file)
-          if (!confirm(' Really DELETE File ' + file)) {
-            throw new Error('User aborted delete file')
-          }
+          debug.log('Recursie delete - we delete file ' + file.uri)
           return kb.fetcher.webOperation('DELETE', file.uri)
         }
       })
-      debug.log('deleteRecirsive folder: ' + folder)
-      if (!confirm(' Really DELETE folder ' + folder)) {
-        throw new Error('User aborted delete file')
-      }
+      debug.log('Recursie delete - we delete folder ' + folder.uri)
       promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
       Promise.all(promises).then(_res => {
         resolve()
@@ -52,15 +65,19 @@ export function deleteRecursive (kb, folder) {
 // beware of other data picked up from other places being smushed
 // together and then deleted.
 export async function deleteThingAndDoc (x) {
-  debug.log('deleteThingAndDoc: ' + x)
+  const name = nameFor(x)
+  if (!confirm('Really DELETE contact ' + name + '?')) {
+    throw new Error('User cancelled contact deletion')
+  }
+  debug.log('deleteThingAndDoc - to be deleted ' + x)
   const ds = kb.statementsMatching(x).concat(kb.statementsMatching(undefined, undefined, x))
   try {
     await kb.updater.updateMany(ds)
-    debug.log('Deleting resoure ' + x.doc())
     await kb.fetcher.delete(x.doc())
-    debug.log('Delete thing ' + x + ': complete.')
+    debug.log('deleteThingAndDoc - deleted')
   } catch (err) {
-    complain('Error deleting thing ' + x + ': ' + err)
+    complain(div, dom, 'Error deleting ' + x + ': ' + err)
+    throw err
   }
 }
 

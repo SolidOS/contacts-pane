@@ -3,6 +3,7 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
+import { normalizeGroupUri } from './localUtils'
 
 const ns = UI.ns
 const kb = store
@@ -11,7 +12,7 @@ const kb = store
 export function groupMembership (person) {
   let groups = kb.statementsMatching(null, ns.owl('sameAs'), person).map(st => st.why)
     .concat(kb.each(null, ns.vcard('hasMember'), person))
-  const strings = new Set(groups.map(group => group.uri)) // remove dups
+  const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
   groups = [...strings].map(uri => kb.sym(uri))
   return groups
 }
