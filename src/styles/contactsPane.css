@@ -16,7 +16,6 @@
 .contactPane .detailSection {
   flex: 1 1 400px;
   min-width: 300px;
-  overflow-y: auto;
   box-sizing: border-box;
   background: var(--color-section-bg);
 }
@@ -140,9 +139,16 @@
   font-size: var(--font-size-xl);
 }
 
+.contactPane {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .contactPane .addressBook-grid {
   display: flex;
   flex-wrap: wrap;
+  flex: 1;
   min-width: 50%;
   align-items: stretch;
   width: 100%;
@@ -174,6 +180,7 @@
 .contactPane .section-bg {
   background: var(--color-section-bg);
   padding: var(--spacing-md);
+  box-sizing: border-box;
 }
 
 /* Primary Button */
@@ -344,6 +351,7 @@
 .contactPane .detailsSectionContent h3 {
   font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-sm);
+  padding-left: 0;
 }
 
 /* Delete confirmation POPUP — centered overlay in details section */
