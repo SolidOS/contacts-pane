@@ -21,6 +21,7 @@
   --color-text-secondary: #666; /* Added for repeated usage */
   --color-text-muted: #444; /* Added for repeated usage */
   --color-border-pale: #eee; /* Added for repeated borders */
+  --color-info-bg: #ccccff;
   --border-radius-full: 1em; /* Matches module usage */
   --border-radius-base: 0.5em;
   --box-shadow: 0 2px 8px rgba(124,77,255,0.08); /* Matches module usage */
