@@ -48,6 +48,25 @@ export function renderGroupButtons (currentBook, groupsUl, options, domElement, 
   utils.syncTableToArrayReOrdered(ulGroups, groups, renderGroupLi)
 }
 
+/** Create the common DOM structure for a group list item (li + button).
+ * Returns { groupLi, groupButton, name } so callers can attach their own handlers.
+ */
+export function createGroupLi (group) {
+  const name = kb.any(group, ns.vcard('fn'))
+  const groupLi = dom.createElement('li')
+  groupLi.setAttribute('role', 'listitem')
+  groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
+  groupLi.subject = group
+  UI.widgets.makeDraggable(groupLi, group)
+
+  const groupButton = groupLi.appendChild(dom.createElement('button'))
+  groupButton.setAttribute('type', 'button')
+  groupButton.innerHTML = name ? name.value : 'Some group'
+  groupButton.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+
+  return { groupLi, groupButton, name }
+}
+
 function renderGroupLi (group) {
   async function handleURIsDroppedOnGroup (uris) {
     for (const u of uris) {
@@ -78,23 +97,9 @@ function renderGroupLi (group) {
     })
   }
 
-  // Body of renderGroupUl
-  const name = kb.any(group, ns.vcard('fn'))
-  const groupLi = dom.createElement('li')
-  groupLi.setAttribute('role', 'listitem')
-  groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
-  groupLi.subject = group
-  UI.widgets.makeDraggable(groupLi, group)
+  const { groupLi, groupButton } = createGroupLi(group)
 
-  const groupButton = groupLi.appendChild(dom.createElement('button'))
-  groupButton.setAttribute('type', 'button')
-  groupButton.innerHTML = name ? name.value : 'Some group'
-  groupButton.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
-  groupButton.addEventListener(
-    'click', groupLiClickListener,
-    false
-  )
-
+  groupButton.addEventListener('click', groupLiClickListener, false)
   UI.widgets.makeDropTarget(groupLi, handleURIsDroppedOnGroup)
   groupLi.addEventListener('click', groupLiClickListener, true)
   return groupLi
@@ -131,8 +136,8 @@ export function selectAllGroups (
     })
   }
 
+  const badness = []
   let todo = 0
-  var badness = [] /* eslint-disable-line no-var */
   for (let k = 0; k < ulGroups.children.length; k++) {
     const groupLi = ulGroups.children[k]
     const group = groupLi.subject

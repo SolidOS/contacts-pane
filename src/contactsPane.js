@@ -20,7 +20,7 @@ import './styles/contactsPane.css'
 import {
   checkDataModel, ensureBookLoaded, renderGroupButtons,
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
-  syncGroupUl, setActiveGroupButton,
+  syncGroupUl, setActiveGroupButton, createGroupLi,
 } from './addressBookPresenter'
 import { complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
@@ -553,16 +553,7 @@ export default {
                 return nameA < nameB ? -1 : nameA > nameB ? 1 : 0
               })
               groups.forEach(function (group) {
-                const name = kb.any(group, ns.vcard('fn'))
-                const groupLi = dom.createElement('li')
-                groupLi.setAttribute('role', 'listitem')
-                groupLi.setAttribute('aria-label', name ? name.value : 'Some group')
-                groupLi.subject = group
-
-                const groupBtn = groupLi.appendChild(dom.createElement('button'))
-                groupBtn.setAttribute('type', 'button')
-                groupBtn.innerHTML = name ? name.value : 'Some group'
-                groupBtn.classList.add('allGroupsButton', 'actionButton', 'btn-secondary', 'action-button-focus')
+                const { groupLi, groupButton: groupBtn, name } = createGroupLi(group)
                 groupBtn.addEventListener('click', function (event) {
                   event.preventDefault()
                   if (!event.metaKey) {
@@ -580,7 +571,6 @@ export default {
                   })
                 }, false)
 
-                UI.widgets.makeDraggable(groupLi, group)
                 UI.widgets.deleteButtonWithCheck(
                   dom,
                   groupLi,
