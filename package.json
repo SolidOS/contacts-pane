@@ -48,7 +48,7 @@
   "peerDependencies": {
     "rdflib": "^2.3.5",
     "solid-logic": "^4.0.2",
-    "solid-ui": "^3.0.3"
+    "solid-ui": "3.0.4-822a480"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
@@ -77,7 +77,7 @@
     "pane-registry": "^3.0.1",
     "rdflib": "^2.3.5",
     "solid-logic": "^4.0.2",
-    "solid-ui": "^3.0.3",
+    "solid-ui": "3.0.4-822a480",
     "style-loader": "^4.0.0",
     "terser-webpack-plugin": "^5.3.16",
     "typescript": "^5.9.3",

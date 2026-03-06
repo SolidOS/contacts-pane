@@ -1,5 +1,17 @@
 /* Solid-UI form */
 
+/* Vertically center autocomplete input in .formFieldValue */
+.individualPane .formFieldValue > div[style*="flex-direction: row"],
+.contactPane .formFieldValue > div[style*="flex-direction: row"] {
+  align-items: center;
+  display: flex;
+}
+
+.individualPane .formFieldValue input[data-testid="autocomplete-input"],
+.contactPane .formFieldValue input[data-testid="autocomplete-input"] {
+  vertical-align: middle;
+}
+
 .individualPane .hoverControl:has(> img:first-child),
 .contactPane .hoverControl:has(> img:first-child) {
   background-color: transparent !important;
@@ -133,6 +145,12 @@
 .individualPane .formFieldValue td,
 .contactPane .formFieldValue td {
   padding: 0 !important;
+  vertical-align: middle;
+}
+
+.individualPane .formFieldValue table[data-testid="autocomplete-table"],
+.contactPane .formFieldValue table[data-testid="autocomplete-table"] {
+  height: 100%;
 }
 
 .individualPane .formFieldValue input:not([type="color"]),
@@ -176,12 +194,58 @@
   padding: 0 !important;
 }
 
+/* In contactPane, remove border/padding from all direct child divs. */
+.individualPane > div,
+.contactPane > div {
+  border: none !important;
+  padding: 0 !important;
+}
+
 /* Align schema.org, solid terms, FOAF, vCard, and org field labels with their input values. */
 .individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue),
 .contactPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) {
   display: flex;
   align-items: baseline;
   margin-bottom: var(--spacing-sm);
+}
+
+/* for the Resume inside corporation choice */
+/* Add space between classifierBox label and select box */
+.individualPane .choiceBox .classifierBox-label,
+.contactPane .choiceBox .classifierBox-label {
+  margin-right: 0;
+  padding-left: 0.3em;
+}
+
+.individualPane .choiceBox .choiceBox-selectBox select,
+.contactPane .choiceBox .choiceBox-selectBox select {
+  margin-left: 2.1em !important;
+}
+
+/* for the Resume orga details */
+/* Add space between classifierBox label and select box */
+.individualPane .classifierBox .classifierBox-label,
+.contactPane .classifierBox .classifierBox-label {
+  margin-right: 0;
+  padding-left: 0.3em;
+  width: 8em;
+  padding: 0.3em;
+  vertical-align: middle;
+}
+
+.individualPane .classifierBox .classifierBox-selectBox,
+.contactPane .classifierBox .classifierBox-selectBox {
+  margin-left: 0 !important;
+}
+
+.individualPane .classifierBox .classifierBox-selectBox select,
+.contactPane .classifierBox .classifierBox-selectBox select {
+  margin-left: 0 !important;
+}
+
+.individualPane .formFieldValue > span > select,
+.contactPane .formFieldValue > span > select {
+  margin-left: 0 !important;
 }
 
 .individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue,
@@ -239,6 +303,12 @@
   margin-right: 0 !important;
 }
 
+/* Add horizontal gap between label and textarea for all label+textarea pairs. */
+.individualPane div:has(> a) + div:has(textarea),
+.contactPane div:has(> a) + div:has(textarea) {
+  margin-left: var(--spacing-sm);
+}
+
 /* Center textarea label vertically in flex rows. */
 .individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea),
 .contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
@@ -248,6 +318,7 @@
 .individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a),
 .contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a) {
   padding-left: var(--spacing-xs);
+  padding-top: var(--spacing-sm);
 }
 
 /* Keep autocomplete/table-based fields (e.g. Occupation) aligned to label text baseline. */
