@@ -691,28 +691,30 @@ function buildFooterButtons (ctx) {
           }, false)
           UI.widgets.makeDropTarget(groupLi, uris => handleURIsDroppedOnGroup(uris, group))
 
-          UI.widgets.deleteButtonWithCheck(
-            dom,
-            groupLi,
-            'group ' + name,
-            async function () {
-              await deleteThingAndDoc(group)
-              delete selectedGroups[group.uri]
-              // Refresh the group buttons list
-              const allGroupsLi = ctx.allGroupsLi
-              const newGroupLi = ctx.newGroupLi
-              if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
-              if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
-              syncGroupUl(book, options, ctx.ulGroups, dom, selectedGroups, ctx.ulPeople, ctx.searchInput)
-              ctx.ulGroups.insertBefore(allGroupsLi, ctx.ulGroups.firstChild)
-              ctx.ulGroups.appendChild(newGroupLi)
-              refreshThingsSelected(ctx.ulGroups, selectedGroups)
-              // Refresh the people list to reflect the deleted group
-              refreshNames(ctx.ulPeople, null, false)
-              // Refresh the groups detail view
-              groupsButton.click()
-            }
-          )
+          if (me) {
+            UI.widgets.deleteButtonWithCheck(
+              dom,
+              groupLi,
+              'group ' + name,
+              async function () {
+                await deleteThingAndDoc(group)
+                delete selectedGroups[group.uri]
+                // Refresh the group buttons list
+                const allGroupsLi = ctx.allGroupsLi
+                const newGroupLi = ctx.newGroupLi
+                if (allGroupsLi.parentNode) allGroupsLi.parentNode.removeChild(allGroupsLi)
+                if (newGroupLi.parentNode) newGroupLi.parentNode.removeChild(newGroupLi)
+                syncGroupUl(book, options, ctx.ulGroups, dom, selectedGroups, ctx.ulPeople, ctx.searchInput)
+                ctx.ulGroups.insertBefore(allGroupsLi, ctx.ulGroups.firstChild)
+                ctx.ulGroups.appendChild(newGroupLi)
+                refreshThingsSelected(ctx.ulGroups, selectedGroups)
+                // Refresh the people list to reflect the deleted group
+                refreshNames(ctx.ulPeople, null, false)
+                // Refresh the groups detail view
+                groupsButton.click()
+              }
+            )
+          }
 
           groupsList.appendChild(groupLi)
         })

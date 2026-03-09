@@ -1,6 +1,6 @@
 // Render a control to record the group memberships we have for this agent
 import * as UI from 'solid-ui'
-import { store } from 'solid-logic'
+import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
 import { normalizeGroupUri } from './localUtils'
@@ -96,16 +96,18 @@ export async function renderGroupMemberships (person, context) {
     linkEl.setAttribute('title', 'Link to ' + label)
     toolbar.appendChild(linkEl)
 
-    // Delete button
-    UI.widgets.deleteButtonWithCheck(
-      dom,
-      toolbar,
-      'membership in ' + label,
-      function () {
-        removeFromGroup(person, group)
-        refreshNames(person) // to allow refresh of card name in groupList
-      }
-    )
+    if ( authn.currentUser()) {
+      // Delete button
+      UI.widgets.deleteButtonWithCheck(
+        dom,
+        toolbar,
+        'membership in ' + label,
+        function () {
+          removeFromGroup(person, group)
+          refreshNames(person) // to allow refresh of card name in groupList
+        }
+      )
+    }
 
     li.appendChild(toolbar)
     return li
