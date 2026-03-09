@@ -65,9 +65,6 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
   } else {
-    // if we are already displaying a WebID, we do not need to add one
-    if (!kb.holds(subject, ns.rdf('type'), ns.foaf('PersonalProfileDocument'))) {
-      div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
-    }
+    div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
   }
 } // renderIndividual

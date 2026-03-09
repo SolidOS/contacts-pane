@@ -160,7 +160,7 @@ export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
 
 export async function renderWebIdControl (person, dataBrowserContext) {
   const options = {
-    longPrompt: `Does this person have a ${WEBID_NOUN}?`,
+    longPrompt: `Link to a ${WEBID_NOUN}?`,
     idNoun: WEBID_NOUN,
     urlType: ns.vcard('WebID')
   }
@@ -178,7 +178,7 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
     }
   }
   const options = {
-    longPrompt: `Does this ${orgClassId} have a ${PUBLICID_NOUN}?`,
+    longPrompt: `Add a ${PUBLICID_NOUN}?`,
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
     dbLookup: true,
