@@ -74,7 +74,9 @@ export async function handleURIsDroppedOnGroup (uris, group) {
     try {
       await addPersonToGroup(thing, group)
     } catch (e) {
-      complain(e)
+      // complain expects (div, dom, message)
+      const msg = e && e.message ? e.message : String(e)
+      complain(div || null, dom || null, 'Error adding dropped URI to group: ' + msg)
     }
     refreshNames(ulPeople)
   }

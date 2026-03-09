@@ -3,6 +3,7 @@ import { store } from 'solid-logic'
 import * as $rdf from 'rdflib'
 import './styles/mugshotGallery.css'
 import * as debug from './debug'
+import { confirmDialog } from './localUtils'
 
 // Lightweight MIME helpers replacing the heavy mime-types/mime-db packages (~170 KiB)
 const mimeMap = {
@@ -284,7 +285,7 @@ export function renderMugshotGallery (dom, subject) {
           alert('Only drop images in this contact onto this trash can.')
           return
         }
-        if (confirm(`Permanently DELETE image ${uri} completely?`)) {
+        if (await confirmDialog(`Permanently DELETE image ${uri} completely?`)) {
           debug.log('Unlinking image file ' + uri)
           await linkToPicture(subject, kb.sym(uri), true)
           try {

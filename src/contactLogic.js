@@ -3,7 +3,7 @@ import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
 import * as debug from './debug'
-import { getSameAs } from './localUtils'
+import { getSameAs, confirmDialog } from './localUtils'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -151,7 +151,7 @@ export async function addPersonToGroup (thing, group) {
     )
   }
   const message = 'Add ' + pname + ' to group ' + gname + '?'
-  if (!confirm(message)) return
+  if (!await confirmDialog(message)) return
   const ins = [
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]

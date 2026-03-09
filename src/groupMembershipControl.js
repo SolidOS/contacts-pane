@@ -3,7 +3,7 @@ import * as UI from 'solid-ui'
 import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
-import { normalizeGroupUri } from './localUtils'
+import { normalizeGroupUri, confirmDialog } from './localUtils'
 import { refreshNames } from './addressBookPresenter'
 import { vcardWebIDs } from './webidControl'
 
@@ -65,7 +65,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
       return
     }
     const message = 'Remove ' + pname + ' from group ' + gname + '?'
-    if (confirm(message)) {
+    if (await confirmDialog(message)) {
       let del = kb
         .statementsMatching(person, undefined, undefined, group.doc())
         .concat(kb.statementsMatching(undefined, undefined, person, group.doc()))
@@ -121,10 +121,10 @@ export async function renderGroupMemberships (person, context, ulPeople) {
         dom,
         toolbar,
         'membership in ' + label,
-        function () {
+        async function () {
           // async operation handles its own refresh once the group doc has
           // been reloaded
-          removeFromGroup(person, group)
+          await removeFromGroup(person, group)
         }
       )
     }

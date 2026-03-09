@@ -142,7 +142,7 @@ export function toolsPane (
             }
             filesToDelete.push(card.dir()) // the folder last
             log(logSpace, 'Files to delete: ' + filesToDelete)
-            if (!confirm('DELETE card ' + card.dir() + ' for "' + kb.any(card, VCARD('fn')) + '", with ' + kb.each(card).length + 'statements?')) {
+            if (!await confirmDialog('DELETE card ' + card.dir() + ' for "' + kb.any(card, VCARD('fn')) + '", with ' + kb.each(card).length + 'statements?')) {
               return resolve('Cancelled by user')
             }
 
@@ -162,7 +162,7 @@ export function toolsPane (
                 .catch(function (e) {
                   var err = '*** ERROR deleting ' + resource + ': ' + e
                   log(logSpace, err)
-                  if (confirm('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card DELETE errors?')) {
+                  if (await confirmDialog('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card DELETE errors?')) {
                     removeFromMainIndex()
                   } else {
                     reject(err)
@@ -246,7 +246,7 @@ export function toolsPane (
               log(logSpace, 'Cant load a card! ' + [card, other] + ': ' + e)
               stats.nameOnlyDuplicates.push(card)
               resolve(false)
-            // if (confirm('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card READ errors?')){
+            // if (await confirmDialog('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card READ errors?')){
             //  removeFromMainIndex()
             // }
             })
