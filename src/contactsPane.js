@@ -99,7 +99,7 @@ export default {
         renderIndividual(dom, div, subject, dataBrowserContext).then(() => debug.log('(individual rendered)'))
       /*
         //          Render a Group instance
-      } 
+      }
         else if (t[ns.vcard('Group').uri]) {
         // If we have a main address book, then render this group as a guest group within it
         UI.login
@@ -150,7 +150,7 @@ export default {
         let book = options.foreignGroup // in case we have only a Grouo
         let title = ''
         if (books && books.length > 0) {
-          book = books[0] // if we have an Address Book, we prefer this     
+          book = books[0] // if we have an Address Book, we prefer this
           title = utils.label(book.dir())
         } else {
           kb.any(book, ns.dc('title')) || kb.any(book, ns.vcard('fn'))
@@ -159,7 +159,7 @@ export default {
           }
           title = title ? title.value : classLabel
         }
-       
+
         const groupIndex = kb.any(book, ns.vcard('groupIndex'))
         const selectedGroups = {}
         let selectedPeople = {} // Actually prob max 1
@@ -182,15 +182,25 @@ export default {
 
         // Shared context passed to all builder functions
         const ctx = {
-          dom, kb, ns, book, options, title, groupIndex,
-          selectedGroups, get selectedPeople () { return selectedPeople },
+          dom,
+          kb,
+          ns,
+          book,
+          options,
+          title,
+          groupIndex,
+          selectedGroups,
+          get selectedPeople () { return selectedPeople },
           set selectedPeople (v) { selectedPeople = v },
           get allGroupsLi () { return allGroupsLi },
           set allGroupsLi (v) { allGroupsLi = v },
           get newGroupLi () { return newGroupLi },
           set newGroupLi (v) { newGroupLi = v },
-          actionButtons, setActiveActionButton,
-          dataBrowserContext, div, me,
+          actionButtons,
+          setActiveActionButton,
+          dataBrowserContext,
+          div,
+          me,
           setMe (v) { me = v },
           paneOptions,
         }
@@ -274,7 +284,7 @@ export default {
 
 // ── Helper: handle "New group" button click ──────────────────────────
 async function handleNewGroupClick (ctx) {
-  const { dom, kb, ns, book, options, selectedGroups, dataBrowserContext, div } = ctx
+  const { dom, kb, ns, book, options, selectedGroups, dataBrowserContext } = ctx
   ctx.showDetailsSection()
   ctx.detailsSectionContent.innerHTML = ''
   const groupIndex = kb.any(book, ns.vcard('groupIndex'))
@@ -326,7 +336,7 @@ async function handleNewGroupClick (ctx) {
 
 // ── Helper: render askName form for person or organization ───────────
 function createNewPersonOrOrganization (ctx, formContainer, klass) {
-  const { dom, kb, ns, book, selectedGroups, dataBrowserContext } = ctx
+  const { dom, kb, book, selectedGroups, dataBrowserContext } = ctx
   formContainer.innerHTML = ''
   UI.widgets
     .askName(dom, kb, formContainer, UI.ns.foaf('name'), klass)
@@ -383,7 +393,7 @@ function buildMainLayout (ctx) {
 
 // ── Builder: header with title and New Contact button ────────────────
 function buildHeaderSection (ctx) {
-  const { dom, ns, kb, title, me, setMe, setActiveActionButton, paneOptions } = ctx
+  const { dom, ns, title, me, setMe, setActiveActionButton } = ctx
 
   const headerSection = dom.createElement('section')
   headerSection.classList.add('headerSection')
@@ -521,8 +531,10 @@ function buildSearchSection (ctx) {
 
 // ── Builder: group buttons bar ───────────────────────────────────────
 function buildGroupBar (ctx) {
-  const { dom, kb, ns, book, options, groupIndex, selectedGroups,
-    actionButtons, setActiveActionButton, div } = ctx
+  const {
+    dom, kb, book, options, groupIndex, selectedGroups,
+    actionButtons, setActiveActionButton, div
+  } = ctx
 
   const buttonSection = dom.createElement('section')
   buttonSection.classList.add('buttonSection')
@@ -643,8 +655,10 @@ function buildGroupBar (ctx) {
 
 // ── Builder: footer action buttons (Groups / Sharing / Tools) ────────
 function buildFooterButtons (ctx) {
-  const { dom, kb, ns, book, options, selectedGroups,
-    actionButtons, setActiveActionButton, dataBrowserContext, div, me } = ctx
+  const {
+    dom, kb, ns, book, options, selectedGroups,
+    actionButtons, setActiveActionButton, dataBrowserContext, div, me
+  } = ctx
 
   const cardFooter = dom.createElement('div')
   cardFooter.classList.add('cardFooter')

@@ -56,7 +56,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
     dataBrowserContext.ulPeople
   ))
 
-  if ( authn.currentUser()) {
+  if (authn.currentUser()) {
     // Allow to attach documents etc to the profile card
     const h3 = div.appendChild(dom.createElement('h3'))
     h3.textContent = 'Attach a document'

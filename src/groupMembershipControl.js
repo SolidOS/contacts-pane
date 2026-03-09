@@ -42,7 +42,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     const pname = kb.any(person, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
     // find all WebIDs of thing
-    let thingwebids = kb.each(null, ns.owl('sameAs'), person, group.doc())
+    const thingwebids = kb.each(null, ns.owl('sameAs'), person, group.doc())
     // WebID can be deleted only if not used in another thing
     let webids = []
     thingwebids.forEach(webid => {
@@ -115,7 +115,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     linkEl.setAttribute('title', 'Link to ' + label)
     toolbar.appendChild(linkEl)
 
-    if ( authn.currentUser()) {
+    if (authn.currentUser()) {
       // Delete button
       UI.widgets.deleteButtonWithCheck(
         dom,
