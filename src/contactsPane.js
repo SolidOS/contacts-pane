@@ -21,7 +21,7 @@ import {
   checkDataModel, ensureBookLoaded, renderGroupButtons,
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
   syncGroupUl, setActiveGroupButton, createGroupLi, refreshFilteredPeople,
-  deselectAllPeople,
+  deselectAllPeople, handleURIsDroppedOnGroup
 } from './addressBookPresenter'
 import { complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
@@ -642,8 +642,12 @@ function buildFooterButtons (ctx) {
       groupsHeader.textContent = 'Your groups'
       ctx.detailsSectionContent.appendChild(groupsHeader)
 
-      const groupRemark = dom.createElement('p')
+      let groupRemark = dom.createElement('p')
       groupRemark.textContent = 'When you delete a group it can happen that some contacts end up groupless.'
+      ctx.detailsSectionContent.appendChild(groupRemark)
+
+      groupRemark = dom.createElement('p')
+      groupRemark.textContent = 'To move contacts around, simply drag and drop them onto a group.'
       ctx.detailsSectionContent.appendChild(groupRemark)
 
       // Load all groups and display them in a list
@@ -685,6 +689,7 @@ function buildFooterButtons (ctx) {
               }
             })
           }, false)
+          UI.widgets.makeDropTarget(groupLi, uris => handleURIsDroppedOnGroup(uris, group))
 
           UI.widgets.deleteButtonWithCheck(
             dom,

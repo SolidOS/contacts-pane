@@ -67,8 +67,7 @@ export function createGroupLi (group) {
   return { groupLi, groupButton, name }
 }
 
-function renderGroupLi (group) {
-  async function handleURIsDroppedOnGroup (uris) {
+export async function handleURIsDroppedOnGroup (uris, group) {
     for (const u of uris) {
       debug.log('Dropped on group: ' + u)
       const thing = kb.sym(u)
@@ -79,7 +78,10 @@ function renderGroupLi (group) {
       }
       refreshNames(ulPeople)
     }
-  }
+}
+
+function renderGroupLi (group) {
+  
   function groupLiClickListener (event) {
     event.preventDefault()
     setActiveGroupButton(ulGroups, groupButton)
@@ -100,7 +102,7 @@ function renderGroupLi (group) {
   const { groupLi, groupButton } = createGroupLi(group)
 
   groupButton.addEventListener('click', groupLiClickListener, false)
-  UI.widgets.makeDropTarget(groupLi, handleURIsDroppedOnGroup)
+  UI.widgets.makeDropTarget(groupLi, uris => handleURIsDroppedOnGroup(uris, group))
   groupLi.addEventListener('click', groupLiClickListener, true)
   return groupLi
 } // renderGroupLi
@@ -222,6 +224,15 @@ export function findBookFromGroups (book) {
 // ######## Person presenter
 /** Refresh the list of names */
 export function refreshNames (ulPeople, detailsView, autoSelect = true) {
+  // Guard: ulPeople must be a DOM element with children.  Callers sometimes
+  // pass the wrong thing (e.g. a person object) which leads to the
+  // "Cannot read properties of undefined (reading 'length')" error in
+  // syncTableToArrayReOrdered.  Bail out early if the value is not valid.
+  if (!ulPeople || !ulPeople.children || typeof ulPeople.children.length !== 'number') {
+    console.warn('refreshNames called with invalid ulPeople:', ulPeople)
+    return
+  }
+
   function setPersonListener (personLi, person) {
     function handleSelect (event) {
       event.preventDefault()
