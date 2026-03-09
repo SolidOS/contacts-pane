@@ -68,20 +68,19 @@ export function createGroupLi (group) {
 }
 
 export async function handleURIsDroppedOnGroup (uris, group) {
-    for (const u of uris) {
-      debug.log('Dropped on group: ' + u)
-      const thing = kb.sym(u)
-      try {
-        await addPersonToGroup(thing, group)
-      } catch (e) {
-        complain(e)
-      }
-      refreshNames(ulPeople)
+  for (const u of uris) {
+    debug.log('Dropped on group: ' + u)
+    const thing = kb.sym(u)
+    try {
+      await addPersonToGroup(thing, group)
+    } catch (e) {
+      complain(e)
     }
+    refreshNames(ulPeople)
+  }
 }
 
 function renderGroupLi (group) {
-  
   function groupLiClickListener (event) {
     event.preventDefault()
     setActiveGroupButton(ulGroups, groupButton)
@@ -201,7 +200,9 @@ export async function loadAllGroups (book) {
     const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
     await kb.fetcher.load(gs)
     return gs
-  } else return
+  } else {
+    return [] // no groups
+  }
 }
 
 // The book could be the main subject, or linked from a group we are dealing with
@@ -370,61 +371,61 @@ function selectPerson (ulPeople, person, detailsView) {
     toolbar.appendChild(linkEl)
 
     if (authn.currentUser()) {
-        // Add in a delete button to delete from AB
-        const deleteButton = UI.widgets.deleteButtonWithCheck(
+      // Add in a delete button to delete from AB
+      const deleteButton = UI.widgets.deleteButtonWithCheck(
         dom,
         toolbar, // appends it to toolbar.appendChild(deleteButton)
         'contact',
         async function () {
-            const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
-        
-            const pname = kb.any(person, ns.vcard('fn'))
-            debug.log('We are about to delete the contact ' + pname)
-            await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-            // load people.ttl
-            let nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-            await kb.fetcher.load(nameEmailIndex)
+          const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
 
-            //  - delete person's WebID's in each Group
-            //  - delete the references to it in group files and save them back
-            //  - delete the reference in people.ttl and save it back
+          const pname = kb.any(person, ns.vcard('fn'))
+          debug.log('We are about to delete the contact ' + pname)
+          await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
+          // load people.ttl
+          const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+          await kb.fetcher.load(nameEmailIndex)
 
-            // find all Groups
-            const groups = groupMembership(person)
-            let removeFromGroups = []
-            // find person WebID's
-            groups.forEach(group => {
+          //  - delete person's WebID's in each Group
+          //  - delete the references to it in group files and save them back
+          //  - delete the reference in people.ttl and save it back
+
+          // find all Groups
+          const groups = groupMembership(person)
+          let removeFromGroups = []
+          // find person WebID's
+          groups.forEach(group => {
             const webids = getSameAs(kb, person, group.doc())
             // for each check in each Group that it is not used by an other person then delete
             webids.forEach(webid => {
-                if (getSameAs(kb, webid, group.doc()).length === 1) {
+              if (getSameAs(kb, webid, group.doc()).length === 1) {
                 removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
-                }
+              }
             })
-            })
+          })
 
-            // Only if folder deletion succeeds, proceed with person deletion
-            await kb.updater.updateMany(removeFromGroups)
-            
-            try {
-                await deleteThingAndDoc(person)
-            } catch (err) {
-                debug.log('Contact deletion cancelled or failed: ' + err.message)
-                return // Stop - don't run deleteRecursive
-            }
+          // Only if folder deletion succeeds, proceed with person deletion
+          await kb.updater.updateMany(removeFromGroups)
 
-            try {
-                await deleteRecursive(kb, container, toolbar, dom)
-            } catch (err) {
-                debug.log('Deletion cancelled: ' + err.message)
-                return // Exit without continuing with other deletions
-            }
-            complain(div, dom, "Contact data deleted.")
-            refreshNames(ulPeople, detailsView)
-            detailsView.innerHTML = 'Contact data deleted.'
+          try {
+            await deleteThingAndDoc(person)
+          } catch (err) {
+            debug.log('Contact deletion cancelled or failed: ' + err.message)
+            return // Stop - don't run deleteRecursive
+          }
+
+          try {
+            await deleteRecursive(kb, container, toolbar, dom)
+          } catch (err) {
+            debug.log('Deletion cancelled: ' + err.message)
+            return // Exit without continuing with other deletions
+          }
+          complain(div, dom, 'Contact data deleted.')
+          refreshNames(ulPeople, detailsView)
+          detailsView.innerHTML = 'Contact data deleted.'
         }
-        )
-        deleteButton.classList.add('deleteButton')
+      )
+      deleteButton.classList.add('deleteButton')
     }
     detailsView.appendChild(toolbar)
 
@@ -496,22 +497,21 @@ export async function checkDataModel (book, detailsSectionContent) {
   const groups = await loadAllGroups(book)
 
   if (groups && groups.length > 0) {
-
     const { del, ins } = await getDataModelIssues(groups)
 
     if (authn.currentUser()) {
-        if (del.length) {
-            UI.widgets.deleteButtonWithCheck(
-            dom,
-            detailsSectionContent, // where it appends it to
-            'contact',
-            async function () {
-                await kb.updater.updateMany(del, ins)
-                debug.log('Deleted ' + del.length + ' bad statements from groups')
-            })
-        }
+      if (del.length) {
+        UI.widgets.deleteButtonWithCheck(
+          dom,
+          detailsSectionContent, // where it appends it to
+          'contact',
+          async function () {
+            await kb.updater.updateMany(del, ins)
+            debug.log('Deleted ' + del.length + ' bad statements from groups')
+          })
+      }
     }
-    }
+  }
 }
 
 // Prepare book data once so askName forms load instantly

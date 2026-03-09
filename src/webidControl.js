@@ -169,11 +169,9 @@ export async function renderWebIdControl (person, dataBrowserContext) {
 
 export async function renderPublicIdControl (person, dataBrowserContext) {
   let orgClass = kb.sym('http://www.wikidata.org/wiki/Q43229')
-  let orgClassId = 'Organization'
   for (const classId in wikidataClasses) {
     if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
       orgClass = kb.sym(wikidataClasses[classId])
-      orgClassId = classId
       debug.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
   }
