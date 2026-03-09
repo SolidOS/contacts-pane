@@ -15,6 +15,10 @@
   width: 100%;
 }
 
+.contactPane .group-pills-wrapper span {
+  width: max-content;
+}
+
 /* Each group item: button on top, toolbar below */
 .contactPane .group-membership-item {
   display: flex;

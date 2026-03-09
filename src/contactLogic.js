@@ -52,13 +52,18 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
     // Note this is propert of the file -- not when the person was created!
   ]
 
-  for (const gu in selectedGroups) {
-    const g = kb.sym(gu)
-    const gd = g.doc()
-    agenda.push(
-      $rdf.st(g, ns.vcard('hasMember'), person, gd),
-      $rdf.st(person, ns.vcard('fn'), name, gd)
-    )
+  if (selectedGroups && selectedGroups.length > 0) {
+    for (const gu in selectedGroups) {
+      const g = kb.sym(gu)
+      const gd = g.doc()
+      agenda.push(
+        $rdf.st(g, ns.vcard('hasMember'), person, gd),
+        $rdf.st(person, ns.vcard('fn'), name, gd)
+      )
+    }
+  } else {
+    alert('Must be a member of at least one group. Please select or create a group.')
+    return
   }
 
   try {

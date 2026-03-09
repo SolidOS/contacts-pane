@@ -484,6 +484,7 @@ function buildSearchSection (ctx) {
   searchSection.classList.add('searchSection')
   const searchDiv = dom.createElement('div')
   searchDiv.classList.add('searchDiv')
+  // container for input + clear button
   searchSection.appendChild(searchDiv)
   const searchInput = dom.createElement('input')
   searchInput.setAttribute('type', 'text')
@@ -491,9 +492,30 @@ function buildSearchSection (ctx) {
   searchInput.classList.add('searchInput')
   searchInput.setAttribute('placeholder', 'Search by name')
   searchDiv.appendChild(searchInput)
+
+  // clear button that appears when there is text
+  const clearBtn = dom.createElement('button')
+  clearBtn.setAttribute('type', 'button')
+  clearBtn.setAttribute('aria-label', 'Clear search')
+  clearBtn.classList.add('searchClearButton', 'hidden')
+  clearBtn.textContent = '\u2715' // multiplication sign ×
+  searchDiv.appendChild(clearBtn)
+
   searchInput.addEventListener('input', function (_event) {
+    const hasText = searchInput.value.length > 0
+    // show/hide using the shared "hidden" utility class instead of direct
+    // style manipulation
+    clearBtn.classList.toggle('hidden', !hasText)
     refreshFilteredPeople(ctx.ulPeople, true, ctx.detailsSectionContent)
   })
+
+  clearBtn.addEventListener('click', function () {
+    searchInput.value = ''
+    clearBtn.classList.add('hidden')
+    searchInput.focus()
+    refreshFilteredPeople(ctx.ulPeople, true, ctx.detailsSectionContent)
+  })
+
   return { searchSection, searchInput }
 }
 

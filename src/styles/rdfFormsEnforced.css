@@ -291,11 +291,8 @@
 .contactPane .formFieldValue textarea {
   appearance: none;
   -webkit-appearance: none;
-  border: 0.05em solid var(--color-secondary) !important;
-  border-style: solid !important;
-  border-width: 0.05em !important;
-  border-color: var(--color-secondary) !important;
-  border-radius: var(--border-radius-base) !important;
+  border-radius: 0.2em !important;
+  border: 0.05em solid #88c !important;
   width: 100%;
   box-sizing: border-box;
   margin-top: var(--spacing-xs);

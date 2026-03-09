@@ -137,7 +137,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     const groups = groupMembership(person)
     const pillsWrapper = container.querySelector('.group-pills-wrapper')
     if (groups.length === 0) {
-      pillsWrapper.innerHTML = 'Not part of any Address Book groups.'
+      pillsWrapper.innerHTML = '<span>Not part of any Address Book groups.</span>'
     } else {
       pillsWrapper.innerHTML = ''
     }

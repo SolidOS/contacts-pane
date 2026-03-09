@@ -155,6 +155,26 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
       expect(div.outerHTML).toMatch('<div class="contactPane"></div>')
       expect(div.innerHTML).toMatch('')
     })
+
+    it('includes a clear button in the search input and it works', async () => {
+      const div = pane.render(book, context)
+      // let asyncRender finish (it runs in a microtask)
+      await new Promise(resolve => setTimeout(resolve, 0))
+      const input = div.querySelector('.searchInput') as HTMLInputElement
+      expect(input).toBeTruthy()
+      const clear = div.querySelector('.searchClearButton') as HTMLElement
+      expect(clear).toBeTruthy()
+      // initially hidden via utility class
+      expect(clear.classList.contains('hidden')).toBe(true)
+      // simulate typing
+      input.value = 'hello'
+      input.dispatchEvent(new Event('input'))
+      expect(clear.classList.contains('hidden')).toBe(false)
+      // clicking clear should reset input and hide button again
+      clear.click()
+      expect(input.value).toBe('')
+      expect(clear.classList.contains('hidden')).toBe(true)
+    })
   }) // render tests
 
   describe('data format tests', () => {
