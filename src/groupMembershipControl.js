@@ -4,6 +4,8 @@ import { store } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
 import { normalizeGroupUri } from './localUtils'
+import { refreshNames } from './addressBookPresenter'
+import { vcardWebIDs } from './webidControl'
 
 const ns = UI.ns
 const kb = store
@@ -19,19 +21,26 @@ export function groupMembership (person) {
 
 export async function renderGroupMemberships (person, context) {
   // Remove a person from a group
-  async function removeFromGroup (thing, group) {
-    const pname = kb.any(thing, ns.vcard('fn'))
+  async function removeFromGroup (person, group) {
+    const pname = kb.any(person, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
     // find all WebIDs of thing
-    const thingwebids = kb.each(null, ns.owl('sameAs'), thing, group.doc())
+    let thingwebids = kb.each(null, ns.owl('sameAs'), person, group.doc())
     // WebID can be deleted only if not used in another thing
     let webids = []
     thingwebids.forEach(webid => {
-      if (kb.statementsMatching(webid, ns.owl('sameAs'), thing, group.doc())) webids = webids.concat(webid)
+      if (kb.statementsMatching(webid, ns.owl('sameAs'), person, group.doc())) webids = webids.concat(webid)
     })
-    let thingOrWebid = thing
-    if (webids.length > 0) thingOrWebid = webids[0]
-    const groups = kb.each(null, ns.vcard('hasMember'), thingOrWebid) // in all groups a person has same structure
+    webids = vcardWebIDs(kb, person).map(webid => webid.value)
+    // When checking how many groups this entity belongs to we should look
+    // at the person **and** any of their webID nodes.  Build an array of
+    // named nodes so we can query all of them.
+    const webidNodes = webids.map(u => kb.sym(u))
+    const members = [person].concat(webidNodes)
+    // collect all groups for any of these members, dedupe by URI
+    let groups = members
+      .flatMap(m => kb.each(null, ns.vcard('hasMember'), m))
+    groups = [...new Set(groups.map(g => g.uri))].map(u => kb.sym(u))
     if (groups.length < 2) {
       alert(
         'Must be a member of at least one group.  Add to another group first.'
@@ -94,6 +103,7 @@ export async function renderGroupMemberships (person, context) {
       'membership in ' + label,
       function () {
         removeFromGroup(person, group)
+        refreshNames(person) // to allow refresh of card name in groupList
       }
     )
 
