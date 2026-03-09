@@ -960,4 +960,5 @@ export function getSameAs (kb, item, doc) {
     kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
-export { addPersonToGroup} from './'
+export { saveNewGroup, addPersonToGroup, groupMembers, saveNewContact } from './contactLogic'
+export { addWebIDToContacts, removeWebIDFromContacts, getPersonas } from './webidControl'
