@@ -47,7 +47,14 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
 
-  div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
+  // forward list element from context if available; some callers (such as
+  // the contacts pane) attach `ulPeople` so that group membership control can
+  // refresh the master list when a membership is removed.
+  div.appendChild(await renderGroupMemberships(
+    subject,
+    dataBrowserContext,
+    dataBrowserContext.ulPeople
+  ))
 
   if ( authn.currentUser()) {
     // Allow to attach documents etc to the profile card

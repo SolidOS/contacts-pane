@@ -274,6 +274,10 @@
   background: transparent;
 }
 
+.contactPane .buttonSection .selected {
+  background: vnone !important;
+}
+
 .contactPane .groupButtonsList {
   display: flex;
   flex-wrap: nowrap;

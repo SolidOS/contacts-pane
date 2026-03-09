@@ -223,20 +223,27 @@ export function findBookFromGroups (book) {
 
 // ######## Person presenter
 /** Refresh the list of names */
-export function refreshNames (ulPeople, detailsView, autoSelect = true) {
-  // Guard: ulPeople must be a DOM element with children.  Callers sometimes
-  // pass the wrong thing (e.g. a person object) which leads to the
+export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
+  // If the caller did not explicitly pass a list element, fall back to the
+  // global variable that other helpers (renderGroupButtons, syncGroupUl, etc.)
+  // keep up to date.  This allows callers that don't have easy access to the
+  // element to simply invoke `refreshNames()` and get the behaviour they
+  // expect when the address-book UI is present.
+  const ul = ulPeopleArg || ulPeople
+
+  // Guard: ul must be a DOM element with children.  Callers sometimes pass the
+  // wrong thing (e.g. a person object) which leads to the
   // "Cannot read properties of undefined (reading 'length')" error in
   // syncTableToArrayReOrdered.  Bail out early if the value is not valid.
-  if (!ulPeople || !ulPeople.children || typeof ulPeople.children.length !== 'number') {
-    debug.warn('refreshNames called with invalid ulPeople:', ulPeople)
+  if (!ul || !ul.children || typeof ul.children.length !== 'number') {
+    debug.warn('refreshNames called with invalid ulPeople:', ul)
     return
   }
 
   function setPersonListener (personLi, person) {
     function handleSelect (event) {
       event.preventDefault()
-      selectPerson(ulPeople, person, cardMain)
+      selectPerson(ul, person, cardMain)
     }
     personLi.addEventListener('click', handleSelect)
     personLi.addEventListener('keydown', function (event) {
@@ -263,7 +270,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     }
   }
 
-  function renderNameInGroupList (person, ulPeople) {
+  function renderNameInGroupList (person, ul) {
     const personLi = dom.createElement('li')
     personLi.setAttribute('role', 'listitem')
     personLi.setAttribute('tabindex', '0')
@@ -298,6 +305,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
       }
     }
     trySetAvatar() // check if already in store
+
     // Load person's own document in background to get hasPhoto
     kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok) {
       if (ok) trySetAvatar()
@@ -329,8 +337,8 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     return personLi
   }
 
-  utils.syncTableToArrayReOrdered(ulPeople, cards, person => renderNameInGroupList(person, ulPeople))
-  refreshFilteredPeople(ulPeople, autoSelect, detailsView || cardMain)
+  utils.syncTableToArrayReOrdered(ul, cards, person => renderNameInGroupList(person, ul))
+  refreshFilteredPeople(ul, autoSelect, detailsView || cardMain)
 } // refreshNames
 
 function selectPerson (ulPeople, person, detailsView) {

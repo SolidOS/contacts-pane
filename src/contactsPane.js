@@ -210,6 +210,10 @@ export default {
         ulPeople.setAttribute('role', 'list')
         ulPeople.setAttribute('aria-label', 'People list')
         ctx.ulPeople = ulPeople
+        // make the element available on the dataBrowserContext too; other
+        // modules (individual/group membership) look for this property when
+        // they need to refresh the master list after a mutation.
+        if (ctx.dataBrowserContext) ctx.dataBrowserContext.ulPeople = ulPeople
 
         const detailsSectionContent = dom.createElement('div')
         detailsSectionContent.classList.add('detailsSectionContent')

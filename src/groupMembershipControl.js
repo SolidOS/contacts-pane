@@ -19,7 +19,24 @@ export function groupMembership (person) {
   return groups
 }
 
-export async function renderGroupMemberships (person, context) {
+/**
+ * Render the group membership section for a given person.
+ *
+ * @param person - the contact whose memberships are being edited
+ * @param context - the Data Browser context used by the pane registry
+ * @param ulPeople - **optional** the `<ul>` element containing the master
+ *   people list.  When provided (e.g. by the contacts pane) the control will
+ *   automatically call `refreshNames(ulPeople)` after removing a membership so
+ *   that the list on the left reflects the change.  If `null` this behaviour
+ *   is skipped.
+ */
+export async function renderGroupMemberships (person, context, ulPeople) {
+  // keep a reference to the people list (if any) so callers can ask us to
+  // refresh it when group membership changes.  The callers that render an
+  // address-book view pass their `ulPeople` element; other consumers may not
+  // have one and can simply ignore it.
+  const peopleUl = ulPeople || null
+
   // Remove a person from a group
   async function removeFromGroup (person, group) {
     const pname = kb.any(person, ns.vcard('fn'))
@@ -69,6 +86,8 @@ export async function renderGroupMemberships (person, context) {
       kb.fetcher.unload(group.doc())
       await kb.fetcher.load(group.doc())
       syncGroupPills()
+      // also update the people list if one exists (or via global fallback)
+      refreshNames(peopleUl)
     }
   }
 
@@ -103,8 +122,9 @@ export async function renderGroupMemberships (person, context) {
         toolbar,
         'membership in ' + label,
         function () {
+          // async operation handles its own refresh once the group doc has
+          // been reloaded
           removeFromGroup(person, group)
-          refreshNames(person) // to allow refresh of card name in groupList
         }
       )
     }
