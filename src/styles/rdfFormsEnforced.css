@@ -156,11 +156,16 @@
 .individualPane .formFieldValue input:not([type="color"]),
 .contactPane .formFieldValue input:not([type="color"]),
 .individualPane .formFieldValue textarea,
-.contactPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
 .individualPane .formFieldValue select,
 .contactPane .formFieldValue select {
   width: 100%;
-  max-width: 100%;
+  display: inline-block;
+  max-width: none !important;
 }
 
 .individualPane select#formSelect,
