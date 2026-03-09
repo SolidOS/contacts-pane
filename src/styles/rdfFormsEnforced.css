@@ -388,3 +388,26 @@
 .contactPane .webidControl table td div.contactPane.namedPane {
   border: none !important;
 }
+
+/* ------------------------------------------------------------------ */
+/* inline popup used for small confirmation flows (like the new confirmDialog) */
+/* apply the class `rdf-inline-modal` on the outer wrapper and give the
+   inner box the class `popup` instead of using the old inline styles. */
+
+/* selectors that match the old inline-styled markup when no classes can be added */
+
+/* outer container: position relative containing an absolute grid popup */
+.contactPane div[style*="position: relative"] > div[style*="position: absolute"][style*="display: grid"] {
+  /* override inline values with theme variables */
+  position: absolute;
+  top: -1em;
+  padding: 0.7em !important;
+  background: var(--color-background) !important;
+  border: 0.1em solid var(--color-primary) !important;
+  border-radius: var(--border-radius-base) !important;
+  box-shadow: 0 0.5em 0.9em rgba(0, 0, 0, 0.2) !important;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.3em;
+  z-index: 10;
+}
