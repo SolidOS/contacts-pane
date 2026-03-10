@@ -607,6 +607,8 @@ export function toolsPane (
     fixGroupless(book)
   })
 
+  // this is an old not needed anymore fix from https://github.com/SolidOS/contacts-pane/issues/81
+  /*
   const fixToOldDataModelButton = buttonsContainer.appendChild(dom.createElement('button'))
   fixToOldDataModelButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
   fixToOldDataModelButton.textContent = 'Revert groups to old data model'
@@ -614,7 +616,8 @@ export function toolsPane (
     setActiveButton(fixToOldDataModelButton)
     logSpace.textContent = ''
     fixToOldDataModel(book)
-  })
+  }) 
+  */
   return pane
 }
 
@@ -749,6 +752,7 @@ async function getGroupless (book) {
   return groupless
 }
 
+/*
 async function fixToOldDataModel (book) {
   async function updateToOldDataModel (groups) {
     let ds = []
@@ -796,3 +800,4 @@ async function fixToOldDataModel (book) {
   groups = [...strings].map(uri => kb.sym(uri))
   updateToOldDataModel(groups)
 }
+  */
