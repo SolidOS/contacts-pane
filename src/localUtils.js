@@ -55,8 +55,8 @@ export function deleteRecursive (kb, folder) {
       promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
       Promise.all(promises).then(_res => {
         resolve()
-      }).catch(reject)  
-    }).catch(reject)    
+      }).catch(reject)
+    }).catch(reject)
   })
 }
 

@@ -49,7 +49,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
 
-  if ( authn.currentUser()) {
+  if (authn.currentUser()) {
     // Allow to attach documents etc to the contact card
     const h3 = div.appendChild(dom.createElement('h3'))
     h3.textContent = 'Attach any document to this contact'
