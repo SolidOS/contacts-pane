@@ -616,7 +616,7 @@ export function toolsPane (
     setActiveButton(fixToOldDataModelButton)
     logSpace.textContent = ''
     fixToOldDataModel(book)
-  }) 
+  })
   */
   return pane
 }

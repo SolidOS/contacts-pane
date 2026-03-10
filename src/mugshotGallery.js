@@ -3,7 +3,7 @@ import { store } from 'solid-logic'
 import * as $rdf from 'rdflib'
 import './styles/mugshotGallery.css'
 import * as debug from './debug'
-import { confirmDialog } from './localUtils'
+import { confirmDialog, alertDialog } from './localUtils'
 
 // Lightweight MIME helpers replacing the heavy mime-types/mime-db packages (~170 KiB)
 const mimeMap = {
@@ -55,9 +55,9 @@ export function renderMugshotGallery (dom, subject) {
         await kb.updater.update([], link)
       }
     } catch (err) {
-      const msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
-      debug.log(msg)
-      alert(msg)
+      const msg = 'Writing back image link FAILED ' + pic + '. Stack: ' + err
+      debug.error(msg)
+      throw new Error('Writing back image link FAILED')
     }
   }
 
@@ -156,9 +156,7 @@ export function renderMugshotGallery (dom, subject) {
         try {
           result = await kb.fetcher.webOperation('GET', thing.uri, options)
         } catch (err) {
-          complain(
-            `Gallery: fetch error trying to read picture ${thing} data: ${err}`
-          )
+          debug.error('Fetch error trying to GET picture ' + thing + '. Stack: ' + err)
           handleDroppedThing(thing)
           return
         }
@@ -167,16 +165,14 @@ export function renderMugshotGallery (dom, subject) {
         pathEnd = pathEnd.split('?')[0] // chop off any query params
         const data = await result.arrayBuffer()
         if (!result.ok) {
-          alert('Cant download, so will link image. ' + thing + ':' + result.status)
+          debug.error('Cant download, so will link image. ' + thing + ':' + result.status)
           handleDroppedThing(thing)
           return
         }
         uploadFileToContact(pathEnd, contentType, data)
         return
       } else {
-        alert(
-          'Not a web document URI, cannot copy as picture: ' + thing
-        )
+        alertDialog('Not a web document URI, cannot copy ' + thing + 'as picture.')
       }
       handleDroppedThing(thing)
     }
@@ -274,7 +270,7 @@ export function renderMugshotGallery (dom, subject) {
       UI.icons.iconBase + 'noun_925021.svg',
       'Drag here to delete',
       undefined,
-      { 'aria-label': 'Delete photo - drag image here' }
+      { 'aria-label': 'Delete picture - drag picture here' }
     )
     async function droppedURIHandler (uris) {
       const images = kb
@@ -282,17 +278,19 @@ export function renderMugshotGallery (dom, subject) {
         .map(x => x.uri)
       for (const uri of uris) {
         if (!images.includes(uri)) {
-          alert('Only drop images in this contact onto this trash can.')
+          alertDialog('Only drop pictures onto this trash can.')
           return
         }
-        if (await confirmDialog(`Permanently DELETE image ${uri} completely?`)) {
-          debug.log('Unlinking image file ' + uri)
-          await linkToPicture(subject, kb.sym(uri), true)
+        if (await confirmDialog('Really DELETE picture?')) {
           try {
+            debug.log('Unlinking image file ' + uri)
+            await linkToPicture(subject, kb.sym(uri), true)
             debug.log('Deleting image file ' + uri)
             await kb.fetcher.webOperation('DELETE', uri)
           } catch (err) {
-            alert('Unable to delete picture! ' + err)
+            const msg = 'Error deleting picture. If it persists, contact your admin'
+            await alertDialog(msg)
+            return
           }
         }
       }
@@ -311,7 +309,7 @@ export function renderMugshotGallery (dom, subject) {
 
     left.appendChild(
       UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)
-    ) // 20190812
+    )
     try {
       middle.appendChild(
         UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler)

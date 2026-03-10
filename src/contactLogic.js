@@ -3,7 +3,7 @@ import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
 import * as debug from './debug'
-import { getSameAs, confirmDialog } from './localUtils'
+import { getSameAs, confirmDialog, alertDialog } from './localUtils'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -52,8 +52,16 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
     // Note this is propert of the file -- not when the person was created!
   ]
 
-  if (selectedGroups && selectedGroups.length > 0) {
-    for (const gu in selectedGroups) {
+  // `selectedGroups` may be an array (older callers) or an object map
+  // (contactsPane.js tracks it as `{ uri: true }`).  Normalize and make sure
+  // at least one group is selected before proceeding – otherwise we return
+  // `undefined` and the caller must handle it.
+  const groups = Array.isArray(selectedGroups)
+    ? selectedGroups
+    : Object.keys(selectedGroups || {})
+
+  if (groups.length > 0) {
+    for (const gu of groups) {
       const g = kb.sym(gu)
       const gd = g.doc()
       agenda.push(
@@ -62,15 +70,15 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
       )
     }
   } else {
-    alert('Must be a member of at least one group. Please select or create a group.')
-    return
+    alertDialog('Must be a member of at least one group. Please select or create a group.')
+    return // caller should check for undefined result
   }
 
   try {
-    await updater.updateMany([], agenda) // @@ in future, updater.updateMany
+    await updater.updateMany([], agenda)
   } catch (e) {
-    debug.error('Error: can\'t update ' + person + ' as new contact:' + e)
-    throw new Error('Updating new contact: ' + e)
+    debug.error('Cannot add group membership for ' + person + '. Stack:' + e)
+    throw new Error('Save new contact')
   }
   return person
 }
@@ -139,15 +147,15 @@ export async function addPersonToGroup (thing, group) {
   // }
   if (!(ns.vcard('Individual').uri in types ||
      ns.vcard('Organization').uri in types)) {
-    return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
+    return alertDialog(`Can't add ${thing} to a group: it has to be an individual or another group.`)
   }
   const pname = kb.any(thing, ns.vcard('fn'))
   const gname = kb.any(group, ns.vcard('fn'))
-  if (!pname) { return alert('No vcard name known for ' + thing) }
+  if (!pname) { return alertDialog('No vcard name known for ' + thing + '.') }
   const already = kb.holds(thing, ns.vcard('fn'), null, group.doc())
   if (already) {
-    return alert(
-      'ALREADY added ' + pname + ' to group ' + gname
+    return alertDialog(
+      'ALREADY added ' + pname + ' to group ' + gname + '.'
     )
   }
   const message = 'Add ' + pname + ' to group ' + gname + '?'

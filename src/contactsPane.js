@@ -23,7 +23,7 @@ import {
   syncGroupUl, setActiveGroupButton, createGroupLi, refreshFilteredPeople,
   deselectAllPeople, handleURIsDroppedOnGroup
 } from './addressBookPresenter'
-import { complain, deleteThingAndDoc, setDom } from './localUtils'
+import { alertDialog, complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
 import './styles/rdfFormsEnforced.css'
 
@@ -347,9 +347,15 @@ function createNewPersonOrOrganization (ctx, formContainer, klass) {
       try {
         person = await saveNewContact(book, name, selectedGroups, klass)
       } catch (err) {
-        const msg = 'Error: can\'t save new contact: ' + err
-        debug.log(msg)
-        alert(msg)
+        const msg = 'Error saving contact. If it persists, contact your admin'
+        alertDialog(msg)
+        return
+      }
+      // It’s possible `saveNewContact` returned `undefined` when no group was
+      // selected.  In that case we already alerted the user and nothing more
+      // should happen.
+      if (!person) {
+        ctx.detailsSectionContent.innerHTML = ''
         return
       }
       ctx.selectedPeople = {}

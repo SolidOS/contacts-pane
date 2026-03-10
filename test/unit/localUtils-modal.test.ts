@@ -16,7 +16,7 @@ describe('accessible modal dialogs', () => {
 
     const title = overlay?.querySelector('#modal-title')
     const desc = overlay?.querySelector('#modal-desc')
-    expect(title?.textContent).toBe('Alert')
+    expect(title?.textContent).toBe('Information')
     expect(desc?.textContent).toBe('Hello world')
 
     const btn = overlay?.querySelector('button') as HTMLElement

@@ -3,7 +3,7 @@ import * as UI from 'solid-ui'
 import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
-import { normalizeGroupUri, confirmDialog } from './localUtils'
+import { normalizeGroupUri, confirmDialog, alertDialog } from './localUtils'
 import { refreshNames } from './addressBookPresenter'
 import { vcardWebIDs } from './webidControl'
 
@@ -59,7 +59,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
       .flatMap(m => kb.each(null, ns.vcard('hasMember'), m))
     groups = [...new Set(groups.map(g => g.uri))].map(u => kb.sym(u))
     if (groups.length < 2) {
-      alert(
+      alertDialog(
         'Must be a member of at least one group.  Add to another group first.'
       )
       return

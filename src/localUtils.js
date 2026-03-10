@@ -133,7 +133,7 @@ function closeModal (result) {
  * @param {string} [title]
  * @returns {Promise<true>}
  */
-export function alertDialog (message, title = 'Alert') {
+export function alertDialog (message, title = 'Information') {
   return openModal({
     title,
     message,
