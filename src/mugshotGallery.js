@@ -288,7 +288,7 @@ export function renderMugshotGallery (dom, subject) {
             debug.log('Deleting image file ' + uri)
             await kb.fetcher.webOperation('DELETE', uri)
           } catch (err) {
-            const msg = 'Error deleting picture. If it persists, contact your admin'
+            const msg = 'Error deleting picture. If it persists, contact your admin.'
             await alertDialog(msg)
             return
           }

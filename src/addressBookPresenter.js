@@ -69,16 +69,14 @@ export function createGroupLi (group) {
 
 export async function handleURIsDroppedOnGroup (uris, group) {
   for (const u of uris) {
-    debug.log('Dropped on group: ' + u)
-    const thing = kb.sym(u)
+    let thing = kb.sym(u)
     try {
-      await addPersonToGroup(thing, group)
+      thing = await addPersonToGroup(thing, group)
     } catch (e) {
-      // complain expects (div, dom, message)
-      const msg = e && e.message ? e.message : String(e)
-      complain(div || null, dom || null, 'Error adding dropped URI to group: ' + msg)
+      const msg = 'Error adding contact to group. If it persists, contact your admin.'
+      alertDialog(msg)
     }
-    refreshNames(ulPeople)
+    if (thing) refreshNames(ulPeople)
   }
 }
 

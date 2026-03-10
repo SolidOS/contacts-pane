@@ -137,26 +137,29 @@ export async function addPersonToGroup (thing, group) {
   try {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
-    // complain(dom, 'Error loading data for ' + thing + ' or ' + group + ': ' + e)
-    throw new Error('addPersonToGroup: ' + e)
+    debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
+    throw new Error('Error adding person to group.')
   }
 
   const types = kb.findTypeURIs(thing)
-  // for (const ty in types) {
-  // debug.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
-  // }
+
   if (!(ns.vcard('Individual').uri in types ||
-     ns.vcard('Organization').uri in types)) {
-    return alertDialog(`Can't add ${thing} to a group: it has to be an individual or another group.`)
+    ns.vcard('Organization').uri in types)) {
+    debug.warn('Thing ' + thing + ' is not an Individual or Organization, but has types: ' + Object.keys(types))
+    alertDialog(`You are trying to add something else than an individual or another group.`)
+    return
   }
   const pname = kb.any(thing, ns.vcard('fn'))
   const gname = kb.any(group, ns.vcard('fn'))
-  if (!pname) { return alertDialog('No vcard name known for ' + thing + '.') }
+  if (!pname) { 
+    debug.warn('Thing ' + thing + ' has no vcard:fn')
+    alertDialog('What you are trying to add seems to have no full name.'); 
+    return 
+  }
   const already = kb.holds(thing, ns.vcard('fn'), null, group.doc())
   if (already) {
-    return alertDialog(
-      'ALREADY added ' + pname + ' to group ' + gname + '.'
-    )
+    alertDialog(pname + ' already exists in group ' + gname + '.')
+    return
   }
   const message = 'Add ' + pname + ' to group ' + gname + '?'
   if (!await confirmDialog(message)) return
@@ -179,7 +182,8 @@ export async function addPersonToGroup (thing, group) {
     kb.fetcher.unload(group.doc())
     await kb.fetcher.load(group.doc())
   } catch (e) {
-    throw new Error(`Error adding ${pname} to group ${gname}:` + e)
+    debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
+    throw new Error('Error adding ' + pname + ' to group ' + gname + '.')
   }
   return thing
 }

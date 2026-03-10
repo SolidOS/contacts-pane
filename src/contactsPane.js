@@ -347,7 +347,7 @@ function createNewPersonOrOrganization (ctx, formContainer, klass) {
       try {
         person = await saveNewContact(book, name, selectedGroups, klass)
       } catch (err) {
-        const msg = 'Error saving contact. If it persists, contact your admin'
+        const msg = 'Error saving contact. If it persists, contact your admin.'
         alertDialog(msg)
         return
       }
