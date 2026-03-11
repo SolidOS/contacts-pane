@@ -191,11 +191,11 @@ export function deleteRecursive (kb, folder) {
         if (kb.holds(file, ns.rdf('type'), ns.ldp('BasicContainer'))) {
           return deleteRecursive(kb, file)
         } else {
-          debug.log('Recursie delete - we delete file ' + file.uri)
+          debug.log('Recursive delete - we delete file ' + file.uri)
           return kb.fetcher.webOperation('DELETE', file.uri)
         }
       })
-      debug.log('Recursie delete - we delete folder ' + folder.uri)
+      debug.log('Recursive delete - we delete folder ' + folder.uri)
       promises.push(kb.fetcher.webOperation('DELETE', folder.uri))
       Promise.all(promises).then(_res => {
         resolve()
@@ -211,7 +211,7 @@ export function deleteRecursive (kb, folder) {
 export async function deleteThingAndDoc (x) {
   const name = nameFor(x)
   if (!(await confirmDialog('Really DELETE ' + name + '?'))) {
-    return
+    throw new Error('User cancelled contact deletion')
   }
   debug.log('deleteThingAndDoc - to be deleted ' + x)
   const ds = kb.statementsMatching(x).concat(kb.statementsMatching(undefined, undefined, x))
@@ -220,8 +220,8 @@ export async function deleteThingAndDoc (x) {
     await kb.fetcher.delete(x.doc())
     debug.log('deleteThingAndDoc - deleted')
   } catch (err) {
-    UI.widgets.complain('Error deleting ' + x + ': ' + err)
-    throw err
+    debug.error('Error deleting ' + x + '. Stack: ' + err)
+    throw new Error('An error occured while deleting.')
   }
 }
 

@@ -629,7 +629,9 @@ async function checkAcces (_event) {
       if (ok) {
         log(logSpace, 'Success for ' + UI.utils.label(card))
       } else {
-        log(logSpace, 'Failure for ' + UI.utils.label(card) + ': ' + message)
+        debug.error('Failure for ' + card + ': ' + message)
+        log(logSpace, 'Failure for ' + card + ': ' + message)
+        return
       }
     })
   }
@@ -690,7 +692,13 @@ async function fixGroupless (book) {
     log(logSpace, 'No groupless contacts found.')
     return
   }
-  const groupOfUngrouped = await saveNewGroup(book, 'No group')
+  let groupOfUngrouped = null
+  try {
+    groupOfUngrouped = await saveNewGroup(book, 'No group')
+  } catch (_e) {
+    //do nothing
+  }
+
   const dom = logSpace.ownerDocument
   return new Promise(function (resolve) {
     const msg = dom.createElement('p')
@@ -700,8 +708,10 @@ async function fixGroupless (book) {
       msg.remove()
       confirmButton.remove()
       for (const person of groupless) {
-        log(logSpace, '   adding ' + UI.utils.label(person))
-        await addPersonToGroup(person, groupOfUngrouped)
+        if (groupOfUngrouped) {
+          log(logSpace, '   adding ' + UI.utils.label(person))
+          await addPersonToGroup(person, groupOfUngrouped)
+        }
       }
       log(logSpace, 'People moved to group.')
       if (refreshGroupsFn) refreshGroupsFn()

@@ -138,7 +138,7 @@ export async function addPersonToGroup (thing, group) {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
     debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
-    throw new Error('Error adding person to group.')
+    throw new Error('Error adding to group.')
   }
 
   const types = kb.findTypeURIs(thing)
@@ -184,7 +184,7 @@ export async function addPersonToGroup (thing, group) {
     await kb.fetcher.load(group.doc())
   } catch (e) {
     debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
-    throw new Error('Error adding ' + pname + ' to group ' + gname + '.')
+    throw new Error('Error adding to group.')
   }
   return thing
 }

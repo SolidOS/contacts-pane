@@ -70,8 +70,8 @@ export async function handleURIsDroppedOnGroup (uris, group) {
     let thing = kb.sym(u)
     try {
       thing = await addPersonToGroup(thing, group)
-    } catch (e) {
-      const msg = 'Error adding contact to group. If it persists, contact your admin.'
+    } catch (_e) {
+      const msg = 'Error adding to group. Make sure you are adding a contact URI.'
       alertDialog(msg)
     }
     if (thing) refreshNames(ulPeople)

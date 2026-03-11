@@ -266,7 +266,7 @@ export default {
         const cardFooter = buildFooterButtons(ctx)
         addressBookSection.appendChild(cardFooter)
 
-        checkDataModel(book, detailsSectionContent).then(() => { debug.log('async checkDataModel done.') })
+        checkDataModel(book, detailsSectionContent).then(() => { debug.log('Async checkDataModel done.') })
       }
 
       // /////////////// Fix user when testing on a plane
@@ -277,7 +277,6 @@ export default {
         ('' + document.location).slice(0, 16) === 'http://localhost'
       ) {
         me = kb.any(subject, UI.ns.acl('owner')) // when testing on plane with no webid
-        debug.log('Assuming user is ' + me)
       }
 
       return div
