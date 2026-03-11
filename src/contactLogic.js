@@ -146,18 +146,19 @@ export async function addPersonToGroup (thing, group) {
   if (!(ns.vcard('Individual').uri in types ||
     ns.vcard('Organization').uri in types)) {
     debug.warn('Thing ' + thing + ' is not an Individual or Organization, but has types: ' + Object.keys(types))
-    alertDialog(`You are trying to add something else than an individual or another group.`)
+    alertDialog('You are trying to add something else than an individual or organization.')
     return
   }
-  const pname = kb.any(thing, ns.vcard('fn'))
+  let pname = kb.any(thing, ns.vcard('fn'))
   const gname = kb.any(group, ns.vcard('fn'))
-  if (!pname) { 
+  if (!pname) {
     debug.warn('Thing ' + thing + ' has no vcard:fn')
-    alertDialog('What you are trying to add seems to have no full name.'); 
-    return 
+    alertDialog('What you are trying to add seems to have no full name.')
+    return
   }
   const already = kb.holds(thing, ns.vcard('fn'), null, group.doc())
   if (already) {
+    if (pname === '') pname = 'Contact'
     alertDialog(pname + ' already exists in group ' + gname + '.')
     return
   }

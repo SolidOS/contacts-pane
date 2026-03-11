@@ -8,18 +8,15 @@ import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 import './styles/individual.css'
 import './styles/rdfFormsEnforced.css'
 import { renderForm, loadDocument } from './rdfFormsHelper'
-import { complain } from './localUtils'
+import * as debug from './debug'
 
 const ns = UI.ns
 const kb = store
 
 const formsName = 'individualAndOrganizationForm.ttl' // The name of the form file
 const vcardName = 'vcard.ttl' // The name of the vcard file
-// Render Individual card
 
 export async function renderIndividual (dom, div, subject, dataBrowserContext) {
-  // ////////////////////  DRAG and Drop for mugshot image
-
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)
@@ -34,7 +31,8 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   try {
     await kb.fetcher.load(subject.doc())
   } catch (err) {
-    complain('Error: Failed to load profile card: ' + err)
+    debug.error('Error loading profile card. Stack: ' + err)
+    throw new Error('Failed to load profile card.')
   } // end of try catch on load
 
   div.classList.add('individualPane')

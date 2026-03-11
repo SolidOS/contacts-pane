@@ -2,7 +2,7 @@ import { addPersonToGroup, groupMembers, getDataModelIssues } from './contactLog
 import * as UI from 'solid-ui'
 import { authn, store } from 'solid-logic'
 import * as debug from './debug'
-import { complain, complainIfBad, getSameAs, deleteRecursive, deleteThingAndDoc, compareForSort, nameFor } from './localUtils'
+import { complain, alertDialog, getSameAs, deleteRecursive, deleteThingAndDoc, compareForSort, nameFor } from './localUtils'
 import { groupMembership } from './groupMembershipControl'
 
 const ns = UI.ns
@@ -14,9 +14,7 @@ let selectedPeople = {}
 let ulPeople = null
 let ulGroups = null
 let searchInput = null
-let cardMain = null
 let book = null
-let div = null
 let dataBrowserContext = null
 let onGroupButtonClick = null
 
@@ -33,13 +31,11 @@ export function setActiveGroupButton (groupsUl, activeBtn) {
   }
 }
 
-export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, divEl, context, groupClickCallback) {
+export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, context, groupClickCallback) {
   dom = domElement
   selectedGroups = groupsSelected || {}
   if (peopleUl) ulPeople = peopleUl
   if (searchEl) searchInput = searchEl
-  if (cardMainEl) cardMain = cardMainEl
-  if (divEl) div = divEl
   if (context) dataBrowserContext = context
   if (groupClickCallback) onGroupButtonClick = groupClickCallback
   book = currentBook
@@ -91,10 +87,11 @@ function renderGroupLi (group) {
     selectedGroups[group.uri] = !selectedGroups[group.uri]
     refreshThingsSelected(ulGroups, selectedGroups)
     // Load group members and refresh people list
-    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
-      if (ok) {
-        refreshNames(ulPeople, null, false)
+    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, message) {
+      if (!ok) {
+        debug.error('Cannot load one group: ' + group + '. Stack: ' + message)
       }
+      refreshNames(ulPeople, null, false)
     })
   }
 
@@ -112,41 +109,41 @@ export function selectAllGroups (
   callbackFunction
 ) {
   function fetchGroupAndSelect (group, groupLi) {
-    groupLi.classList.add('group-loading')
-    groupLi.setAttribute('aria-busy', 'true')
-    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
-      ok,
-      message
-    ) {
-      if (!ok) {
-        const msg = 'Can\'t load group file: ' + group + ': ' + message
-        badness.push(msg)
+    return new Promise((resolve, reject) => {
+      groupLi.classList.add('group-loading')
+      groupLi.setAttribute('aria-busy', 'true')
+      kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
+        ok,
+        message
+      ) {
+        if (!ok) {
+          const msg = 'Cannot load group ' + group + '. Stack: ' + message
+          debug.error(msg)
+          if (callbackFunction) callbackFunction(false, msg)
+          reject(msg)
+          return
+        }
+        groupLi.classList.remove('group-loading')
         groupLi.setAttribute('aria-busy', 'false')
-        return complainIfBad(div, dom, ok, msg)
-      }
-      groupLi.classList.remove('group-loading')
-      groupLi.setAttribute('aria-busy', 'false')
-      groupLi.classList.add('selected')
-      selectedGroups[group.uri] = true
-      refreshThingsSelected(ulGroups, selectedGroups)
-      refreshNames(ulPeople, null) // @@ every time??
-      todo -= 1
-      if (!todo) {
-        if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
-      }
+        groupLi.classList.add('selected')
+        selectedGroups[group.uri] = true
+        refreshThingsSelected(ulGroups, selectedGroups)
+        refreshNames(ulPeople, null) // @@ every time??
+        if (callbackFunction) callbackFunction(true)
+        resolve(true)
+      })
     })
   }
 
-  const badness = []
-  let todo = 0
   for (let k = 0; k < ulGroups.children.length; k++) {
     const groupLi = ulGroups.children[k]
     const group = groupLi.subject
     if (!group) continue // Skip non-group items (e.g. All contacts, New group)
-    todo++
     fetchGroupAndSelect(group, groupLi)
+      .catch(err => {
+        if (callbackFunction) callbackFunction(false, err)
+      })
   } // for each row
-  if (todo === 0 && callbackFunction) { callbackFunction(true, badness) }
 }
 
 export function refreshThingsSelected (ul, selectionArray) {
@@ -244,7 +241,7 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
   function setPersonListener (personLi, person) {
     function handleSelect (event) {
       event.preventDefault()
-      selectPerson(ul, person, cardMain)
+      selectPerson(ul, person, detailsView)
     }
     personLi.addEventListener('click', handleSelect)
     personLi.addEventListener('keydown', function (event) {
@@ -308,8 +305,12 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
     trySetAvatar() // check if already in store
 
     // Load person's own document in background to get hasPhoto
-    kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok) {
-      if (ok) trySetAvatar()
+    kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok, message) {
+      if (!ok) {
+        debug.error('Cannot load contact: ' + person + '. Stack: ' + message)
+        // should not halt applciation
+      }
+      trySetAvatar()
     })
 
     // Center: Name
@@ -339,10 +340,10 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
   }
 
   utils.syncTableToArrayReOrdered(ul, cards, person => renderNameInGroupList(person, ul))
-  refreshFilteredPeople(ul, autoSelect, detailsView || cardMain)
+  refreshFilteredPeople(ul, autoSelect, detailsView)
 } // refreshNames
 
-function selectPerson (ulPeople, person, detailsView) {
+export function selectPerson (ulPeople, person, detailsView) {
   if (!detailsView) return
   if (detailsView.parentNode) detailsView.parentNode.classList.remove('hidden')
   detailsView.innerHTML = 'Loading...'
@@ -359,7 +360,9 @@ function selectPerson (ulPeople, person, detailsView) {
     detailsView.innerHTML = ''
     detailsView.setAttribute('aria-busy', 'false')
     if (!ok) {
-      return complainIfBad(div, dom, ok, 'Can\'t load card: ' + local + ': ' + message)
+      debug.error('Failed to load contact card: ' + local + '. Stack: ' + message)
+      complain(detailsView, dom, 'Failed to load contact card: ' + message)
+      return
     }
     // debug.log("Loaded card " + local + '\n')
 
@@ -410,17 +413,17 @@ function selectPerson (ulPeople, person, detailsView) {
           try {
             await deleteThingAndDoc(person)
           } catch (err) {
-            debug.log('Contact deletion cancelled or failed: ' + err.message)
-            return // Stop - don't run deleteRecursive
+            complain(detailsView, dom, 'Failed to delete contact. If it persists, contact your admin.')
+            return
           }
 
           try {
             await deleteRecursive(kb, container, toolbar, dom)
           } catch (err) {
-            debug.log('Deletion cancelled: ' + err.message)
-            return // Exit without continuing with other deletions
+            const msg = 'Failed to delete contact. If it persists, contact your admin.'
+            complain(detailsView, dom, msg)
+            return
           }
-          complain(div, dom, 'Contact data deleted.')
           refreshNames(ulPeople, detailsView)
           detailsView.innerHTML = 'Contact data deleted.'
         }

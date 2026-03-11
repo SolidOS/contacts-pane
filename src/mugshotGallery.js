@@ -39,8 +39,7 @@ const kb = store
 * Make this a form field?
 */
 export function renderMugshotGallery (dom, subject) {
-  function complain (message) {
-    debug.log(message)
+  function localComplain (message) {
     galleryDiv.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
   }
 
@@ -64,11 +63,11 @@ export function renderMugshotGallery (dom, subject) {
   function handleDroppedThing (thing) {
     kb.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
       if (!ok) {
-        debug.log('Error looking up dropped thing ' + thing + ': ' + mess)
+        debug.error('Error looking up dropped thing ' + thing + '. Stack: ' + mess)
       } else {
         const types = kb.findTypeURIs(thing)
         for (const ty in types) {
-          debug.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+          debug.log('drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
         }
         debug.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
         kb.add(subject, ns.wf('attachment'), thing, subject.doc())
@@ -82,7 +81,7 @@ export function renderMugshotGallery (dom, subject) {
     const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
-      debug.log('MIME TYPE MISMATCH -- adding extension: ' + filename)
+      debug.warn('MIME TYPE MISMATCH -- adding extension: ' + filename)
     }
     let prefix, predicate
     const isImage = contentType.startsWith('image')
@@ -118,10 +117,11 @@ export function renderMugshotGallery (dom, subject) {
       })
       .then(function (response) {
         if (!response.ok) {
-          complain('Error uploading ' + pic + ':' + response.status)
+          debug.error('Upload of ' + pic + ' failed: ' + response.status + ' ' + response.statusText)
+          localComplain('Error uploading picture. If the problem persists, contact admin.')
           return
         }
-        debug.log(' Upload: put OK: ' + pic)
+        debug.log('Upload picture put OK: ' + pic)
         kb.add(subject, predicate, pic, subject.doc())
         kb.fetcher
           .putBack(subject.doc(), { contentType: 'text/turtle' })
@@ -132,9 +132,7 @@ export function renderMugshotGallery (dom, subject) {
               }
             },
             function (err) {
-              debug.log(
-                ' Write back image link FAIL ' + pic + ', Error: ' + err
-              )
+              debug.error(' Write back image link FAIL ' + pic + '. Stack: ' + err)
             }
           )
       })
@@ -172,7 +170,7 @@ export function renderMugshotGallery (dom, subject) {
         uploadFileToContact(pathEnd, contentType, data)
         return
       } else {
-        alertDialog('Not a web document URI, cannot copy ' + thing + 'as picture.')
+        localComplain('Not a web document URI, cannot copy ' + thing + ' as picture.')
       }
       handleDroppedThing(thing)
     }
@@ -289,7 +287,7 @@ export function renderMugshotGallery (dom, subject) {
             await kb.fetcher.webOperation('DELETE', uri)
           } catch (err) {
             const msg = 'Error deleting picture. If it persists, contact your admin.'
-            await alertDialog(msg)
+            localComplain(msg)
             return
           }
         }

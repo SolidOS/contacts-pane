@@ -4,7 +4,7 @@ import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import './styles/toolsPane.css'
 import * as $rdf from 'rdflib'
-import { complain, normalizeGroupUri } from './localUtils'
+import { normalizeGroupUri } from './localUtils'
 import * as debug from './debug'
 
 const kb = store
@@ -582,7 +582,7 @@ export function toolsPane (
     log(logSpace, 'Loading groups...')
     selectAllGroups(selectedGroups, groupsMainTable, async function (ok, message) {
       if (!ok) {
-        log(logSpace, 'Load all groups: failed: ' + message)
+        log(logSpace, 'Loading all groups failed. If it persists, contact your admin.')
         return
       }
 
@@ -590,11 +590,13 @@ export function toolsPane (
       try {
         await kb.fetcher.load(nameEmailIndex)
       } catch (e) {
-        complain(e)
+        debug.error('Error loading name index (vcard(nameEmailIndex)). Stack: ' + e)
+        log(logSpace, 'Loading name index failed. If it persists, contact your admin.')
+        return
       }
       log(logSpace, 'Loaded groups and name index.')
       getGroupless(book)
-      log(logSpace, 'Groupless list finished..')
+      log(logSpace, 'Groupless list finished.')
     }) // select all groups then
   })
 
@@ -649,7 +651,6 @@ async function checkAcces (_event) {
 }
 
 function log (logSpace, message) {
-  debug.log(message)
   logSpace.textContent += message + '\n'
 }
 
@@ -718,7 +719,8 @@ async function getGroupless (book) {
     const groups = kb.each(book, ns.vcard('includesGroup'))
     await kb.fetcher.load(groups)
   } catch (e) {
-    complain('Error loading stuff:' + e)
+    debug.error('Error loading groups. Stack: ' + e)
+    log(logSpace, 'Error loading groups or name index. If it persists, contact your admin.')
   }
 
   const reverseIndex = {}

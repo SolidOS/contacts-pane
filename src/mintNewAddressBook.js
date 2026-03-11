@@ -47,6 +47,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
               resolve(context)
             })
             .catch(function (err) {
+              debug.error('Failed to fetch new address book. Stack: ' + err)
               reject(
                 new Error('Error creating document for new group ' + err)
               )
@@ -116,19 +117,17 @@ export function mintNewAddressBook (dataBrowserContext, context) {
         function doNextTask () {
           function checkOKSetACL (uri, ok) {
             if (!ok) {
-              complain('Error writing new file ' + task.to)
               return reject(new Error('Error writing new file ' + task.to))
             }
 
             setACLUserPublic(dest, me, aclOptions)
               .then(() => doNextTask())
               .catch(err => {
+                debug.error('Error setting access permissions for ' + task.to + '. Stack: ' + err)
                 const message =
                   'Error setting access permissions for ' +
                   task.to +
-                  ' : ' +
-                  err.message
-                complain(message)
+                  '.'
                 return reject(new Error(message))
               })
           }
@@ -152,7 +151,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             } else if ('existing' in task) {
               checkOKSetACL(dest, true)
             } else {
-              reject(new Error('copy not expected buiding new app!!'))
+              reject(new Error('Copy not expected while buiding new app.'))
               // const from = task.from || task.to // default source to be same as dest
               // UI.widgets.webCopy(base + from, dest, task.contentType, checkOKSetACL)
             }
@@ -162,7 +161,8 @@ export function mintNewAddressBook (dataBrowserContext, context) {
       },
       err => {
         // log in then
-        context.div.appendChild(UI.widgets.errorMessageBlock(err))
+        debug.warn('Error logging in. Stack: ' + err)
+        complain(context.div, context.dom, 'Please log in to create a new address book.')
       }
     )
   })

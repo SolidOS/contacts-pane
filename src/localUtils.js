@@ -175,13 +175,7 @@ export function normalizeGroupUri (uri) {
 }
 
 export function complain (div, d, message) {
-  debug.error('contactsPane: ' + message)
-  UI.widgets.errorMessageBlock(d, message, 'pink')
-}
-export function complainIfBad (div, dom, ok, body) {
-  if (!ok) {
-    complain(div, dom, 'Error: ' + body)
-  }
+  div.appendChild(UI.widgets.errorMessageBlock(d, message, 'pink'))
 }
 
 export function getSameAs (kb, item, doc) {

@@ -78,8 +78,9 @@ export default {
     div.setAttribute('class', 'contactPane')
 
     asyncRender().then(
-      () => debug.log('contactsPane rendered ' + subject),
-      err => complain(div, dom, '' + err))
+      () => debug.log('Contacts pane rendered for ' + subject),
+      err => complain(div, dom, err.message || '' + err)
+    )
     return div
 
     // Async part of render. Maybe API will later allow render to be async
@@ -96,7 +97,11 @@ export default {
         t[ns.vcard('Organization').uri] ||
         t[ns.schema('Organization').uri]
       ) {
-        renderIndividual(dom, div, subject, dataBrowserContext).then(() => debug.log('(individual rendered)'))
+        renderIndividual(dom, div, subject, dataBrowserContext)
+          .then(() => debug.log('(individual rendered)'))
+          .catch(() => {
+            throw new Error('Failed to render contact.')
+          })
       /*
         //          Render a Group instance
       }
@@ -123,11 +128,8 @@ export default {
       } else if (t[ns.vcard('AddressBook').uri]) {
         renderAddressBook([subject], {})
       } else {
-        debug.log(
-          'Error: Contact pane: No evidence that ' +
-            subject +
-            ' is anything to do with contacts.'
-        )
+        debug.error('No evidence that ' + subject + ' is anything to do with contacts.')
+        throw new Error('This does not seem to be a contact or address book.')
       }
 
       let me = authn.currentUser()
@@ -140,7 +142,8 @@ export default {
             renderAddressBookDetails(books, options)
           })
           .catch(function (err) {
-            complain(div, dom, '' + err)
+            debug.error('Error loading address book. Stack: ' + err)
+            throw new Error('Failed to load address book.')
           })
       }
 
@@ -506,7 +509,7 @@ function buildSearchSection (ctx) {
   searchInput.setAttribute('type', 'text')
   searchInput.setAttribute('aria-label', 'Search contacts')
   searchInput.classList.add('searchInput')
-  searchInput.setAttribute('placeholder', 'Search by name')
+  searchInput.setAttribute('placeholder', 'Search by name in selected group')
   searchDiv.appendChild(searchInput)
 
   // clear button that appears when there is text
@@ -539,7 +542,7 @@ function buildSearchSection (ctx) {
 function buildGroupBar (ctx) {
   const {
     dom, kb, book, options, groupIndex, selectedGroups,
-    actionButtons, setActiveActionButton, div
+    actionButtons, setActiveActionButton
   } = ctx
 
   const buttonSection = dom.createElement('section')
@@ -573,7 +576,7 @@ function buildGroupBar (ctx) {
         allGroupsButton.classList.add('allGroupsButton--loading')
         allGroupsButton.setAttribute('aria-busy', 'true')
         selectAllGroups(selectedGroups, ulGroups, function (ok, message) {
-          if (!ok) return complain(div, dom, message)
+          if (!ok) return alertDialog('Failed to select all groups. If it persists, contact admin.')
           allGroupsButton.classList.remove('allGroupsButton--loading')
           allGroupsButton.setAttribute('aria-busy', 'false')
           allGroupsButton.classList.add('allGroupsButton--active')
@@ -586,7 +589,6 @@ function buildGroupBar (ctx) {
         allGroupsButton.classList.add('allGroupsButton--loaded') // pale green hint groups loaded
         for (const key in selectedGroups) delete selectedGroups[key]
         refreshThingsSelected(ulGroups, selectedGroups)
-        refreshNames(ctx.ulPeople, null)
       }
     }) // on button click
     ctx.allGroupsLi.appendChild(allGroupsButton)
@@ -615,7 +617,11 @@ function buildGroupBar (ctx) {
 
     if (groupIndex) {
       kb.fetcher.nowOrWhenFetched(groupIndex.uri, book, function (ok, body) {
-        if (!ok) return complain(div, dom, 'Cannot load group index: ' + body)
+        if (!ok) {
+          debug.error('Error loading group index. Stack: ' + body)
+          alertDialog('Error loading group index. If it persists, contact admin.')
+          return
+        }
         // Remove special items before sync (syncTableToArrayReOrdered expects .subject on all children)
         if (ctx.allGroupsLi.parentNode) ctx.allGroupsLi.parentNode.removeChild(ctx.allGroupsLi)
         if (ctx.newGroupLi.parentNode) ctx.newGroupLi.parentNode.removeChild(ctx.newGroupLi)
@@ -626,8 +632,8 @@ function buildGroupBar (ctx) {
         // Auto-select all groups and display all contacts on load
         allGroupsButton.classList.add('allGroupsButton--loading')
         allGroupsButton.setAttribute('aria-busy', 'true')
-        selectAllGroups(selectedGroups, ulGroups, function (loadOk, message) {
-          if (!loadOk) return complain(div, dom, message)
+        selectAllGroups(selectedGroups, ulGroups, function (ok, message) {
+          if (!ok) return alertDialog('Failed to select all groups. If it persists, contact admin.')
           allGroupsButton.classList.remove('allGroupsButton--loading')
           allGroupsButton.setAttribute('aria-busy', 'false')
           allGroupsButton.classList.add('allGroupsButton--active')
@@ -640,7 +646,7 @@ function buildGroupBar (ctx) {
     // Remove special items before initial render too
     if (ctx.allGroupsLi.parentNode) ctx.allGroupsLi.parentNode.removeChild(ctx.allGroupsLi)
     if (ctx.newGroupLi.parentNode) ctx.newGroupLi.parentNode.removeChild(ctx.newGroupLi)
-    renderGroupButtons(book, ulGroups, options, dom, selectedGroups, ctx.ulPeople, ctx.searchInput, ctx.detailsSectionContent, div, ctx.dataBrowserContext, function () {
+    renderGroupButtons(book, ulGroups, options, dom, selectedGroups, ctx.ulPeople, ctx.searchInput, ctx.dataBrowserContext, function () {
       setActiveActionButton(null)
       // Keep the details section open when a contact or New contact form is showing
       if (!ctx.detailsSectionContent.querySelector('.contactTypeChooser, .contactFormContainer, .renderPane')) {
@@ -729,10 +735,12 @@ function buildFooterButtons (ctx) {
             // Highlight the matching group button in the sidebar ulGroups
             const matchingLi = Array.from(ctx.ulGroups.children).find(li => li.subject && li.subject.uri === group.uri)
             setActiveGroupButton(ctx.ulGroups, matchingLi ? matchingLi.querySelector('button') : null)
-            kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
-              if (ok) {
-                refreshNames(ctx.ulPeople, null, false)
+            kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, message) {
+              if (!ok) {
+                debug.error('Cannot load group: ' + group + '. Stack: ' + message)
+                return alertDialog('Failed to load group details. If it persists, contact your admin.')
               }
+              refreshNames(ctx.ulPeople, null, false)
             })
           }, false)
           UI.widgets.makeDropTarget(groupLi, uris => handleURIsDroppedOnGroup(uris, group))
@@ -801,7 +809,10 @@ function buildFooterButtons (ctx) {
           'book',
           kb,
           function (ok, body) {
-            if (!ok) ctx.detailsSectionContent.innerHTML = 'ACL control box Failed: ' + body
+            if (!ok) {
+              debug.error('ACL control box Failed. Stack: ' + body)
+              complain(ctx.detailsSectionContent, dom, 'Problem displaying sharing controls. If persists, contact admin.')
+            }
           }
         )
       )
@@ -816,7 +827,10 @@ function buildFooterButtons (ctx) {
       }
       UI.login.registrationControl(sharingContext, book, ns.vcard('AddressBook'))
         .then(() => debug.log('Registration control finished.'))
-        .catch(e => UI.widgets.complain(sharingContext, 'registrationControl: ' + e))
+        .catch(e => {
+          debug.error('Error in registration control. Stack: ' + e)
+          complain(ctx.detailsSectionContent, dom, 'Problem displaying findable controls. If persists, contact admin.')
+        })
     })
 
     // Settings button
