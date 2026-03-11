@@ -542,3 +542,7 @@
   display: flex;
   align-items: center;
 }
+
+.contactPane .personLi--error {
+  opacity: 0.5;
+}

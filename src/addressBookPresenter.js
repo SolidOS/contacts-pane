@@ -14,6 +14,7 @@ let selectedPeople = {}
 let ulPeople = null
 let ulGroups = null
 let searchInput = null
+let cardMain = null
 let book = null
 let dataBrowserContext = null
 let onGroupButtonClick = null
@@ -31,11 +32,12 @@ export function setActiveGroupButton (groupsUl, activeBtn) {
   }
 }
 
-export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, context, groupClickCallback) {
+export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, context, groupClickCallback) {
   dom = domElement
   selectedGroups = groupsSelected || {}
   if (peopleUl) ulPeople = peopleUl
   if (searchEl) searchInput = searchEl
+  if (cardMainEl) cardMain = cardMainEl
   if (context) dataBrowserContext = context
   if (groupClickCallback) onGroupButtonClick = groupClickCallback
   book = currentBook
@@ -241,7 +243,7 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
   function setPersonListener (personLi, person) {
     function handleSelect (event) {
       event.preventDefault()
-      selectPerson(ul, person, detailsView)
+      selectPerson(ul, person, cardMain)
     }
     personLi.addEventListener('click', handleSelect)
     personLi.addEventListener('keydown', function (event) {
@@ -308,7 +310,8 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
     kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok, message) {
       if (!ok) {
         debug.error('Cannot load contact: ' + person + '. Stack: ' + message)
-        // should not halt applciation
+        personLi.classList.add('personLi--error')
+        return // skip avatar – doc is unavailable
       }
       trySetAvatar()
     })
@@ -340,7 +343,7 @@ export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
   }
 
   utils.syncTableToArrayReOrdered(ul, cards, person => renderNameInGroupList(person, ul))
-  refreshFilteredPeople(ul, autoSelect, detailsView)
+  refreshFilteredPeople(ul, autoSelect, detailsView || cardMain)
 } // refreshNames
 
 export function selectPerson (ulPeople, person, detailsView) {
@@ -352,7 +355,15 @@ export function selectPerson (ulPeople, person, detailsView) {
   selectedPeople = {}
   selectedPeople[person.uri] = true
   refreshFilteredPeople(ulPeople, false, detailsView) // Color to remember which one you picked
-  const local = book ? localNode(person) : person
+  let local
+  try {
+    local = book ? localNode(person) : person
+  } catch (err) {
+    detailsView.innerHTML = ''
+    detailsView.setAttribute('aria-busy', 'false')
+    complain(detailsView, dom, 'Cannot load contact: ' + err.message)
+    return
+  }
   kb.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
     ok,
     message
@@ -361,7 +372,7 @@ export function selectPerson (ulPeople, person, detailsView) {
     detailsView.setAttribute('aria-busy', 'false')
     if (!ok) {
       debug.error('Failed to load contact card: ' + local + '. Stack: ' + message)
-      complain(detailsView, dom, 'Failed to load contact card: ' + message)
+      complain(detailsView, dom, 'Failed to load contact. If it persists, contact your admin.')
       return
     }
     // debug.log("Loaded card " + local + '\n')
