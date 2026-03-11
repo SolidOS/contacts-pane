@@ -867,3 +867,6 @@ function buildFooterButtons (ctx) {
 
   return cardFooter
 }
+
+export { saveNewGroup, addPersonToGroup, groupMembers, saveNewContact }
+export { addWebIDToContacts, removeWebIDFromContacts, getPersonas } from './webidControl'
