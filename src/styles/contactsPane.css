@@ -307,7 +307,7 @@
 }
 
 .contactPane .buttonSection .selected {
-  background: vnone !important;
+  background: none !important;
 }
 
 .contactPane .groupButtonsList {
