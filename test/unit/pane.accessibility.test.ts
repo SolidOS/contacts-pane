@@ -1,14 +1,12 @@
 import { axe } from 'jest-axe'
 import pane from '../../src/contactsPane'
-import { sym } from 'rdflib'
-import { context, doc } from './setup'
+import { sym, parse } from 'rdflib'
+import { context, doc, prefixes, web } from './setup'
+
+// ensure the store knows this is an AddressBook so asyncRender will build UI
 
 const base = doc.dir()?.uri || ''
 const book = sym(base + 'book.ttl#this')
-
-// ensure the store knows this is an AddressBook so asyncRender will build UI
-import { parse } from 'rdflib'
-import { prefixes, web } from './setup'
 
 web[base + 'book.ttl'] = `
 <#this> a vcard:AddressBook;

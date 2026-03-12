@@ -631,7 +631,6 @@ async function checkAcces (_event) {
       } else {
         debug.error('Failure for ' + card + ': ' + message)
         log(logSpace, 'Failure for ' + card + ': ' + message)
-        return
       }
     })
   }
@@ -696,7 +695,7 @@ async function fixGroupless (book) {
   try {
     groupOfUngrouped = await saveNewGroup(book, 'No group')
   } catch (_e) {
-    //do nothing
+    // do nothing
   }
 
   const dom = logSpace.ownerDocument
