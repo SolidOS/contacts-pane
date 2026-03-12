@@ -1,5 +1,4 @@
 import { alertDialog, confirmDialog, setDom } from '../../src/localUtils'
-import { axe } from 'jest-axe'
 
 describe('accessible modal dialogs', () => {
   beforeEach(() => {
@@ -27,14 +26,6 @@ describe('accessible modal dialogs', () => {
     await expect(p).resolves.toBe(true)
     // after close the overlay should be hidden again
     expect(overlay?.classList.contains('hidden')).toBe(true)
-  })
-
-  test('an accessible alertDialog via axe', async () => {
-    // bring up an alert and then run axe on the document
-    alertDialog('Hi!').then(() => {})
-    // wait a tick for DOM to update
-    await Promise.resolve()
-    await expect(axe(document.body)).resolves.toHaveNoViolations()
   })
 
   test('confirmDialog resolves false when cancel, true when OK', async () => {

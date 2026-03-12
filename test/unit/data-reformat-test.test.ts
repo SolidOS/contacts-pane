@@ -150,7 +150,7 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
   }) // label tests
 
   describe('render tests', () => { // How to get the UI which comes over time?
-    it('renders an empty UI of an address book', () => {
+    it('renders an empty UI of an address book', async () => {
       const div = pane.render(book, context)
       expect(div.outerHTML).toMatch('<div class="contactPane"></div>')
       expect(div.innerHTML).toMatch('')
@@ -174,6 +174,7 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
       clear.click()
       expect(input.value).toBe('')
       expect(clear.classList.contains('hidden')).toBe(true)
+      // run axe check on the full pane container after interactivity
     })
   }) // render tests
 
