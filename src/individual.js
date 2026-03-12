@@ -8,18 +8,15 @@ import VCARD_ONTOLOGY_TEXT from './ontology/vcard.ttl'
 import './styles/individual.css'
 import './styles/rdfFormsEnforced.css'
 import { renderForm, loadDocument } from './rdfFormsHelper'
-import { complain } from './localUtils'
+import * as debug from './debug'
 
 const ns = UI.ns
 const kb = store
 
 const formsName = 'individualAndOrganizationForm.ttl' // The name of the form file
 const vcardName = 'vcard.ttl' // The name of the vcard file
-// Render Individual card
 
 export async function renderIndividual (dom, div, subject, dataBrowserContext) {
-  // ////////////////////  DRAG and Drop for mugshot image
-
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)
@@ -34,7 +31,8 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   try {
     await kb.fetcher.load(subject.doc())
   } catch (err) {
-    complain('Error: Failed to load profile card: ' + err)
+    debug.error('Error loading profile card. Stack: ' + err)
+    throw new Error('Failed to load profile card.')
   } // end of try catch on load
 
   div.classList.add('individualPane')
@@ -47,12 +45,19 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
 
-  div.appendChild(await renderGroupMemberships(subject, dataBrowserContext))
+  // forward list element from context if available; some callers (such as
+  // the contacts pane) attach `ulPeople` so that group membership control can
+  // refresh the master list when a membership is removed.
+  div.appendChild(await renderGroupMemberships(
+    subject,
+    dataBrowserContext,
+    dataBrowserContext.ulPeople
+  ))
 
   if (authn.currentUser()) {
-    // Allow to attach documents etc to the contact card
+    // Allow to attach documents etc to the profile card
     const h3 = div.appendChild(dom.createElement('h3'))
-    h3.textContent = 'Attach any document to this contact'
+    h3.textContent = 'Attach a document'
     h3.classList.add('webidHeading')
 
     UI.widgets.attachmentList(dom, subject, div, {
@@ -65,9 +70,6 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
   } else {
-    // if we are already displaying a WebID, we do not need to add one
-    if (!kb.holds(subject, ns.rdf('type'), ns.foaf('PersonalProfileDocument'))) {
-      div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
-    }
+    div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
   }
 } // renderIndividual

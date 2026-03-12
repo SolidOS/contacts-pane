@@ -3,6 +3,7 @@ import { store } from 'solid-logic'
 import * as $rdf from 'rdflib'
 import './styles/mugshotGallery.css'
 import * as debug from './debug'
+import { confirmDialog, alertDialog } from './localUtils'
 
 // Lightweight MIME helpers replacing the heavy mime-types/mime-db packages (~170 KiB)
 const mimeMap = {
@@ -38,8 +39,7 @@ const kb = store
 * Make this a form field?
 */
 export function renderMugshotGallery (dom, subject) {
-  function complain (message) {
-    debug.log(message)
+  function localComplain (message) {
     galleryDiv.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
   }
 
@@ -54,20 +54,20 @@ export function renderMugshotGallery (dom, subject) {
         await kb.updater.update([], link)
       }
     } catch (err) {
-      const msg = ' Write back image link FAIL ' + pic + ', Error: ' + err
-      debug.log(msg)
-      alert(msg)
+      const msg = 'Writing back image link FAILED ' + pic + '. Stack: ' + err
+      debug.error(msg)
+      throw new Error('Writing back image link FAILED')
     }
   }
 
   function handleDroppedThing (thing) {
     kb.fetcher.nowOrWhenFetched(thing.doc(), function (ok, mess) {
       if (!ok) {
-        debug.log('Error looking up dropped thing ' + thing + ': ' + mess)
+        debug.error('Error looking up dropped thing ' + thing + '. Stack: ' + mess)
       } else {
         const types = kb.findTypeURIs(thing)
         for (const ty in types) {
-          debug.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
+          debug.log('drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
         }
         debug.log('Default: assume web page  ' + thing) // icon was: UI.icons.iconBase + 'noun_25830.svg'
         kb.add(subject, ns.wf('attachment'), thing, subject.doc())
@@ -81,7 +81,7 @@ export function renderMugshotGallery (dom, subject) {
     const extension = mime.extension(contentType)
     if (contentType !== mime.lookup(filename)) {
       filename += '_.' + extension
-      debug.log('MIME TYPE MISMATCH -- adding extension: ' + filename)
+      debug.warn('MIME TYPE MISMATCH -- adding extension: ' + filename)
     }
     let prefix, predicate
     const isImage = contentType.startsWith('image')
@@ -117,10 +117,11 @@ export function renderMugshotGallery (dom, subject) {
       })
       .then(function (response) {
         if (!response.ok) {
-          complain('Error uploading ' + pic + ':' + response.status)
+          debug.error('Upload of ' + pic + ' failed: ' + response.status + ' ' + response.statusText)
+          localComplain('Error uploading picture. If the problem persists, contact admin.')
           return
         }
-        debug.log(' Upload: put OK: ' + pic)
+        debug.log('Upload picture put OK: ' + pic)
         kb.add(subject, predicate, pic, subject.doc())
         kb.fetcher
           .putBack(subject.doc(), { contentType: 'text/turtle' })
@@ -131,9 +132,7 @@ export function renderMugshotGallery (dom, subject) {
               }
             },
             function (err) {
-              debug.log(
-                ' Write back image link FAIL ' + pic + ', Error: ' + err
-              )
+              debug.error(' Write back image link FAIL ' + pic + '. Stack: ' + err)
             }
           )
       })
@@ -155,9 +154,7 @@ export function renderMugshotGallery (dom, subject) {
         try {
           result = await kb.fetcher.webOperation('GET', thing.uri, options)
         } catch (err) {
-          complain(
-            `Gallery: fetch error trying to read picture ${thing} data: ${err}`
-          )
+          debug.error('Fetch error trying to GET picture ' + thing + '. Stack: ' + err)
           handleDroppedThing(thing)
           return
         }
@@ -166,16 +163,14 @@ export function renderMugshotGallery (dom, subject) {
         pathEnd = pathEnd.split('?')[0] // chop off any query params
         const data = await result.arrayBuffer()
         if (!result.ok) {
-          alert('Cant download, so will link image. ' + thing + ':' + result.status)
+          debug.error('Cant download, so will link image. ' + thing + ':' + result.status)
           handleDroppedThing(thing)
           return
         }
         uploadFileToContact(pathEnd, contentType, data)
         return
       } else {
-        alert(
-          'Not a web document URI, cannot copy as picture: ' + thing
-        )
+        localComplain('Not a web document URI, cannot copy ' + thing + ' as picture.')
       }
       handleDroppedThing(thing)
     }
@@ -273,7 +268,7 @@ export function renderMugshotGallery (dom, subject) {
       UI.icons.iconBase + 'noun_925021.svg',
       'Drag here to delete',
       undefined,
-      { 'aria-label': 'Delete photo - drag image here' }
+      { 'aria-label': 'Delete picture - drag picture here' }
     )
     async function droppedURIHandler (uris) {
       const images = kb
@@ -281,17 +276,19 @@ export function renderMugshotGallery (dom, subject) {
         .map(x => x.uri)
       for (const uri of uris) {
         if (!images.includes(uri)) {
-          alert('Only drop images in this contact onto this trash can.')
+          alertDialog('Only drop pictures onto this trash can.')
           return
         }
-        if (confirm(`Permanently DELETE image ${uri} completely?`)) {
-          debug.log('Unlinking image file ' + uri)
-          await linkToPicture(subject, kb.sym(uri), true)
+        if (await confirmDialog('Really DELETE picture?')) {
           try {
+            debug.log('Unlinking image file ' + uri)
+            await linkToPicture(subject, kb.sym(uri), true)
             debug.log('Deleting image file ' + uri)
             await kb.fetcher.webOperation('DELETE', uri)
           } catch (err) {
-            alert('Unable to delete picture! ' + err)
+            const msg = 'Error deleting picture. If it persists, contact your admin.'
+            localComplain(msg)
+            return
           }
         }
       }
@@ -310,7 +307,7 @@ export function renderMugshotGallery (dom, subject) {
 
     left.appendChild(
       UI.media.cameraButton(dom, kb, getImageDoc, tookPicture)
-    ) // 20190812
+    )
     try {
       middle.appendChild(
         UI.widgets.fileUploadButtonDiv(dom, droppedFileHandler)

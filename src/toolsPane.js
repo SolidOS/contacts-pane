@@ -4,7 +4,7 @@ import { store } from 'solid-logic'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import './styles/toolsPane.css'
 import * as $rdf from 'rdflib'
-import { complain, normalizeGroupUri } from './localUtils'
+import { normalizeGroupUri } from './localUtils'
 import * as debug from './debug'
 
 const kb = store
@@ -142,7 +142,7 @@ export function toolsPane (
             }
             filesToDelete.push(card.dir()) // the folder last
             log(logSpace, 'Files to delete: ' + filesToDelete)
-            if (!confirm('DELETE card ' + card.dir() + ' for "' + kb.any(card, VCARD('fn')) + '", with ' + kb.each(card).length + 'statements?')) {
+            if (!await confirmDialog('DELETE card ' + card.dir() + ' for "' + kb.any(card, VCARD('fn')) + '", with ' + kb.each(card).length + 'statements?')) {
               return resolve('Cancelled by user')
             }
 
@@ -162,7 +162,7 @@ export function toolsPane (
                 .catch(function (e) {
                   var err = '*** ERROR deleting ' + resource + ': ' + e
                   log(logSpace, err)
-                  if (confirm('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card DELETE errors?')) {
+                  if (await confirmDialog('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card DELETE errors?')) {
                     removeFromMainIndex()
                   } else {
                     reject(err)
@@ -246,7 +246,7 @@ export function toolsPane (
               log(logSpace, 'Cant load a card! ' + [card, other] + ': ' + e)
               stats.nameOnlyDuplicates.push(card)
               resolve(false)
-            // if (confirm('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card READ errors?')){
+            // if (await confirmDialog('Patch out index file for card ' + card.dir() + ' EVEN THOUGH card READ errors?')){
             //  removeFromMainIndex()
             // }
             })
@@ -582,7 +582,7 @@ export function toolsPane (
     log(logSpace, 'Loading groups...')
     selectAllGroups(selectedGroups, groupsMainTable, async function (ok, message) {
       if (!ok) {
-        log(logSpace, 'Load all groups: failed: ' + message)
+        log(logSpace, 'Loading all groups failed. If it persists, contact your admin.')
         return
       }
 
@@ -590,11 +590,13 @@ export function toolsPane (
       try {
         await kb.fetcher.load(nameEmailIndex)
       } catch (e) {
-        complain(e)
+        debug.error('Error loading name index (vcard(nameEmailIndex)). Stack: ' + e)
+        log(logSpace, 'Loading name index failed. If it persists, contact your admin.')
+        return
       }
       log(logSpace, 'Loaded groups and name index.')
       getGroupless(book)
-      log(logSpace, 'Groupless list finished..')
+      log(logSpace, 'Groupless list finished.')
     }) // select all groups then
   })
 
@@ -607,6 +609,8 @@ export function toolsPane (
     fixGroupless(book)
   })
 
+  // this is an old not needed anymore fix from https://github.com/SolidOS/contacts-pane/issues/81
+  /*
   const fixToOldDataModelButton = buttonsContainer.appendChild(dom.createElement('button'))
   fixToOldDataModelButton.classList.add('actionButton', 'btn-secondary', 'action-button-focus')
   fixToOldDataModelButton.textContent = 'Revert groups to old data model'
@@ -615,6 +619,7 @@ export function toolsPane (
     logSpace.textContent = ''
     fixToOldDataModel(book)
   })
+  */
   return pane
 }
 
@@ -624,7 +629,9 @@ async function checkAcces (_event) {
       if (ok) {
         log(logSpace, 'Success for ' + UI.utils.label(card))
       } else {
-        log(logSpace, 'Failure for ' + UI.utils.label(card) + ': ' + message)
+        debug.error('Failure for ' + card + ': ' + message)
+        log(logSpace, 'Failure for ' + card + ': ' + message)
+        return
       }
     })
   }
@@ -646,7 +653,6 @@ async function checkAcces (_event) {
 }
 
 function log (logSpace, message) {
-  debug.log(message)
   logSpace.textContent += message + '\n'
 }
 
@@ -686,7 +692,13 @@ async function fixGroupless (book) {
     log(logSpace, 'No groupless contacts found.')
     return
   }
-  const groupOfUngrouped = await saveNewGroup(book, 'No group')
+  let groupOfUngrouped = null
+  try {
+    groupOfUngrouped = await saveNewGroup(book, 'No group')
+  } catch (_e) {
+    //do nothing
+  }
+
   const dom = logSpace.ownerDocument
   return new Promise(function (resolve) {
     const msg = dom.createElement('p')
@@ -696,8 +708,10 @@ async function fixGroupless (book) {
       msg.remove()
       confirmButton.remove()
       for (const person of groupless) {
-        log(logSpace, '   adding ' + UI.utils.label(person))
-        await addPersonToGroup(person, groupOfUngrouped)
+        if (groupOfUngrouped) {
+          log(logSpace, '   adding ' + UI.utils.label(person))
+          await addPersonToGroup(person, groupOfUngrouped)
+        }
       }
       log(logSpace, 'People moved to group.')
       if (refreshGroupsFn) refreshGroupsFn()
@@ -715,7 +729,8 @@ async function getGroupless (book) {
     const groups = kb.each(book, ns.vcard('includesGroup'))
     await kb.fetcher.load(groups)
   } catch (e) {
-    complain('Error loading stuff:' + e)
+    debug.error('Error loading groups. Stack: ' + e)
+    log(logSpace, 'Error loading groups or name index. If it persists, contact your admin.')
   }
 
   const reverseIndex = {}
@@ -749,6 +764,7 @@ async function getGroupless (book) {
   return groupless
 }
 
+/*
 async function fixToOldDataModel (book) {
   async function updateToOldDataModel (groups) {
     let ds = []
@@ -796,3 +812,4 @@ async function fixToOldDataModel (book) {
   groups = [...strings].map(uri => kb.sym(uri))
   updateToOldDataModel(groups)
 }
+  */

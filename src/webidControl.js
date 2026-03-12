@@ -160,7 +160,7 @@ export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
 
 export async function renderWebIdControl (person, dataBrowserContext) {
   const options = {
-    longPrompt: `Does this person have a ${WEBID_NOUN}?`,
+    longPrompt: `Link to a ${WEBID_NOUN}?`,
     idNoun: WEBID_NOUN,
     urlType: ns.vcard('WebID')
   }
@@ -169,16 +169,14 @@ export async function renderWebIdControl (person, dataBrowserContext) {
 
 export async function renderPublicIdControl (person, dataBrowserContext) {
   let orgClass = kb.sym('http://www.wikidata.org/wiki/Q43229')
-  let orgClassId = 'Organization'
   for (const classId in wikidataClasses) {
     if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
       orgClass = kb.sym(wikidataClasses[classId])
-      orgClassId = classId
       debug.log(`  renderPublicIdControl bingo: ${classId} -> ${orgClass}`)
     }
   }
   const options = {
-    longPrompt: `Does this ${orgClassId} have a ${PUBLICID_NOUN}?`,
+    longPrompt: `Add a ${PUBLICID_NOUN}?`,
     idNoun: PUBLICID_NOUN,
     urlType: ns.vcard('PublicId'),
     dbLookup: true,
@@ -210,7 +208,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
         try {
           await removeWebIDFromContacts(person, webid, options.urlType, kb)
         } catch (err) {
-          div.appendChild(widgets.errorMessageBlock(dom, `Error removing Id ${webid} from ${person}: ${err}`))
+          debug.error(`Error removing Id ${webid} from ${person}: ${err}`)
+          div.appendChild(widgets.errorMessageBlock(dom, 'Error removing WebId from profile. If it persists, contact admin.'))
         }
         await refreshWebIDTable()
       }
@@ -254,17 +253,17 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     // loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
-        debug.log('main: ', main)
         main.classList.add('fullWidth')
-        debug.log('renderIdControl: main element: ', main)
         // main.style.visibility = 'collapse'
         mainCell.appendChild(main)
       } catch (err) {
-        main = widgets.errorMessageBlock(dom, `Problem displaying persona ${persona}: ${err}`)
+        debug.error('Error displaying persona ' + persona + '. Stack: ' + err)
+        main = widgets.errorMessageBlock(dom, 'Error displaying profile. If it persists, contact admin.')
         mainCell.appendChild(main)
       }
     }, err => {
-      main = widgets.errorMessageBlock(dom, `Error loading persona ${persona}: ${err}`)
+      debug.error('Error loading persona ' + persona + '. Stack: ' + err)
+      main = widgets.errorMessageBlock(dom, 'Error loading profile. If it persists, contact admin.')
       mainCell.appendChild(main)
     })
     return div
@@ -272,7 +271,6 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
-    debug.log('WebId personas: ' + person + ' -> ' + personas.map(p => p.uri).join(',\n  '))
     prompt.classList.toggle('hidden', personas.length > 0)
     utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
   }
@@ -280,7 +278,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     try {
       await addWebIDToContacts(person, webid, options.urlType, kb)
     } catch (err) {
-      div.appendChild(widgets.errorMessageBlock(dom, `Error adding Id ${webid} to ${person}: ${err}`))
+      debug.error('Error adding webId ' + webid + ' to ' + person + '. Stack: ' + err)
+      div.appendChild(widgets.errorMessageBlock(dom, 'Error adding WebID to profile. If it persists, contact admin.'))
     }
     await refreshWebIDTable()
   }
@@ -320,8 +319,8 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     try {
       div.appendChild(await widgets.renderAutocompleteControl(dom, person, barOptions, acOptions, addOneIdAndRefresh))
     } catch (err) {
-      debug.error('renderAutocompleteControl failed:', err)
-      div.appendChild(widgets.errorMessageBlock(dom, 'Error rendering autocomplete: ' + err))
+      debug.error('Render Autocomplete Control failed. Stack:', err)
+      div.appendChild(widgets.errorMessageBlock(dom, 'Error rendering autocomplete. If it persists, contact admin.'))
     }
   }
   const profileArea = div.appendChild(dom.createElement('div'))

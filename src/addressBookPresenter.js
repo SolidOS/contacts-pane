@@ -1,8 +1,8 @@
 import { addPersonToGroup, groupMembers, getDataModelIssues } from './contactLogic'
 import * as UI from 'solid-ui'
-import { store } from 'solid-logic'
+import { authn, store } from 'solid-logic'
 import * as debug from './debug'
-import { complain, complainIfBad, getSameAs, deleteRecursive, deleteThingAndDoc, compareForSort, nameFor } from './localUtils'
+import { complain, alertDialog, getSameAs, deleteRecursive, deleteThingAndDoc, compareForSort, nameFor } from './localUtils'
 import { groupMembership } from './groupMembershipControl'
 
 const ns = UI.ns
@@ -16,7 +16,6 @@ let ulGroups = null
 let searchInput = null
 let cardMain = null
 let book = null
-let div = null
 let dataBrowserContext = null
 let onGroupButtonClick = null
 
@@ -33,13 +32,12 @@ export function setActiveGroupButton (groupsUl, activeBtn) {
   }
 }
 
-export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, divEl, context, groupClickCallback) {
+export function renderGroupButtons (currentBook, groupsUl, options, domElement, groupsSelected, peopleUl, searchEl, cardMainEl, context, groupClickCallback) {
   dom = domElement
   selectedGroups = groupsSelected || {}
   if (peopleUl) ulPeople = peopleUl
   if (searchEl) searchInput = searchEl
   if (cardMainEl) cardMain = cardMainEl
-  if (divEl) div = divEl
   if (context) dataBrowserContext = context
   if (groupClickCallback) onGroupButtonClick = groupClickCallback
   book = currentBook
@@ -67,19 +65,20 @@ export function createGroupLi (group) {
   return { groupLi, groupButton, name }
 }
 
-function renderGroupLi (group) {
-  async function handleURIsDroppedOnGroup (uris) {
-    for (const u of uris) {
-      debug.log('Dropped on group: ' + u)
-      const thing = kb.sym(u)
-      try {
-        await addPersonToGroup(thing, group)
-      } catch (e) {
-        complain(e)
-      }
-      refreshNames(ulPeople)
+export async function handleURIsDroppedOnGroup (uris, group) {
+  for (const u of uris) {
+    let thing = kb.sym(u)
+    try {
+      thing = await addPersonToGroup(thing, group)
+    } catch (_e) {
+      const msg = 'Error adding to group. Make sure you are adding a contact URI.'
+      alertDialog(msg)
     }
+    if (thing) refreshNames(ulPeople)
   }
+}
+
+function renderGroupLi (group) {
   function groupLiClickListener (event) {
     event.preventDefault()
     setActiveGroupButton(ulGroups, groupButton)
@@ -90,17 +89,18 @@ function renderGroupLi (group) {
     selectedGroups[group.uri] = !selectedGroups[group.uri]
     refreshThingsSelected(ulGroups, selectedGroups)
     // Load group members and refresh people list
-    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, _message) {
-      if (ok) {
-        refreshNames(ulPeople, null, false)
+    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (ok, message) {
+      if (!ok) {
+        debug.error('Cannot load one group: ' + group + '. Stack: ' + message)
       }
+      refreshNames(ulPeople, null, false)
     })
   }
 
   const { groupLi, groupButton } = createGroupLi(group)
 
   groupButton.addEventListener('click', groupLiClickListener, false)
-  UI.widgets.makeDropTarget(groupLi, handleURIsDroppedOnGroup)
+  UI.widgets.makeDropTarget(groupLi, uris => handleURIsDroppedOnGroup(uris, group))
   groupLi.addEventListener('click', groupLiClickListener, true)
   return groupLi
 } // renderGroupLi
@@ -111,41 +111,41 @@ export function selectAllGroups (
   callbackFunction
 ) {
   function fetchGroupAndSelect (group, groupLi) {
-    groupLi.classList.add('group-loading')
-    groupLi.setAttribute('aria-busy', 'true')
-    kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
-      ok,
-      message
-    ) {
-      if (!ok) {
-        const msg = 'Can\'t load group file: ' + group + ': ' + message
-        badness.push(msg)
+    return new Promise((resolve, reject) => {
+      groupLi.classList.add('group-loading')
+      groupLi.setAttribute('aria-busy', 'true')
+      kb.fetcher.nowOrWhenFetched(group.doc(), undefined, function (
+        ok,
+        message
+      ) {
+        if (!ok) {
+          const msg = 'Cannot load group ' + group + '. Stack: ' + message
+          debug.error(msg)
+          if (callbackFunction) callbackFunction(false, msg)
+          reject(msg)
+          return
+        }
+        groupLi.classList.remove('group-loading')
         groupLi.setAttribute('aria-busy', 'false')
-        return complainIfBad(div, dom, ok, msg)
-      }
-      groupLi.classList.remove('group-loading')
-      groupLi.setAttribute('aria-busy', 'false')
-      groupLi.classList.add('selected')
-      selectedGroups[group.uri] = true
-      refreshThingsSelected(ulGroups, selectedGroups)
-      refreshNames(ulPeople, null) // @@ every time??
-      todo -= 1
-      if (!todo) {
-        if (callbackFunction) { callbackFunction(badness.length === 0, badness) }
-      }
+        groupLi.classList.add('selected')
+        selectedGroups[group.uri] = true
+        refreshThingsSelected(ulGroups, selectedGroups)
+        refreshNames(ulPeople, null) // @@ every time??
+        if (callbackFunction) callbackFunction(true)
+        resolve(true)
+      })
     })
   }
 
-  const badness = []
-  let todo = 0
   for (let k = 0; k < ulGroups.children.length; k++) {
     const groupLi = ulGroups.children[k]
     const group = groupLi.subject
     if (!group) continue // Skip non-group items (e.g. All contacts, New group)
-    todo++
     fetchGroupAndSelect(group, groupLi)
+      .catch(err => {
+        if (callbackFunction) callbackFunction(false, err)
+      })
   } // for each row
-  if (todo === 0 && callbackFunction) { callbackFunction(true, badness) }
 }
 
 export function refreshThingsSelected (ul, selectionArray) {
@@ -199,7 +199,9 @@ export async function loadAllGroups (book) {
     const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
     await kb.fetcher.load(gs)
     return gs
-  } else return
+  } else {
+    return [] // no groups
+  }
 }
 
 // The book could be the main subject, or linked from a group we are dealing with
@@ -221,11 +223,27 @@ export function findBookFromGroups (book) {
 
 // ######## Person presenter
 /** Refresh the list of names */
-export function refreshNames (ulPeople, detailsView, autoSelect = true) {
+export function refreshNames (ulPeopleArg, detailsView, autoSelect = true) {
+  // If the caller did not explicitly pass a list element, fall back to the
+  // global variable that other helpers (renderGroupButtons, syncGroupUl, etc.)
+  // keep up to date.  This allows callers that don't have easy access to the
+  // element to simply invoke `refreshNames()` and get the behaviour they
+  // expect when the address-book UI is present.
+  const ul = ulPeopleArg || ulPeople
+
+  // Guard: ul must be a DOM element with children.  Callers sometimes pass the
+  // wrong thing (e.g. a person object) which leads to the
+  // "Cannot read properties of undefined (reading 'length')" error in
+  // syncTableToArrayReOrdered.  Bail out early if the value is not valid.
+  if (!ul || !ul.children || typeof ul.children.length !== 'number') {
+    debug.warn('refreshNames called with invalid ulPeople:', ul)
+    return
+  }
+
   function setPersonListener (personLi, person) {
     function handleSelect (event) {
       event.preventDefault()
-      selectPerson(ulPeople, person, cardMain)
+      selectPerson(ul, person, cardMain)
     }
     personLi.addEventListener('click', handleSelect)
     personLi.addEventListener('keydown', function (event) {
@@ -252,7 +270,7 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     }
   }
 
-  function renderNameInGroupList (person, ulPeople) {
+  function renderNameInGroupList (person, ul) {
     const personLi = dom.createElement('li')
     personLi.setAttribute('role', 'listitem')
     personLi.setAttribute('tabindex', '0')
@@ -287,9 +305,15 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
       }
     }
     trySetAvatar() // check if already in store
+
     // Load person's own document in background to get hasPhoto
-    kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok) {
-      if (ok) trySetAvatar()
+    kb.fetcher.nowOrWhenFetched(person.doc(), undefined, function (ok, message) {
+      if (!ok) {
+        debug.error('Cannot load contact: ' + person + '. Stack: ' + message)
+        personLi.classList.add('personLi--error')
+        return // skip avatar – doc is unavailable
+      }
+      trySetAvatar()
     })
 
     // Center: Name
@@ -318,11 +342,11 @@ export function refreshNames (ulPeople, detailsView, autoSelect = true) {
     return personLi
   }
 
-  utils.syncTableToArrayReOrdered(ulPeople, cards, person => renderNameInGroupList(person, ulPeople))
-  refreshFilteredPeople(ulPeople, autoSelect, detailsView || cardMain)
+  utils.syncTableToArrayReOrdered(ul, cards, person => renderNameInGroupList(person, ul))
+  refreshFilteredPeople(ul, autoSelect, detailsView || cardMain)
 } // refreshNames
 
-function selectPerson (ulPeople, person, detailsView) {
+export function selectPerson (ulPeople, person, detailsView) {
   if (!detailsView) return
   if (detailsView.parentNode) detailsView.parentNode.classList.remove('hidden')
   detailsView.innerHTML = 'Loading...'
@@ -331,7 +355,15 @@ function selectPerson (ulPeople, person, detailsView) {
   selectedPeople = {}
   selectedPeople[person.uri] = true
   refreshFilteredPeople(ulPeople, false, detailsView) // Color to remember which one you picked
-  const local = book ? localNode(person) : person
+  let local
+  try {
+    local = book ? localNode(person) : person
+  } catch (err) {
+    detailsView.innerHTML = ''
+    detailsView.setAttribute('aria-busy', 'false')
+    complain(detailsView, dom, 'Cannot load contact: ' + err.message)
+    return
+  }
   kb.fetcher.nowOrWhenFetched(local.doc(), undefined, function (
     ok,
     message
@@ -339,7 +371,9 @@ function selectPerson (ulPeople, person, detailsView) {
     detailsView.innerHTML = ''
     detailsView.setAttribute('aria-busy', 'false')
     if (!ok) {
-      return complainIfBad(div, dom, ok, 'Can\'t load card: ' + local + ': ' + message)
+      debug.error('Failed to load contact card: ' + local + '. Stack: ' + message)
+      complain(detailsView, dom, 'Failed to load contact. If it persists, contact your admin.')
+      return
     }
     // debug.log("Loaded card " + local + '\n')
 
@@ -350,61 +384,63 @@ function selectPerson (ulPeople, person, detailsView) {
     linkEl.setAttribute('title', 'Uri of contact')
     toolbar.appendChild(linkEl)
 
-    // Add in a delete button to delete from AB
-    const deleteButton = UI.widgets.deleteButtonWithCheck(
-      dom,
-      toolbar, // appends it to toolbar.appendChild(deleteButton)
-      'contact',
-      async function () {
-        const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
+    if (authn.currentUser()) {
+      // Add in a delete button to delete from AB
+      const deleteButton = UI.widgets.deleteButtonWithCheck(
+        dom,
+        toolbar, // appends it to toolbar.appendChild(deleteButton)
+        'contact',
+        async function () {
+          const container = person.dir() // ASSUMPTION THAT CARD IS IN ITS OWN DIRECTORY
 
-        const pname = kb.any(person, ns.vcard('fn'))
-        debug.log('We are about to delete the contact ' + pname)
-        await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
-        // load people.ttl
-        const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
-        await kb.fetcher.load(nameEmailIndex)
+          const pname = kb.any(person, ns.vcard('fn'))
+          debug.log('We are about to delete the contact ' + pname)
+          await loadAllGroups() // need to wait for all groups to be loaded in case they have a link to this person
+          // load people.ttl
+          const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+          await kb.fetcher.load(nameEmailIndex)
 
-        //  - delete person's WebID's in each Group
-        //  - delete the references to it in group files and save them back
-        //  - delete the reference in people.ttl and save it back
+          //  - delete person's WebID's in each Group
+          //  - delete the references to it in group files and save them back
+          //  - delete the reference in people.ttl and save it back
 
-        // find all Groups
-        const groups = groupMembership(person)
-        let removeFromGroups = []
-        // find person WebID's
-        groups.forEach(group => {
-          const webids = getSameAs(kb, person, group.doc())
-          // for each check in each Group that it is not used by an other person then delete
-          webids.forEach(webid => {
-            if (getSameAs(kb, webid, group.doc()).length === 1) {
-              removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
-            }
+          // find all Groups
+          const groups = groupMembership(person)
+          let removeFromGroups = []
+          // find person WebID's
+          groups.forEach(group => {
+            const webids = getSameAs(kb, person, group.doc())
+            // for each check in each Group that it is not used by an other person then delete
+            webids.forEach(webid => {
+              if (getSameAs(kb, webid, group.doc()).length === 1) {
+                removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), webid, group.doc()))
+              }
+            })
           })
-        })
 
-        // Only if folder deletion succeeds, proceed with person deletion
-        await kb.updater.updateMany(removeFromGroups)
+          // Only if folder deletion succeeds, proceed with person deletion
+          await kb.updater.updateMany(removeFromGroups)
 
-        try {
-          await deleteThingAndDoc(person)
-        } catch (err) {
-          debug.log('Contact deletion cancelled or failed: ' + err.message)
-          return // Stop - don't run deleteRecursive
+          try {
+            await deleteThingAndDoc(person)
+          } catch (err) {
+            complain(detailsView, dom, 'Failed to delete contact. If it persists, contact your admin.')
+            return
+          }
+
+          try {
+            await deleteRecursive(kb, container, toolbar, dom)
+          } catch (err) {
+            const msg = 'Failed to delete contact. If it persists, contact your admin.'
+            complain(detailsView, dom, msg)
+            return
+          }
+          refreshNames(ulPeople, detailsView)
+          detailsView.innerHTML = 'Contact data deleted.'
         }
-
-        try {
-          await deleteRecursive(kb, container, toolbar, dom)
-        } catch (err) {
-          debug.log('Deletion cancelled: ' + err.message)
-          return // Exit without continuing with other deletions
-        }
-        complain(div, dom, 'Contact data deleted.')
-        refreshNames(ulPeople, detailsView)
-        detailsView.innerHTML = 'Contact data deleted.'
-      }
-    )
-    deleteButton.classList.add('deleteButton')
+      )
+      deleteButton.classList.add('deleteButton')
+    }
     detailsView.appendChild(toolbar)
 
     detailsView.classList.add('detailsSectionContent--wide')
@@ -477,15 +513,17 @@ export async function checkDataModel (book, detailsSectionContent) {
   if (groups && groups.length > 0) {
     const { del, ins } = await getDataModelIssues(groups)
 
-    if (del.length) {
-      UI.widgets.deleteButtonWithCheck(
-        dom,
-        detailsSectionContent, // where it appends it to
-        'contact',
-        async function () {
-          await kb.updater.updateMany(del, ins)
-          debug.log('Deleted ' + del.length + ' bad statements from groups')
-        })
+    if (authn.currentUser()) {
+      if (del.length) {
+        UI.widgets.deleteButtonWithCheck(
+          dom,
+          detailsSectionContent, // where it appends it to
+          'contact',
+          async function () {
+            await kb.updater.updateMany(del, ins)
+            debug.log('Deleted ' + del.length + ' bad statements from groups')
+          })
+      }
     }
   }
 }

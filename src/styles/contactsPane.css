@@ -14,7 +14,7 @@
 }
 
 .contactPane .detailSection {
-  flex: 1 1 400px;
+  flex: 1 1 0; /* allow it to grow but not force wrap */
   min-width: 300px;
   box-sizing: border-box;
   background: var(--color-section-bg);
@@ -34,7 +34,8 @@
 
 .contactPane .cardFooter {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* keep buttons inline */
+  align-items: center; /* vertical centering if varied heights */
   gap: var(--spacing-xs);
   padding-top: var(--spacing-md);
   margin-top: var(--spacing-md);
@@ -73,6 +74,11 @@
   border-radius: var(--border-radius-full) !important;
   /* existing styles */
 }
+/* wrapper to position clear icon/button */
+.contactPane .searchDiv {
+  position: relative;
+}
+
 .contactPane .searchInput {
   height: var(--min-touch-target);
   border: 1px solid var(--color-border-pale);
@@ -86,6 +92,29 @@
   font-size: var(--font-size-base);
   width: 100%;
   box-sizing: border-box;
+}
+
+/* clear button inside search input */
+.contactPane .searchClearButton {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-base);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  /* visibility is controlled via the generic `.hidden` utility class */
+  display: block;
+}
+.contactPane .searchClearButton.hidden {
+  display: none;
+}
+.contactPane .searchClearButton:hover {
+  color: var(--color-text);
 }
 
 /* ── Contact toolbar (top-right link + delete) ──────────────── */
@@ -147,12 +176,13 @@
 
 .contactPane .addressBook-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* keep sections side-by-side */
   flex: 1;
   min-width: 50%;
   align-items: stretch;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: auto; /* allow horizontal scroll if needed */
 }
 
 .contactPane .addressBookSection {
@@ -181,6 +211,8 @@
   background: var(--color-section-bg);
   padding: var(--spacing-md);
   box-sizing: border-box;
+  border: none !important;
+  border-radius: 0 !important;
 }
 
 /* Primary Button */
@@ -272,6 +304,10 @@
 
 .contactPane .buttonSection::-webkit-scrollbar-track {
   background: transparent;
+}
+
+.contactPane .buttonSection .selected {
+  background: vnone !important;
 }
 
 .contactPane .groupButtonsList {
@@ -505,4 +541,8 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+}
+
+.contactPane .personLi--error {
+  opacity: 0.5;
 }
