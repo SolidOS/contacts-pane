@@ -276,7 +276,10 @@ export default {
         document.location &&
         ('' + document.location).slice(0, 16) === 'http://localhost'
       ) {
-        me = kb.any(subject, UI.ns.acl('owner')) // when testing on plane with no webid
+        const inferredOwner = kb.any(subject, UI.ns.acl('owner')) // when testing on plane with no webid
+        if (inferredOwner) {
+          me = inferredOwner
+        }
       }
 
       return div
