@@ -22,6 +22,8 @@
     dct:title "Contact details for a person" ;
     ui:parts (
         :fullNameField
+        :nicknameGroup
+        :pronounsGroup
         :roleField
         :orgNameField
         # :addressesComment
@@ -41,6 +43,27 @@
         ui:maxLength "128" ;
         ui:property vcard:fn .
 
+    # Nickname
+
+    :nicknameGroup a ui:Group; ui:weight 0; 
+        ui:parts (:nicknameField) .
+
+    :nicknameField a ui:SingleLineTextField; 
+        ui:property foaf:nick;
+        ui:label "Nickname"@en, "Nom court"@fr.
+
+    # Pronouns
+
+    :pronounsGroup a ui:Group; ui:weight 0; 
+        ui:parts ( :subjectPronounForm :objectPronounForm :relativePronounForm) .
+
+    :subjectPronounForm a ui:SingleLineTextField; ui:property solid:preferredSubjectPronoun;
+        ui:label "He/she/they" .
+    :objectPronounForm a ui:SingleLineTextField; ui:property solid:preferredObjectPronoun;
+        ui:label "Him/her/them" .
+    :relativePronounForm a ui:SingleLineTextField; ui:property solid:preferredRelativePronoun;
+        ui:label "His/hers/theirs" .
+        
     :roleField
         a ui:SingleLineTextField ;
         ui:suppressEmptyUneditable true;
