@@ -27,6 +27,8 @@ If this is the case, simply run "npm audit fix" and upgrade the repository. It s
 
 Unit tests use `jest` and are placed in the `test` folder.
 
+Accessibility is verified via `axe-core`/`jest-axe` – new tests extend the setup and will check rendered components for a11y violations.
+
 ### Dev Server
 
 Start a webpack dev server:
