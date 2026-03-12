@@ -11,7 +11,7 @@ const webId = document.getElementById('webId')
 loginBanner.appendChild(UI.login.loginStatusBox(document, null, {}))
 
 //const webIdToShow = 'https://solidos.solidcommunity.net/Contacts/index.ttl#this' //example to render an Address Book instead
-const webIdToShow = 'https://bourgeoa.pivot-test.solidproject.org:3000/public/contacts/index.ttl#this'
+const webIdToShow = 'https://testingsolidos.solidcommunity.net/profile/card#me'
 
 async function finishLogin() {
   await authSession.handleIncomingRedirect({ restorePreviousSession: true })
