@@ -2,6 +2,11 @@
 
 /* ── Individual pane container ───────────────────────────────── */
 
-.contactPane .individualPane {
+.individualPane {
   padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-md) var(--spacing-lg);
+  background: var(--color-section-bg);
+  border-radius: var(--border-radius-full);
+  box-shadow: var(--box-shadow);
+  box-sizing: border-box;
+  max-width: 100%;
 }
