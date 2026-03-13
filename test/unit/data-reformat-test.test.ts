@@ -114,7 +114,7 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     it('returns a good label contact if Organization', () => {
       const thing = sym(base + 'thing1')
       store.add(thing, ns.rdf('type'), ns.vcard('Organization'), doc)
-      expect(pane.label(thing, context)).toEqual('contact')
+      expect(pane.label(thing, context)).toEqual('Contact')
     })
 
     it('returns a good label Contact for Individual', () => {
@@ -150,10 +150,31 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
   }) // label tests
 
   describe('render tests', () => { // How to get the UI which comes over time?
-    it('renders an empty UI of an address book', () => {
+    it('renders an empty UI of an address book', async () => {
       const div = pane.render(book, context)
       expect(div.outerHTML).toMatch('<div class="contactPane"></div>')
       expect(div.innerHTML).toMatch('')
+    })
+
+    it('includes a clear button in the search input and it works', async () => {
+      const div = pane.render(book, context)
+      // let asyncRender finish (it runs in a microtask)
+      await new Promise(resolve => setTimeout(resolve, 0))
+      const input = div.querySelector('.searchInput') as HTMLInputElement
+      expect(input).toBeTruthy()
+      const clear = div.querySelector('.searchClearButton') as HTMLElement
+      expect(clear).toBeTruthy()
+      // initially hidden via utility class
+      expect(clear.classList.contains('hidden')).toBe(true)
+      // simulate typing
+      input.value = 'hello'
+      input.dispatchEvent(new Event('input'))
+      expect(clear.classList.contains('hidden')).toBe(false)
+      // clicking clear should reset input and hide button again
+      clear.click()
+      expect(input.value).toBe('')
+      expect(clear.classList.contains('hidden')).toBe(true)
+      // run axe check on the full pane container after interactivity
     })
   }) // render tests
 

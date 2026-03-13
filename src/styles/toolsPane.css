@@ -1,0 +1,46 @@
+/* toolsPane.js styles — extracted from inline styles */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Tools pane table ────────────────────────────────────────── */
+
+.contactPane .statsLog {
+  font-size: var(--font-size-lg);
+  margin: var(--spacing-md);
+  background-color: var(--color-background);
+}
+
+.contactPane .statsLog pre {
+  padding: var(--spacing-md);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+/* ── Tools pane layout ────────────────────────────────────────── */
+
+.contactPane .toolsPane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.contactPane .toolsButtonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+/* ── Load index button states ──────────────────────────────── */
+
+.contactPane .toolsButton--loading {
+}
+
+.contactPane .toolsButton--error {
+  background-color: var(--color-error);
+}
+
+.contactPane .toolsButton--success {
+  background-color: var(--color-primary);
+}

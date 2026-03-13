@@ -1,0 +1,548 @@
+/* Focus indicator for keyboard navigation */
+.contactPane table tr[tabindex="0"]:focus {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: 2px;
+  background: var(--color-info-bg);
+}
+/* contactsPane styles — extracted from inline styles in contactsPane.js */
+/* Uses CSS custom properties from the global stylesheet (dev-global.css / mashlib) */
+
+/* ── Layout: Three-column browser ────────────────────────────── */
+
+.contactPane .peopleSection .selected {
+  background-color: var(--color-info-bg) !important;
+}
+
+.contactPane .detailSection {
+  flex: 1 1 0; /* allow it to grow but not force wrap */
+  min-width: 300px;
+  box-sizing: border-box;
+  background: var(--color-section-bg);
+}
+
+.contactPane .detailsSectionContent {
+  min-height: 200px;
+  padding: var(--spacing-lg);
+  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contactPane .detailsSectionContent--wide {
+  max-width: 900px;
+}
+
+.contactPane .cardFooter {
+  display: flex;
+  flex-wrap: nowrap; /* keep buttons inline */
+  align-items: center; /* vertical centering if varied heights */
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.contactPane .detailsSectionContent {
+  margin: 0;
+}
+
+/* ── Contact type chooser ───────────────────────────────────── */
+
+.contactPane .contactTypeChooser {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-width: 360px;
+}
+
+.contactPane .contactTypeChooser h3 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-lg);
+}
+
+.contactPane .contactTypeSelect {
+  height: var(--min-touch-target);
+  border: 1px solid var(--color-border-pale);
+  border-radius: var(--border-radius-base);
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  background: var(--color-section-bg);
+}
+
+/* ── Search ──────────────────────────────────────────────────── */
+
+.contactPane .allGroupsButton {
+  border-radius: var(--border-radius-full) !important;
+  /* existing styles */
+}
+/* wrapper to position clear icon/button */
+.contactPane .searchDiv {
+  position: relative;
+}
+
+.contactPane .searchInput {
+  height: var(--min-touch-target);
+  border: 1px solid var(--color-border-pale);
+  background-color: var(--color-section-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 20px 20px;
+  border-radius: var(--border-radius-base);
+  padding: 0 var(--spacing-sm) 0 34px;
+  font-size: var(--font-size-base);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* clear button inside search input */
+.contactPane .searchClearButton {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-base);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  /* visibility is controlled via the generic `.hidden` utility class */
+  display: block;
+}
+.contactPane .searchClearButton.hidden {
+  display: none;
+}
+.contactPane .searchClearButton:hover {
+  color: var(--color-text);
+}
+
+/* ── Contact toolbar (top-right link + delete) ──────────────── */
+
+.contactPane .contact-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.contactPane .contact-toolbar a img {
+  width: 1.3em;
+  height: 1em;
+  margin: 0;
+}
+
+/* ── "All" groups button ─────────────────────────────────────── */
+
+.contactPane .allGroupsButton {
+  margin-left: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.contactPane .allGroupsButton--loading {
+  background-color: var(--color-primary);
+}
+
+.contactPane .allGroupsButton--active {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.contactPane .allGroupsButton--loaded {
+  background-color: var(--color-primary);
+}
+
+/* ── Selection & visibility states ───────────────────────────── */
+
+.contactPane .group-loading {
+}
+
+.contactPane .hidden {
+  display: none;
+}
+
+/* ── Mint new address book ───────────────────────────────────── */
+
+.contactPane .claimSuccess {
+  font-size: var(--font-size-xl);
+}
+
+.contactPane {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.contactPane .addressBook-grid {
+  display: flex;
+  flex-wrap: nowrap; /* keep sections side-by-side */
+  flex: 1;
+  min-width: 50%;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto; /* allow horizontal scroll if needed */
+}
+
+.contactPane .addressBookSection {
+  flex: 1 1 350px;
+  max-width: 485px;
+  box-sizing: border-box;
+}
+
+@media ((min-width: 500px) and (max-width: 900px)) {
+  .contactPane .addressBookSection {
+    max-width: 900px;
+  }
+  .contactPane .addressBookSection section {
+    max-width: 485px;
+  }
+}
+
+@media (max-width: 500px) {
+  .contactPane .addressBookSection {
+    max-width: 485px;
+  }
+}
+
+/* Card Section Background */
+.contactPane .section-bg {
+  background: var(--color-section-bg);
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Primary Button */
+.contactPane .btn-primary {
+  min-height: var(--min-touch-target);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-base);
+  background: var(--color-primary);
+  color: var(--color-background);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--animation-duration) ease;
+}
+
+.contactPane .btn-primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 90%, black);
+  box-shadow: 0 2px 4px rgba(124, 77, 255, 0.2);
+}
+
+.contactPane .btn-primary:active {
+  box-shadow: 0 1px 2px rgba(124, 77, 255, 0.2);
+}
+
+.contactPane .btn-primary:disabled {
+  opacity: var(--opacity-disabled, 0.6);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary button */
+.contactPane .btn-secondary {
+  min-height: var(--min-touch-target);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--border-width-thin) solid var(--color-secondary);
+  border-radius: var(--border-radius-base);
+  background: var(--color-secondary);
+  color: var(--color-background);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all var(--animation-duration) ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactPane .btn-secondary:hover {
+  background: color-mix(in srgb, var(--color-secondary) 85%, black);
+}
+
+.contactPane .btn-secondary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Action Button Focus - used by ChatWithMe, ProfileCard */
+.contactPane .action-button-focus:focus,
+.contactPane .action-button-focus:focus-visible {
+  outline: 3px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px var(--color-background), 0 0 0 5px rgba(124, 77, 255, 0.25) !important;
+  z-index: 1;
+}
+
+/* ── Button section: horizontal scrollable row ──────────────── */
+
+.contactPane .buttonSection {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: var(--spacing-sm);
+  padding-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  margin-bottom: 0;
+}
+
+.contactPane .buttonSection::-webkit-scrollbar {
+  height: 6px;
+}
+
+.contactPane .buttonSection::-webkit-scrollbar-thumb {
+  background: var(--color-border-pale);
+  border-radius: var(--border-radius-base);
+}
+
+.contactPane .buttonSection::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.contactPane .buttonSection .selected {
+  background: none !important;
+}
+
+.contactPane .groupButtonsList {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  list-style: none;
+}
+
+.contactPane .buttonSection .groupButtonsList {
+  margin-left: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
+  padding-left: 0;
+}
+
+.contactPane .groupButtonsList li {
+  flex-shrink: 0;
+}
+
+.contactPane .groupButtonsList button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: max-content;
+  margin-left: 0;
+}
+
+/* Groups list in details section — flexible 2-column grid */
+.contactPane .detailsSectionContent .groupButtonsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList li {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.contactPane .detailsSectionContent .groupButtonsList button {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  border-radius: var(--border-radius-base);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 599px) {
+  .contactPane .detailsSectionContent .groupButtonsList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xs);
+  }
+
+  .contactPane .detailsSectionContent .groupButtonsList button {
+    font-size: var(--font-size-sm);
+    border-radius: var(--border-radius-base);
+  }
+}
+
+@media (min-width: 900px) {
+  .contactPane .detailsSectionContent .groupButtonsList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.contactPane .detailsSectionContent .newGroupBtn {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: var(--spacing-sm);
+}
+
+.contactPane .detailsSectionContent h3 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-sm);
+  padding-left: 0;
+}
+
+/* Delete confirmation POPUP — centered overlay in details section */
+.contactPane .detailSection {
+  position: relative;
+}
+
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"],
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"],
+.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"],
+.contactPane .detailsSectionContent .group-membership-toolbar > div[style*="position: relative"] {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"] > div,
+.contactPane .detailsSectionContent .group-membership-toolbar > div[style*="position: relative"] > div {
+  position: relative !important;
+  top: auto !important;
+  background: var(--color-background);
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-lg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+/* Selected state for All contacts button */
+.contactPane .allGroupsButton--selected {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+/* ── Header section ──────────────────────────────────────────── */
+
+.contactPane .headerSection {
+  background: var(--color-background);
+  padding: var(--spacing-sm);
+  border-top-left-radius: var(--border-radius-full);
+  border-top-right-radius: var(--border-radius-full);
+  margin-bottom: 0;
+}
+
+.contactPane .headerSection header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.contactPane .headerSection h2 {
+  margin-bottom: 0;
+}
+
+/* ── Dotted horizontal rule ─────────────────────────────────── */
+
+.contactPane .dottedHr {
+  border: none;
+  border-top: 1px dotted var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Search section ─────────────────────────────────────────── */
+
+.contactPane .searchSection {
+  padding: var(--spacing-sm);
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+/* ── People list section ────────────────────────────────────── */
+
+.contactPane .peopleSection {
+  display: flex;
+  background: var(--color-background);
+  border-top: 1px dotted var(--color-text-muted);
+  margin-bottom: 0;
+}
+
+.contactPane .peopleSection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.contactPane .peopleSection li {
+  border-top: 1px solid var(--color-border-pale);
+  padding: var(--spacing-xs);
+}
+
+/* ── Person list item (addressBookPresenter) ─────────────────── */
+
+.contactPane .personLi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contactPane .personLi-avatar {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactPane .personLi-avatar .avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactPane .personLi-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.contactPane .personLi-info {
+  flex: 1;
+  margin-left: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.contactPane .personLi-name {
+  font-weight: bold;
+  font-size: var(--font-size-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contactPane .personLi-arrow {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.contactPane .personLi--error {
+  opacity: 0.5;
+}

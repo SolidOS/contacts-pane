@@ -1,0 +1,58 @@
+/* ── Named pane (rendered sub-pane) ──────────────────────────── */
+.contactPane .namedPane {
+  border: 0.1em solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
+}
+
+/* ── Persona row ─────────────────────────────────────────────── */
+
+.contactPane .personaRow {
+  padding: var(--spacing-xs);
+}
+
+.contactPane .personaRow--webid {
+  background-color: var(--color-info-bg);
+}
+
+/* ── Full-width elements ─────────────────────────────────────── */
+
+.contactPane .fullWidth {
+  width: 100%;
+}
+
+/* ── Open/close profile button ───────────────────────────────── */
+
+.contactPane .personaOpenButton {
+  float: right;
+  background-color: transparent;
+  border: none;
+}
+
+/* ── Section heading ─────────────────────────────────────────── */
+
+.contactPane .webidHeading {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-primary);
+  padding: var(--spacing-xs);
+  margin: var(--spacing-sm) 0;
+}
+
+/* ── Prompt text ─────────────────────────────────────────────── */
+
+.contactPane .webidPrompt {
+  padding: var(--spacing-sm);
+  border: none;
+  font-size: var(--font-size-base);
+  white-space: pre-wrap;
+}
+
+/* ── Visibility / display helpers ────────────────────────────── */
+
+.contactPane .hidden {
+  display: none;
+}
+
+.contactPane .collapsed {
+  visibility: collapse;
+}

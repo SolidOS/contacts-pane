@@ -1,6 +1,8 @@
 import * as UI from 'solid-ui'
 import { solidLogicSingleton } from 'solid-logic'
 import * as $rdf from 'rdflib'
+import { complain } from './localUtils'
+import * as debug from './debug'
 
 const { setACLUserPublic } = solidLogicSingleton.acl
 // const mime = require('mime-types')
@@ -17,7 +19,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
     UI.login.ensureLoadedProfile(context).then(
       context => {
         // 20180713
-        console.log('Logged in as ' + context.me)
+        debug.log('Logged in as ' + context.me)
         const me = context.me
 
         const dom = context.dom
@@ -45,6 +47,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
               resolve(context)
             })
             .catch(function (err) {
+              debug.error('Failed to fetch new address book. Stack: ' + err)
               reject(
                 new Error('Error creating document for new group ' + err)
               )
@@ -52,10 +55,6 @@ export function mintNewAddressBook (dataBrowserContext, context) {
           return
         }
         const appInstanceNoun = 'address book'
-
-        function complain (message) {
-          div.appendChild(UI.widgets.errorMessageBlock(dom, message, 'pink'))
-        }
 
         let bookContents = `@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
   @prefix ab: <http://www.w3.org/ns/pim/ab#>.
@@ -94,9 +93,9 @@ export function mintNewAddressBook (dataBrowserContext, context) {
 
         function claimSuccess (newAppInstance, appInstanceNoun) {
           // @@ delete or grey other stuff
-          console.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
+          debug.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
           const p = div.appendChild(dom.createElement('p'))
-          p.setAttribute('style', 'font-size: 140%;')
+          p.classList.add('claimSuccess')
           p.innerHTML =
             'Your <a href=\'' +
             newAppInstance.uri +
@@ -118,19 +117,17 @@ export function mintNewAddressBook (dataBrowserContext, context) {
         function doNextTask () {
           function checkOKSetACL (uri, ok) {
             if (!ok) {
-              complain('Error writing new file ' + task.to)
               return reject(new Error('Error writing new file ' + task.to))
             }
 
             setACLUserPublic(dest, me, aclOptions)
               .then(() => doNextTask())
               .catch(err => {
+                debug.error('Error setting access permissions for ' + task.to + '. Stack: ' + err)
                 const message =
                   'Error setting access permissions for ' +
                   task.to +
-                  ' : ' +
-                  err.message
-                complain(message)
+                  '.'
                 return reject(new Error(message))
               })
           }
@@ -139,7 +136,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             claimSuccess(newAppInstance, appInstanceNoun)
           } else {
             var task = toBeWritten.shift() /* eslint-disable-line no-var */
-            console.log('Creating new file ' + task.to + ' in new instance ')
+            debug.log('Creating new file ' + task.to + ' in new instance ')
             var dest = $rdf.uri.join(task.to, newBase) /* eslint-disable-line no-var */
             var aclOptions = task.aclOptions || {} /* eslint-disable-line no-var */
 
@@ -154,7 +151,7 @@ export function mintNewAddressBook (dataBrowserContext, context) {
             } else if ('existing' in task) {
               checkOKSetACL(dest, true)
             } else {
-              reject(new Error('copy not expected buiding new app!!'))
+              reject(new Error('Copy not expected while buiding new app.'))
               // const from = task.from || task.to // default source to be same as dest
               // UI.widgets.webCopy(base + from, dest, task.contentType, checkOKSetACL)
             }
@@ -164,7 +161,8 @@ export function mintNewAddressBook (dataBrowserContext, context) {
       },
       err => {
         // log in then
-        context.div.appendChild(UI.widgets.errorMessageBlock(err))
+        debug.warn('Error logging in. Stack: ' + err)
+        complain(context.div, context.dom, 'Please log in to create a new address book.')
       }
     )
   })
