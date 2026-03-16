@@ -45,7 +45,7 @@ Visit `http://localhost:8080/` to render the pane. Adjust `const webIdToShow` in
 npm run build
 ```
 
-### Genertive AI usage
+### Generative AI usage
 The SolidOS team is using GitHub Copilot integrated in Visual Studio Code. 
 We have added comments in the code to make it explicit which parts are 100% written by AI.
 Example: 
