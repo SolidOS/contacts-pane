@@ -28,13 +28,83 @@
   border: none;
 }
 
+/* ── hoverControl cell in webidControl: stack items, no overlapping floats ── */
+
+/* Use a flex column so the delete icon, link, and open button stack cleanly  */
+.contactPane .webidControl .hoverControl {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.2em;
+  flex-wrap: nowrap;
+}
+
+/* Cancel the inline float:right and any absolute positioning from solid-ui */
+.contactPane .webidControl .hoverControl > img.hoverControlHide,
+.contactPane .webidControl .hoverControl > [data-testid="deleteButtonWithCheck"] {
+  float: none !important;
+  position: static !important;
+  order: 4; /* rightmost, after the open button */
+  /* Use visibility instead of display so the icon always occupies space and
+     showing it on hover doesn't shift the other elements */
+  display: inline-flex !important;
+  visibility: hidden !important;
+  /* Larger clickable/hoverable area via padding without growing the icon itself */
+  padding: 1em !important;
+  box-sizing: content-box !important;
+  cursor: pointer;
+}
+
+.contactPane .webidControl .hoverControl:hover > img.hoverControlHide,
+.contactPane .webidControl .hoverControl:hover > [data-testid="deleteButtonWithCheck"] {
+  visibility: visible !important;
+}
+
+/* Cancel the float on the open button inside this flex context */
+.contactPane .webidControl .personaOpenButton {
+  float: none !important;
+  order: 3;
+}
+
+/* <br> is redundant once flex handles the layout */
+.contactPane .webidControl .hoverControl > br {
+  display: none;
+}
+
+/* ── Delete confirmation popup in webidControl ───────────────── */
+
+/* Remove intermediate positioned ancestor so popup anchors to .hoverControl */
+.contactPane .webidControl div[style*="position: relative"]:has(> div[style*="display: grid"]) {
+  position: static !important;
+}
+
+/* Position the popup absolutely so it never participates in the flex row */
+.contactPane .webidControl div[style*="position: relative"] > div[style*="display: grid"] {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: 0.7em !important;
+  min-width: 12em !important;
+  background: var(--color-background) !important;
+  border: 0.1em solid var(--color-primary) !important;
+  border-radius: var(--border-radius-base) !important;
+  box-shadow: 0 0.5em 0.9em rgba(0, 0, 0, 0.2) !important;
+  grid-template-columns: auto auto !important;
+  gap: 0.3em !important;
+}
+
 /* ── Section heading ─────────────────────────────────────────── */
 
 .contactPane .webidHeading {
   font-size: var(--font-size-lg);
   font-weight: bold;
   color: var(--color-primary);
-  padding: var(--spacing-xs);
   margin: var(--spacing-sm) 0;
 }
 

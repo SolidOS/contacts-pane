@@ -99,7 +99,8 @@ export default {
       ) {
         renderIndividual(dom, div, subject, dataBrowserContext)
           .then(() => debug.log('(individual rendered)'))
-          .catch(() => {
+          .catch((err) => {
+            debug.error('Error rendering contact. Stack: ' + err)
             throw new Error('Failed to render contact.')
           })
       /*

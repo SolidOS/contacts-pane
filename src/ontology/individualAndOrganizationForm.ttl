@@ -58,11 +58,11 @@
         ui:parts ( :subjectPronounForm :objectPronounForm :relativePronounForm) .
 
     :subjectPronounForm a ui:SingleLineTextField; ui:property solid:preferredSubjectPronoun;
-        ui:label "He/she/they" .
+        ui:label "he/she/they" .
     :objectPronounForm a ui:SingleLineTextField; ui:property solid:preferredObjectPronoun;
-        ui:label "Him/her/them" .
+        ui:label "him/her/them" .
     :relativePronounForm a ui:SingleLineTextField; ui:property solid:preferredRelativePronoun;
-        ui:label "His/hers/theirs" .
+        ui:label "his/hers/theirs" .
         
     :roleField
         a ui:SingleLineTextField ;

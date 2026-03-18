@@ -3,7 +3,7 @@ import * as UI from 'solid-ui'
 import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
-import { normalizeGroupUri, confirmDialog, alertDialog } from './localUtils'
+import { normalizeGroupUri, confirmDialog, alertDialog, isAWebID } from './localUtils'
 import { refreshNames } from './addressBookPresenter'
 import { vcardWebIDs } from './webidControl'
 
@@ -133,9 +133,18 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     return li
   }
 
-  function syncGroupPills () {
-    const groups = groupMembership(person)
-    const pillsWrapper = container.querySelector('.group-pills-wrapper')
+  function syncGroupPills (groups = null) {
+    const pillsWrapper = dom.createElement('ul')
+    pillsWrapper.classList.add('group-pills-wrapper')
+    container.appendChild(pillsWrapper)
+
+    const header = dom.createElement('h3')
+    header.classList.add('group-membership-header')
+    header.textContent = 'Part of groups'
+    container.insertBefore(header, pillsWrapper)
+    
+    groups = groups || groupMembership(person)
+
     if (groups.length === 0) {
       pillsWrapper.innerHTML = '<span>Not part of any Address Book group.</span>'
     } else {
@@ -151,12 +160,13 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     if (!book) {
       book = kb.any(undefined, ns.vcard('includesGroup'))
       if (!book) {
-        return // no book => no groups
+        return [] // no book => no groups
       }
     }
     const groupIndex = kb.any(book, ns.vcard('groupIndex'))
     const gs = book ? kb.each(book, ns.vcard('includesGroup'), null, groupIndex) : []
     await kb.fetcher.load(gs)
+    return gs
   }
 
   const { dom } = context
@@ -165,20 +175,11 @@ export async function renderGroupMemberships (person, context, ulPeople) {
   const container = dom.createElement('div')
   container.classList.add('group-membership-container')
 
-  // Header
-  const header = dom.createElement('h3')
-  header.classList.add('group-membership-header')
-  header.textContent = 'Part of groups'
-  container.appendChild(header)
-
-  const pillsWrapper = dom.createElement('ul')
-  pillsWrapper.classList.add('group-pills-wrapper')
-  container.appendChild(pillsWrapper)
-
   // find book any group and load all groups
-  await loadGroupsFromBook()
+  const groups = await loadGroupsFromBook()
 
+  // renders the Part of Group
   container.refresh = syncGroupPills
-  syncGroupPills()
+  syncGroupPills(groups)
   return container
 }

@@ -250,3 +250,43 @@ export function nameFor (x) {
     kb.any(x, ns.vcard('organization-name'))
   return name ? name.value : '???'
 }
+
+/**
+ * Prevent keyboard tabbing into labels/label-like links created by rdflib/solid-ui forms.
+ * @param {HTMLElement} root
+ */
+export function skipLabelsFromTabbing(root) {
+  // Many Solid-UI forms render field labels as focusable links (hrefs).
+  // Make sure keyboard tabbing skips these label links entirely.
+  const selectors = [
+    'label',
+    '.formFieldName a',
+    '.classifierBox-label a',
+    '.choiceBox-label a',
+    '.label a',
+    // Skip focusable label-like links created by Solid-UI forms, including the vcard note link
+    'a[href="http://www.w3.org/2006/vcard/ns#note"]',
+    'a[href$="#note"]',
+  ].join(', ')
+
+  // Some environments have NodeLists without forEach (e.g., older Safari).
+  const nodes = root?.querySelectorAll?.(selectors)
+  if (!nodes) return
+
+  Array.from(nodes).forEach(el => {
+    // Some browsers may return null for tabIndex, and some elements may not
+    // expose tabIndex at all (e.g., SVG elements), so guard before setting.
+    if (typeof el.tabIndex === 'number' && el.tabIndex !== -1) {
+      el.tabIndex = -1
+    }
+    // Ensure those label links are not announced as focusable elements
+    if (el.getAttribute('aria-hidden') !== 'true') {
+      el.setAttribute('aria-hidden', 'true')
+    }
+  })
+}
+
+export function isAWebID(subject) {
+  const t = kb.findTypeURIs(subject.doc())
+  return !!t[ns.foaf('PersonalProfileDocument').uri]
+}

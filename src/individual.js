@@ -9,6 +9,7 @@ import './styles/individual.css'
 import './styles/rdfFormsEnforced.css'
 import { renderForm, loadDocument } from './rdfFormsHelper'
 import * as debug from './debug'
+import { skipLabelsFromTabbing, isAWebID } from './localUtils'
 
 const ns = UI.ns
 const kb = store
@@ -44,15 +45,19 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
   const whichForm = isOrganization ? 'organizationForm' : 'individualForm'
 
   renderForm(div, subject, formsSource, formsName, store, dom, subject.doc(), whichForm)
+  // Improve keyboard navigation: prevent tabbing into label links created by rdflib/solid-ui forms
+  skipLabelsFromTabbing(div)
 
   // forward list element from context if available; some callers (such as
   // the contacts pane) attach `ulPeople` so that group membership control can
   // refresh the master list when a membership is removed.
-  div.appendChild(await renderGroupMemberships(
-    subject,
-    dataBrowserContext,
-    dataBrowserContext.ulPeople
-  ))
+  if (!isAWebID(subject)) {
+    div.appendChild(await renderGroupMemberships(
+      subject,
+      dataBrowserContext,
+      dataBrowserContext.ulPeople
+    ))
+  }
 
   if (authn.currentUser()) {
     // Allow to attach documents etc to the profile card
@@ -69,7 +74,8 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   if (isOrganization) {
     div.appendChild(await renderPublicIdControl(subject, dataBrowserContext))
-  } else {
+  } else if (!isAWebID(subject)) {
+    // Only render WebID control for a contact and not. WebID.
     div.appendChild(await renderWebIdControl(subject, dataBrowserContext))
   }
 } // renderIndividual
