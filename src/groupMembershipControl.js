@@ -11,11 +11,11 @@ const ns = UI.ns
 const kb = store
 
 // Groups the person is a member of
-export function groupMembership (person) {
-  let groups = kb.statementsMatching(null, ns.owl('sameAs'), person).map(st => st.why)
-    .concat(kb.each(null, ns.vcard('hasMember'), person))
+export function groupMembership (person, store = kb) {
+  let groups = store.statementsMatching(null, ns.owl('sameAs'), person).map(st => st.why)
+    .concat(store.each(null, ns.vcard('hasMember'), person))
   const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
-  groups = [...strings].map(uri => kb.sym(uri))
+  groups = [...strings].map(uri => store.sym(uri))
   return groups
 }
 
@@ -134,16 +134,19 @@ export async function renderGroupMemberships (person, context, ulPeople) {
   }
 
   function syncGroupPills (groups = null) {
-    const pillsWrapper = dom.createElement('ul')
-    pillsWrapper.classList.add('group-pills-wrapper')
-    container.appendChild(pillsWrapper)
+    // Clear previous render so we don't keep appending duplicate headers / lists
+    container.innerHTML = ''
 
     const header = dom.createElement('h3')
     header.classList.add('group-membership-header')
     header.textContent = 'Part of groups'
-    container.insertBefore(header, pillsWrapper)
-    
-    groups = groups || groupMembership(person)
+    container.appendChild(header)
+
+    const pillsWrapper = dom.createElement('ul')
+    pillsWrapper.classList.add('group-pills-wrapper')
+    container.appendChild(pillsWrapper)
+
+    groups = groups || groupMembership(person, kb)
 
     if (groups.length === 0) {
       pillsWrapper.innerHTML = '<span>Not part of any Address Book group.</span>'
@@ -175,11 +178,11 @@ export async function renderGroupMemberships (person, context, ulPeople) {
   const container = dom.createElement('div')
   container.classList.add('group-membership-container')
 
-  // find book any group and load all groups
-  const groups = await loadGroupsFromBook()
+  // find book any group and load all groups (so membership checks have the data they need)
+  await loadGroupsFromBook()
 
   // renders the Part of Group
   container.refresh = syncGroupPills
-  syncGroupPills(groups)
+  syncGroupPills()
   return container
 }

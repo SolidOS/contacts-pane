@@ -63,10 +63,25 @@
   border-radius: 0 !important;
 }
 
+/* If the SVG button is inside a statsLog wrapper, add pink background to the button only. */
+.individualPane .statsLog button:has(> img[src$=".svg"]),
+.contactPane .statsLog button:has(> img[src$=".svg"]) {
+  background-color: var(--color-info-bg) !important;
+  border: initial !important;
+  margin: initial !important;
+  border-radius: initial !important;
+}
+
 /* Hide the “Continue” icon button that Solid-UI sometimes renders below textareas. */
 .individualPane button:has(> img[title="Continue"]),
 .contactPane button:has(> img[title="Continue"]) {
   display: none !important;
+}
+
+/* Exception: allow “Continue” buttons inside statsLog to remain visible. */
+.individualPane .statsLog button:has(> img[title="Continue"]),
+.contactPane .statsLog button:has(> img[title="Continue"]) {
+  display: inline-flex !important;
 }
 
 .individualPane button,
@@ -81,7 +96,7 @@
 .contactPane textarea,
 .individualPane select,
 .contactPane select {
-  max-width: 100%;
+  max-width: 99%;
   min-width: 0;
   box-sizing: border-box ;
   font: inherit;
@@ -127,7 +142,7 @@
 
 .individualPane input[type="url"],
 .contactPane input[type="url"] {
-  width: 100%;
+  width: 99%;
 }
 
 .individualPane .formFieldValue,
@@ -157,28 +172,28 @@
 .contactPane .formFieldValue input:not([type="color"]),
 .individualPane .formFieldValue textarea,
 .contactPane .formFieldValue textarea {
-  width: 44em;
-  max-width: 100%;
+  width: 99% !important;
+  max-width: 99%;
 }
 
 /* Email and phone value inputs: do not stretch full width */
 .individualPane .formFieldName:has(a[href="http://www.w3.org/2006/vcard/ns#value"]) + .formFieldValue input:not([type="color"]),
 .contactPane .formFieldName:has(a[href="http://www.w3.org/2006/vcard/ns#value"]) + .formFieldValue input:not([type="color"]) {
-  width: 42em;
-  max-width: 100%;
+  width: 98% !important;
+  max-width: 98%;
 }
 
 .individualPane .formFieldValue select,
 .contactPane .formFieldValue select {
-  width: 100%;
+  width: 99%;
   display: inline-block;
   max-width: none !important;
 }
 
 .individualPane select#formSelect,
 .contactPane select#formSelect {
-  width: 100%;
-  max-width: 97%;
+  width: 99%;
+  max-width: 98%;
   box-sizing: border-box;
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -305,7 +320,7 @@
   -webkit-appearance: none;
   border-radius: 0.2em !important;
   border: 0.05em solid #88c !important;
-  width: 100%;
+  width: 99%;
   box-sizing: border-box;
   margin-top: var(--spacing-xs);
   margin-left: 0 !important;
@@ -354,7 +369,7 @@
 
 .individualPane input:not([type="color"]),
 .contactPane input:not([type="color"]) {
-  width: 100%;
+  width: 99%;
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
