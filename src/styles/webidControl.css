@@ -1,6 +1,6 @@
 /* ── Named pane (rendered sub-pane) ──────────────────────────── */
 .contactPane .namedPane {
-  border: 0.1em solid var(--color-text-muted);
+  border: var(--border-width-sm) solid var(--color-text-muted);
   border-radius: var(--border-radius-base);
 }
 
@@ -48,14 +48,14 @@
   pointer-events: auto !important;
   opacity: 1 !important;
   visibility: visible !important;
-  padding: 0.7em !important;
+  padding: var(--spacing-btn) !important;
   min-width: 12em !important;
   background: var(--color-background) !important;
-  border: 0.1em solid var(--color-primary) !important;
+  border: var(--border-width-sm) solid var(--color-primary) !important;
   border-radius: var(--border-radius-base) !important;
-  box-shadow: 0 0.5em 0.9em rgba(0, 0, 0, 0.2) !important;
+  box-shadow: var(--box-shadow-popup) !important;
   grid-template-columns: auto auto !important;
-  gap: 0.3em !important;
+  gap: var(--spacing-xxs) !important;
 }
 
 /* ── Section heading ─────────────────────────────────────────── */

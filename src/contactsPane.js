@@ -16,6 +16,7 @@ import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
 import { toolsPane } from './toolsPane'
+import './styles/utilities.css'
 import './styles/contactsPane.css'
 import {
   checkDataModel, ensureBookLoaded, renderGroupButtons,

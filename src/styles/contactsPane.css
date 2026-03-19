@@ -228,17 +228,17 @@
   transition: all var(--animation-duration) ease;
 }
 
-.contactPane .btn-primary:hover {
+..contactPane .btn-primary:hover {
   background: color-mix(in srgb, var(--color-primary) 90%, black);
-  box-shadow: 0 2px 4px rgba(124, 77, 255, 0.2);
+  box-shadow: var(--box-shadow-hover);
 }
 
 .contactPane .btn-primary:active {
-  box-shadow: 0 1px 2px rgba(124, 77, 255, 0.2);
+  box-shadow: var(--box-shadow-active);
 }
 
 .contactPane .btn-primary:disabled {
-  opacity: var(--opacity-disabled, 0.6);
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
   transform: none;
 }
@@ -274,7 +274,7 @@
 .contactPane .action-button-focus:focus-visible {
   outline: 3px solid var(--color-primary) !important;
   outline-offset: 2px !important;
-  box-shadow: 0 0 0 2px var(--color-background), 0 0 0 5px rgba(124, 77, 255, 0.25) !important;
+  box-shadow: 0 0 0 2px var(--color-background), var(--box-shadow-focus) !important;
   z-index: 1;
 }
 
@@ -408,7 +408,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--overlay-bg-muted);
   z-index: 1000;
 }
 .contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div,
@@ -419,7 +419,7 @@
   background: var(--color-background);
   border-radius: var(--border-radius-full);
   padding: var(--spacing-lg);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--box-shadow-overlay);
   z-index: 1001;
 }
 

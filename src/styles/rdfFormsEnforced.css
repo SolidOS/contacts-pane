@@ -39,7 +39,7 @@
   border: none !important;
   margin: 0 !important;
   border-radius: 0 !important;
-  padding: 0.7em !important;
+  padding: var(--spacing-btn) !important;
   min-height: var(--min-touch-target);
   min-width: var(--min-touch-target);
   cursor: pointer;
@@ -52,7 +52,7 @@
 .contactPane .hoverControl:has(> img:first-child) > span {
   display: inline-flex;
   align-items: center;
-  margin-left: 0.3em;
+  margin-left: var(--spacing-xxs);
 }
 
 .individualPane div[style*="padding: 0.5em"]:has(> img),
@@ -63,7 +63,7 @@
 
 .individualPane div[style*="padding: 0.5em"]:has(> img) > span,
 .contactPane div[style*="padding: 0.5em"]:has(> img) > span {
-  margin-left: 0.3em;
+  margin-left: var(--spacing-xxs);
 }
 
 .individualPane .hoverControl:has(> img:first-child):hover,
@@ -140,8 +140,8 @@ img[src$="go-to-this.png"] {
 .contactPane .formFieldValue textarea {
   appearance: none;
   -webkit-appearance: none;
-  border-radius: 0.2em !important;
-  border: 0.05em solid #88c !important;
+  border-radius: var(--border-radius-sm) !important;
+  border: var(--border-width-xthin) solid var(--color-border-accent) !important;
   width: 99%;
   max-width: 99%;
   box-sizing: border-box;
@@ -295,7 +295,7 @@ img[src$="go-to-this.png"] {
 .individualPane .choiceBox .classifierBox-label,
 .contactPane .choiceBox .classifierBox-label {
   margin-right: 0;
-  padding-left: 0.3em;
+  padding-left: var(--spacing-xxs);
 }
 
 .individualPane .choiceBox .choiceBox-selectBox select,
@@ -308,9 +308,9 @@ img[src$="go-to-this.png"] {
 .individualPane .classifierBox .classifierBox-label,
 .contactPane .classifierBox .classifierBox-label {
   margin-right: 0;
-  padding-left: 0.3em;
+  padding-left: var(--spacing-xxs);
   width: 8em;
-  padding: 0.3em;
+  padding: var(--spacing-xxs);
   vertical-align: middle;
 }
 
@@ -422,8 +422,8 @@ img[src$="go-to-this.png"] {
 .contactPane textarea:read-only {
   background-color: var(--color-background) !important;
   cursor: not-allowed;
-  opacity: 0.75;
-  border: 0.05em solid var(--color-background) !important;
+  opacity: var(--opacity-input-disabled);
+  border: var(--border-width-xthin) solid var(--color-background) !important;
 }
 
 .contactPane .webidControl table td div.contactPane.namedPane {
@@ -454,19 +454,19 @@ img[src$="go-to-this.png"] {
   pointer-events: auto !important;
   opacity: 1 !important;
   visibility: visible !important;
-  padding: 0.7em !important;
+  padding: var(--spacing-btn) !important;
   background: var(--color-background) !important;
-  border: 0.1em solid var(--color-primary) !important;
+  border: var(--border-width-sm) solid var(--color-primary) !important;
   border-radius: var(--border-radius-base) !important;
-  box-shadow: 0 0.5em 0.9em rgba(0, 0, 0, 0.2) !important;
+  box-shadow: var(--box-shadow-popup) !important;
   grid-template-columns: auto auto !important;
-  gap: 0.3em !important;
+  gap: var(--spacing-xxs) !important;
 }
 
 .individualPane .hoverControl img.hoverControlHide,
 .individualPane .hoverControl [data-testid="deleteButtonWithCheck"] {
   position: absolute !important;
-  right: 0.2em !important;
+  right: var(--spacing-xxxs) !important;
   width: 1.5em !important;
   height: 1.5em !important;
   display: none !important;
@@ -487,7 +487,7 @@ img[src$="go-to-this.png"] {
 .individualPane .hoverControl:has(> div:nth-child(1):nth-last-child(2)):hover > img.hoverControlHide,
 .individualPane .hoverControl:has(> div:nth-child(1):nth-last-child(2)):hover > [data-testid="deleteButtonWithCheck"] {
   top: 50% !important;
-  right: 0.2em !important;
+  right: var(--spacing-xxxs) !important;
   left: auto !important;
   transform: translateY(-50%) !important;
 }

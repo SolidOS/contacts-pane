@@ -87,7 +87,7 @@
   background: var(--color-background);
   border-radius: var(--border-radius-full);
   padding: var(--spacing-lg);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--box-shadow-overlay);
   z-index: 1001;
 }
 
