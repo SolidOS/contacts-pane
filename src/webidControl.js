@@ -271,7 +271,6 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
-    prompt.classList.toggle('hidden', personas.length > 0)
     utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
   }
   async function addOneIdAndRefresh (person, webid) {
@@ -296,12 +295,9 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   }
 
   const h3 = div.appendChild(dom.createElement('h3'))
-  h3.textContent = options.idNoun
+  h3.textContent = "Link to a " + options.idNoun
   h3.classList.add('contactPanedHeading')
 
-  const prompt = div.appendChild(dom.createElement('p'))
-  prompt.classList.add('webidPrompt')
-  prompt.textContent = options.longPrompt
   const table = div.appendChild(dom.createElement('table'))
   table.classList.add('fullWidth')
 

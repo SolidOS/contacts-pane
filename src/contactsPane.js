@@ -80,7 +80,9 @@ export default {
     asyncRender().then(
       () => debug.log('Contacts pane rendered for ' + subject),
       err => complain(div, dom, err.message || '' + err)
-    )
+    ).catch(err => {  
+      complain(div, dom, err.message || '' + err)
+    })
     return div
 
     // Async part of render. Maybe API will later allow render to be async
@@ -97,12 +99,12 @@ export default {
         t[ns.vcard('Organization').uri] ||
         t[ns.schema('Organization').uri]
       ) {
-        renderIndividual(dom, div, subject, dataBrowserContext)
-          .then(() => debug.log('(individual rendered)'))
-          .catch((err) => {
-            debug.error('Error rendering contact. Stack: ' + err)
-            throw new Error('Failed to render contact.')
-          })
+        try {
+          await renderIndividual(dom, div, subject, dataBrowserContext)
+        } catch (err) {
+          debug.error('Error rendering contact. Stack: ' + err)
+          throw new Error('Failed to render contact: ' + (err.message || err))
+        }
       /*
         //          Render a Group instance
       }

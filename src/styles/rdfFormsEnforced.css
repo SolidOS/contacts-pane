@@ -81,6 +81,18 @@
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Ensure certain icon images render at a consistent size and align nicely when adjacent. */
+img[src$="red.svg"],
+img[src$="go-to-this.png"] {
+  width: 1.2em !important;
+  height: 1.2em !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* If the SVG button is inside a statsLog wrapper, add pink background to the button only. */
 .individualPane .statsLog button:has(> img[src$=".svg"]),
 .contactPane .statsLog button:has(> img[src$=".svg"]) {
@@ -109,25 +121,49 @@
 }
 
 .individualPane input:not([type="color"]),
-.contactPane input:not([type="color"]),
-.individualPane textarea,
-.contactPane textarea,
-.individualPane select,
-.contactPane select {
+.contactPane input:not([type="color"]) {
+  width: 99%;
   max-width: 99%;
   min-width: 0;
-  box-sizing: border-box ;
+  box-sizing: border-box;
   font: inherit;
   color: var(--color-text);
   background-color: var(--color-card-bg) !important;
   border: 1px solid var(--color-border-pale);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .individualPane textarea,
-.contactPane textarea {
-  border-color: var(--color-border-pale) !important;
+.contactPane textarea,
+.individualPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0.2em !important;
+  border: 0.05em solid #88c !important;
+  width: 99%;
+  max-width: 99%;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card-bg) !important;
   margin: 0 !important;
-  padding: 0 !important;
+  margin-top: var(--spacing-xs);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: var(--spacing-xs) !important;
+}
+
+.individualPane select,
+.contactPane select {
+  max-width: 99%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card-bg) !important;
+  border: 1px solid var(--color-border-pale);
 }
 
 .individualPane input[type="date"],
@@ -330,21 +366,6 @@
   min-width: 0;
 }
 
-.individualPane textarea,
-.contactPane textarea,
-.individualPane .formFieldValue textarea,
-.contactPane .formFieldValue textarea {
-  appearance: none;
-  -webkit-appearance: none;
-  border-radius: 0.2em !important;
-  border: 0.05em solid #88c !important;
-  width: 99%;
-  box-sizing: border-box;
-  margin-top: var(--spacing-xs);
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
 /* Center textarea label vertically in flex rows. */
 .individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea),
 .contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
@@ -385,13 +406,6 @@
   vertical-align: baseline;
 }
 
-.individualPane input:not([type="color"]),
-.contactPane input:not([type="color"]) {
-  width: 99%;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
 .individualPane input:disabled,
 .contactPane input:disabled,
 .individualPane textarea:disabled,
@@ -410,13 +424,6 @@
   cursor: not-allowed;
   opacity: 0.75;
   border: 0.05em solid var(--color-background) !important;
-}
-
-.individualPane textarea,
-.contactPane textarea,
-.individualPane .formFieldValue textarea,
-.contactPane .formFieldValue textarea {
-  padding: var(--spacing-xs) !important;
 }
 
 .contactPane .webidControl table td div.contactPane.namedPane {
@@ -454,11 +461,6 @@
   box-shadow: 0 0.5em 0.9em rgba(0, 0, 0, 0.2) !important;
   grid-template-columns: auto auto !important;
   gap: 0.3em !important;
-}
-
-.individualPane .hoverControl,
-.contactPane .hoverControl {
-  position: relative;
 }
 
 .individualPane .hoverControl img.hoverControlHide,
