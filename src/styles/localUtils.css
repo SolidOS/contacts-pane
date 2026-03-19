@@ -14,10 +14,6 @@
   align-items: center;
 }
 
-.focus-trap.hidden {
-  display: none;
-}
-
 /* inner dialog box */
 .focus-trap .modal {
   background: var(--color-background);
@@ -44,20 +40,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: all var(--animation-duration) ease;
-}
-
-#contacts-modal .modal button.btn-primary {
-  background: var(--color-primary);
-  color: var(--color-background);
-}
-
-#contacts-modal .modal button.btn-primary:hover {
-  background: color-mix(in srgb, var(--color-primary) 90%, black);
-  box-shadow: var(--box-shadow-hover);
-}
-
-#contacts-modal .modal button.btn-primary:active {
-  box-shadow: var(--box-shadow-active);
 }
 
 #contacts-modal .modal button:disabled {

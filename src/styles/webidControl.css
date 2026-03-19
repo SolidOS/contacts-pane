@@ -78,10 +78,6 @@
 
 /* ── Visibility / display helpers ────────────────────────────── */
 
-.contactPane .hidden {
-  display: none;
-}
-
 .contactPane .collapsed {
   visibility: collapse;
 }
