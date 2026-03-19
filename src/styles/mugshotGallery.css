@@ -8,3 +8,10 @@
   border-radius: var(--border-radius-full);
   margin: var(--spacing-sm);
 }
+
+.contactPane button:has(> img[src$=".svg"]) {
+  background-color: var(--color-section-bg) !important;
+  border: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}

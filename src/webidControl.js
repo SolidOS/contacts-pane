@@ -297,7 +297,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   const h3 = div.appendChild(dom.createElement('h3'))
   h3.textContent = options.idNoun
-  h3.classList.add('webidHeading')
+  h3.classList.add('contactPanedHeading')
 
   const prompt = div.appendChild(dom.createElement('p'))
   prompt.classList.add('webidPrompt')

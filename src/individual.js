@@ -61,14 +61,15 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   if (authn.currentUser()) {
     // Allow to attach documents etc to the profile card
+    // creates a 
     const h3 = div.appendChild(dom.createElement('h3'))
-    h3.textContent = 'Attach a document'
-    h3.classList.add('webidHeading')
+    h3.textContent = 'Attach a link to any file'
+    h3.classList.add('contactPanedHeading')
 
     UI.widgets.attachmentList(dom, subject, div, {
       modify: editable
       // promptIcon: UI.icons.iconBase +  'noun_681601.svg',
-      // predicate: UI.ns.vcard('url') // @@@@@@@@@ ,--- no, the vcard ontology structure uses a bnode.
+      // predicate: default <http://www.w3.org/2005/01/wf/flow#attachment>
     })
   }
 

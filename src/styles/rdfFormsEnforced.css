@@ -17,6 +17,22 @@
   position: relative;
 }
 
+/* In contactPane, hover controls in table cells may contain a link + delete icon.
+   Make the cell grow and keep the delete icon right-aligned (no overlap). */
+.contactPane td.hoverControl:has(> a) {
+  width: auto !important;
+  min-width: 4em !important;
+  justify-content: space-between !important;
+}
+
+.contactPane td.hoverControl:has(> a) > a {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
 .individualPane .hoverControl:has(> img:first-child),
 .contactPane .hoverControl:has(> img:first-child) {
   background-color: transparent !important;
@@ -52,15 +68,17 @@
 
 .individualPane .hoverControl:has(> img:first-child):hover,
 .contactPane .hoverControl:has(> img:first-child):hover {
-  background-color: transparent !important;
+  background-color: var(--color-section-bg) !important;
 }
 
 .individualPane button:has(> img[src$=".svg"]),
 .contactPane button:has(> img[src$=".svg"]) {
-  background-color: transparent !important;
+  background-color: var(--color-section-bg) !important;
   border: none !important;
   margin: 0 !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* If the SVG button is inside a statsLog wrapper, add pink background to the button only. */
