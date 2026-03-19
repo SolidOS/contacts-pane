@@ -92,7 +92,6 @@ web[base + 'People/aaaaaaaaaa/index.ttl'] = `
 const groups = [testGroup, homeGroup, workGroup]
 
 for (const uri in web) {
-  console.log(`  parsing "${uri}"  (${web[uri].length})`)
   parse(prefixes + web[uri], store, uri)
 }
 
