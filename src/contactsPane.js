@@ -26,7 +26,7 @@ import {
 } from './addressBookPresenter'
 import { alertDialog, complain, deleteThingAndDoc, setDom } from './localUtils'
 import * as debug from './debug'
-import './styles/rdfFormsEnforced.css'
+import './styles/contactsRDFFormsEnforced.css'
 
 const ns = UI.ns
 const utils = UI.utils
