@@ -255,7 +255,7 @@ export function nameFor (x) {
  * Prevent keyboard tabbing into labels/label-like links created by rdflib/solid-ui forms.
  * @param {HTMLElement} root
  */
-export function skipLabelsFromTabbing(root) {
+export function skipLabelsFromTabbing (root) {
   // Many Solid-UI forms render field labels as focusable links (hrefs).
   // Make sure keyboard tabbing skips these label links entirely.
   const selectors = [
@@ -286,7 +286,7 @@ export function skipLabelsFromTabbing(root) {
   })
 }
 
-export function isAWebID(subject) {
+export function isAWebID (subject) {
   const t = kb.findTypeURIs(subject.doc())
   return !!t[ns.foaf('PersonalProfileDocument').uri]
 }

@@ -81,7 +81,7 @@ export default {
     asyncRender().then(
       () => debug.log('Contacts pane rendered for ' + subject),
       err => complain(div, dom, err.message || '' + err)
-    ).catch(err => {  
+    ).catch(err => {
       complain(div, dom, err.message || '' + err)
     })
     return div

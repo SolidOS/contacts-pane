@@ -295,7 +295,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   }
 
   const h3 = div.appendChild(dom.createElement('h3'))
-  h3.textContent = "Link to a " + options.idNoun
+  h3.textContent = 'Link to a ' + options.idNoun
   h3.classList.add('contactPanedHeading')
 
   const table = div.appendChild(dom.createElement('table'))

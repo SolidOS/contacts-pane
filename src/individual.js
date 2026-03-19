@@ -61,7 +61,7 @@ export async function renderIndividual (dom, div, subject, dataBrowserContext) {
 
   if (authn.currentUser()) {
     // Allow to attach documents etc to the profile card
-    // creates a 
+    // creates a
     const h3 = div.appendChild(dom.createElement('h3'))
     h3.textContent = 'Attach a link to any file'
     h3.classList.add('contactPanedHeading')

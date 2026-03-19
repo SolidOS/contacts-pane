@@ -3,7 +3,7 @@ import * as UI from 'solid-ui'
 import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
-import { normalizeGroupUri, confirmDialog, alertDialog, isAWebID } from './localUtils'
+import { normalizeGroupUri, confirmDialog, alertDialog } from './localUtils'
 import { refreshNames } from './addressBookPresenter'
 import { vcardWebIDs } from './webidControl'
 
