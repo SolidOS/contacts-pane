@@ -20,8 +20,11 @@ for (const uri in web) {
 describe('contacts-pane accessibility', () => {
   it('renders an empty UI of an address book', async () => {
     const div = pane.render(book, context)
-    expect(div.outerHTML).toMatch('<div class="contactPane"></div>')
+    expect(div.classList.contains('contactPane')).toBe(true)
     expect(div.innerHTML).toMatch('')
+    expect(div.dataset.paneWidth).toBeDefined()
+    expect(div.dataset.paneNarrow).toBeDefined()
+    expect(div.dataset.viewportNarrow).toBeDefined()
     // check accessibility of the generated DOM (ignore aria-allowed-role for now)
     await expect(
       axe(div, { rules: { 'aria-allowed-role': { enabled: false } } })

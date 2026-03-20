@@ -108,6 +108,14 @@ img[src$="go-to-this.png"] {
   display: none !important;
 }
 
+/* Allow “Continue” buttons inside contactFormContainer to be visible. */
+.individualPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
+.contactPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
+.individualPane .contactFormContainer button:has(> img[title="Continue"]),
+.contactPane .contactFormContainer button:has(> img[title="Continue"]) {
+  display: inline-flex !important;
+}
+
 /* Exception: allow “Continue” buttons inside statsLog to remain visible. */
 .individualPane .statsLog button:has(> img[title="Continue"]),
 .contactPane .statsLog button:has(> img[title="Continue"]) {

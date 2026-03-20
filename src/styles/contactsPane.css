@@ -13,7 +13,11 @@
   background-color: var(--color-info-bg) !important;
 }
 
-.contactPane .detailSection {
+.contactPane .detailSection,
+.contactPane .addressBookSection {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   flex: 1 1 0; /* allow it to grow but not force wrap */
   min-width: 300px;
   box-sizing: border-box;
@@ -21,6 +25,7 @@
 }
 
 .contactPane .detailsSectionContent {
+  flex: 1 1 auto;
   min-height: 200px;
   padding: var(--spacing-lg);
   max-width: 900px;
@@ -196,11 +201,91 @@
   }
 }
 
-@media (max-width: 500px) {
+.contactPane.contactPane--narrow {
+  /* DEBUG: visually confirm the narrow-mode class is active (remove when verified) */
+  outline: 2px dashed var(--color-primary);
+}
+
+.contactPane.contactPane--narrow .addressBook-grid {
+  flex-direction: column !important;
+  flex-wrap: wrap !important;
+}
+
+.contactPane.contactPane--narrow .addressBookSection,
+.contactPane.contactPane--narrow .detailSection {
+  flex: 1 1 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1000px) {
+  /* Stack sidebar + details vertically on narrow screens */
+  .contactPane {
+    min-height: auto !important;
+  }
+
+  .contactPane .addressBook-grid {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+
+  .contactPane .addressBookSection,
+  .contactPane .detailSection {
+    order: initial !important;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
   .contactPane .addressBookSection {
-    max-width: 485px;
+    max-height: 60vh !important;
+    min-height: auto !important;
+    overflow-y: auto !important;
+    padding-bottom: var(--spacing-lg) !important;
+  }
+
+  .contactPane .detailSection {
+    max-height: none !important;
+    min-height: auto !important;
+    overflow-y: visible !important;
+  }
+
+  .contactPane .detailsSectionContent {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+
+  .contactPane .detailSection > .detailsSectionContent {
+    padding-top: var(--spacing-sm) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Small-screen larger text and spacing */
+  .contactPane,
+  .contactPane * {
+    font-size: 2rem !important;
+  }
+
+  .contactPane .actionButton,
+  .contactPane .searchInput,
+  .contactPane .flatButton,
+  .contactPane .buttonSection button,
+  .contactPane .groupButtonsList button {
+    min-height: calc(var(--min-touch-target) + 0.5em) !important;
+    font-size: 2rem !important;
+    padding: 1em 1em !important;
   }
 }
+
 
 /* Card Section Background */
 .contactPane .section-bg {
@@ -211,6 +296,20 @@
   border-radius: 0 !important;
 }
 
+/* Keep detail section content anchored at top */
+.contactPane .detailSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.contactPane .detailsSectionContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
 
 /* ── Button section: horizontal scrollable row ──────────────── */
 

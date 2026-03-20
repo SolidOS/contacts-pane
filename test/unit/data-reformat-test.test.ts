@@ -151,8 +151,11 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
   describe('render tests', () => { // How to get the UI which comes over time?
     it('renders an empty UI of an address book', async () => {
       const div = pane.render(book, context)
-      expect(div.outerHTML).toMatch('<div class="contactPane"></div>')
+      expect(div.classList.contains('contactPane')).toBe(true)
       expect(div.innerHTML).toMatch('')
+      expect(div.dataset.paneWidth).toBeDefined()
+      expect(div.dataset.paneNarrow).toBeDefined()
+      expect(div.dataset.viewportNarrow).toBeDefined()
     })
 
     it('includes a clear button in the search input and it works', async () => {
