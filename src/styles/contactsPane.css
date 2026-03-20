@@ -201,11 +201,6 @@
   }
 }
 
-.contactPane.contactPane--narrow {
-  /* DEBUG: visually confirm the narrow-mode class is active (remove when verified) */
-  outline: 2px dashed var(--color-primary);
-}
-
 .contactPane.contactPane--narrow .addressBook-grid {
   flex-direction: column !important;
   flex-wrap: wrap !important;
