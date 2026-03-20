@@ -278,7 +278,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       await addWebIDToContacts(person, webid, options.urlType, kb)
     } catch (err) {
       debug.error('Error adding webId ' + webid + ' to ' + person + '. Stack: ' + err)
-      div.appendChild(widgets.errorMessageBlock(dom, 'Error adding WebID to profile. If it persists, contact admin.'))
+      div.appendChild(widgets.errorMessageBlock(dom, 'This is not a valid WebID.'))
     }
     await refreshWebIDTable()
   }

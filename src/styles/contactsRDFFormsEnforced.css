@@ -118,7 +118,9 @@ img[src$="go-to-this.png"] {
 
 /* Exception: allow “Continue” buttons inside statsLog to remain visible. */
 .individualPane .statsLog button:has(> img[title="Continue"]),
-.contactPane .statsLog button:has(> img[title="Continue"]) {
+.contactPane .statsLog button:has(> img[title="Continue"]),
+.individualPane .webidControl button:has(> img[title="Continue"]),
+.contactPane .webidControl button:has(> img[title="Continue"]){
   display: inline-flex !important;
 }
 

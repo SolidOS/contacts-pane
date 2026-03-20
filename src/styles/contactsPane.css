@@ -279,6 +279,14 @@
     font-size: 2rem !important;
     padding: 1em 1em !important;
   }
+
+  .contactPane .group-membership-item .group-membership-toolbar > img.hoverControlHide, .contactPane .group-membership-item .group-membership-toolbar > [data-testid="deleteButtonWithCheck"],
+  .individualPane .hoverControl img.hoverControlHide, 
+  .individualPane .hoverControl [data-testid="deleteButtonWithCheck"] {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 }
 
 

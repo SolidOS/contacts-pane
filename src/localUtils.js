@@ -290,3 +290,65 @@ export function isAWebID (subject) {
   const t = kb.findTypeURIs(subject.doc())
   return !!t[ns.foaf('PersonalProfileDocument').uri]
 }
+
+
+// Make the layout stack vertically when the containing pane gets narrow
+export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
+  function updateFromPane () {
+    const width = paneDiv.getBoundingClientRect().width
+    const isNarrow = width <= breakpoint
+    // Always track viewport fallback even if pane is not in DOM yet
+    const viewportNarrow = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
+      ? window.matchMedia('(max-width: ' + breakpoint + 'px)').matches
+      : false
+
+    if (width > 0) {
+      paneDiv.classList.toggle('contactPane--narrow', isNarrow)
+      paneDiv.dataset.paneWidth = Math.round(width).toString()
+      paneDiv.dataset.paneNarrow = isNarrow ? 'true' : 'false'
+    } else {
+      // If not inserted yet, apply viewport mode until placed.
+      paneDiv.classList.toggle('contactPane--narrow', viewportNarrow)
+      paneDiv.dataset.paneWidth = '0'
+      paneDiv.dataset.paneNarrow = viewportNarrow ? 'true' : 'false'
+    }
+
+    paneDiv.dataset.viewportNarrow = viewportNarrow ? 'true' : 'false'
+
+    return isNarrow
+  }
+
+  function updateFromViewport () {
+    const isNarrow = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
+      ? window.matchMedia('(max-width: ' + breakpoint + 'px)').matches
+      : false
+    paneDiv.classList.toggle('contactPane--narrow', isNarrow)
+    paneDiv.dataset.viewportNarrow = isNarrow ? 'true' : 'false'
+    return isNarrow
+  }
+
+  const resizeObserverAvailable = typeof ResizeObserver !== 'undefined'
+  if (resizeObserverAvailable) {
+    const ro = new ResizeObserver(() => updateFromPane())
+    ro.observe(paneDiv)
+  }
+
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('resize', () => {
+      updateFromPane()
+      updateFromViewport()
+    })
+  }
+
+  // Initial state
+  function ensureInitialUpdate () {
+    const paneNarrow = updateFromPane()
+    const viewportNarrow = updateFromViewport()
+    // If we are not in the document yet, re-run until connected
+    if (!paneDiv.isConnected) {
+      requestAnimationFrame(ensureInitialUpdate)
+    }
+  }
+
+  ensureInitialUpdate()
+}
