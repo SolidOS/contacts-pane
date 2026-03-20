@@ -1,0 +1,32 @@
+import { sym } from 'rdflib'
+import { default as pane } from '../src/contactsPane' 
+import './dev-global.css' // Import after src to override component styles
+import { context, fetcher } from './context'
+import { authn, authSession } from 'solid-logic'
+import * as UI from 'solid-ui'
+
+const loginBanner = document.getElementById('loginBanner')
+const webId = document.getElementById('webId')
+
+loginBanner.appendChild(UI.login.loginStatusBox(document, null, {}))
+
+//const webIdToShow = 'https://solidos.solidcommunity.net/Contacts/index.ttl#this' //example to render an Address Book instead
+const webIdToShow = 'https://testingsolidos.solidcommunity.net/profile/card#me'
+
+async function finishLogin() {
+  await authSession.handleIncomingRedirect({ restorePreviousSession: true })
+  const session = authSession
+  if (session.info.isLoggedIn) {
+    // Update the page with the status.
+    webId.textContent = 'Logged in as: ' + authn.currentUser().uri
+  } else {
+    webId.textContent = ''
+  }
+  fetcher.load(webIdToShow).then(() => {
+  const app = pane.render(sym(webIdToShow), context)
+  document.getElementById('app').replaceWith(app)
+})
+}
+
+finishLogin()
+

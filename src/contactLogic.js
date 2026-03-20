@@ -1,9 +1,9 @@
-// Logic for solid contacts
-
 import * as UI from 'solid-ui'
 import * as $rdf from 'rdflib'
 import { store } from 'solid-logic'
 import { getPersonas } from './webidControl'
+import * as debug from './debug'
+import { getSameAs, confirmDialog, alertDialog } from './localUtils'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -52,20 +52,33 @@ export async function saveNewContact (book, name, selectedGroups, klass) {
     // Note this is propert of the file -- not when the person was created!
   ]
 
-  for (const gu in selectedGroups) {
-    const g = kb.sym(gu)
-    const gd = g.doc()
-    agenda.push(
-      $rdf.st(g, ns.vcard('hasMember'), person, gd),
-      $rdf.st(person, ns.vcard('fn'), name, gd)
-    )
+  // `selectedGroups` may be an array (older callers) or an object map
+  // (contactsPane.js tracks it as `{ uri: true }`).  Normalize and make sure
+  // at least one group is selected before proceeding – otherwise we return
+  // `undefined` and the caller must handle it.
+  const groups = Array.isArray(selectedGroups)
+    ? selectedGroups
+    : Object.keys(selectedGroups || {})
+
+  if (groups.length > 0) {
+    for (const gu of groups) {
+      const g = kb.sym(gu)
+      const gd = g.doc()
+      agenda.push(
+        $rdf.st(g, ns.vcard('hasMember'), person, gd),
+        $rdf.st(person, ns.vcard('fn'), name, gd)
+      )
+    }
+  } else {
+    alertDialog('Must be a member of at least one group. Please select or create a group.')
+    return // caller should check for undefined result
   }
 
   try {
-    await updater.updateMany([], agenda) // @@ in future, updater.updateMany
+    await updater.updateMany([], agenda)
   } catch (e) {
-    console.error('Error: can\'t update ' + person + ' as new contact:' + e)
-    throw new Error('Updating new contact: ' + e)
+    debug.error('Cannot add group membership for ' + person + '. Stack:' + e)
+    throw new Error('Save new contact')
   }
   return person
 }
@@ -86,7 +99,7 @@ export async function saveNewGroup (book, name) {
   const gname = sanitizeToAlpha(name)
   const group = kb.sym(book.dir().uri + 'Group/' + gname + '.ttl#this')
   const doc = group.doc()
-  // console.log(' New group will be: ' + group + '\n')
+  // debug.log(' New group will be: ' + group + '\n')
   try {
     await kb.fetcher.load(gix)
   } catch (err) {
@@ -124,28 +137,33 @@ export async function addPersonToGroup (thing, group) {
   try {
     await kb.fetcher.load(toBeFetched)
   } catch (e) {
-    throw new Error('addPersonToGroup: ' + e)
+    debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
+    throw new Error('Error adding to group.')
   }
 
   const types = kb.findTypeURIs(thing)
-  // for (const ty in types) {
-  // console.log('    drop object type includes: ' + ty) // @@ Allow email addresses and phone numbers to be dropped?
-  // }
+
   if (!(ns.vcard('Individual').uri in types ||
-     ns.vcard('Organization').uri in types)) {
-    return alert(`Can't add ${thing} to a group: it has to be an individual or another group.`)
+    ns.vcard('Organization').uri in types)) {
+    debug.warn('Thing ' + thing + ' is not an Individual or Organization, but has types: ' + Object.keys(types))
+    alertDialog('You are trying to add something else than an individual or organization.')
+    return
   }
-  const pname = kb.any(thing, ns.vcard('fn'))
+  let pname = kb.any(thing, ns.vcard('fn'))
   const gname = kb.any(group, ns.vcard('fn'))
-  if (!pname) { return alert('No vcard name known for ' + thing) }
+  if (!pname) {
+    debug.warn('Thing ' + thing + ' has no vcard:fn')
+    alertDialog('What you are trying to add seems to have no full name.')
+    return
+  }
   const already = kb.holds(thing, ns.vcard('fn'), null, group.doc())
   if (already) {
-    return alert(
-      'ALREADY added ' + pname + ' to group ' + gname
-    )
+    if (pname === '') pname = 'Contact'
+    alertDialog(pname + ' already exists in group ' + gname + '.')
+    return
   }
   const message = 'Add ' + pname + ' to group ' + gname + '?'
-  if (!confirm(message)) return
+  if (!await confirmDialog(message)) return
   const ins = [
     $rdf.st(thing, ns.vcard('fn'), pname, group.doc())
   ]
@@ -165,7 +183,8 @@ export async function addPersonToGroup (thing, group) {
     kb.fetcher.unload(group.doc())
     await kb.fetcher.load(group.doc())
   } catch (e) {
-    throw new Error(`Error adding ${pname} to group ${gname}:` + e)
+    debug.error('Error adding ' + thing + ' to group ' + group + '. Stack: ' + e)
+    throw new Error('Error adding to group.')
   }
   return thing
 }
@@ -197,13 +216,8 @@ export function groupMembers (kb, group) {
 export function isLocal (group, item) {
   const tree = group.dir().dir().dir()
   const local = item.uri && item.uri.startsWith(tree.uri)
-  // console.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
+  // debug.log(`   isLocal ${local} for ${item.uri} in group ${group} tree ${tree.uri}`)
   return local
-}
-
-export function getSameAs (kb, item, doc) {
-  return kb.each(item, ns.owl('sameAs'), null, doc).concat(
-    kb.each(null, ns.owl('sameAs'), item, doc))
 }
 
 export async function getDataModelIssues (groups) {
@@ -221,7 +235,7 @@ export async function getDataModelIssues (groups) {
             ins.push($rdf.st(group, ns.vcard('hasMember'), other, group.doc()))
             break
           }
-          // console.log('getDataModelIssues: ??? expected id not to be local ' + other)
+          // debug.log('getDataModelIssues: ??? expected id not to be local ' + other)
         } // other
       } // if
     }) // member
