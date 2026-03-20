@@ -431,32 +431,37 @@
   position: relative;
 }
 
-.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"],
-.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"],
-.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"] {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--overlay-bg-muted);
-  z-index: 1000;
+.contactPane .webidControl div[style*="position: relative"]:has(> div[style*="display: grid"]) {
+  position: static !important;
 }
+
+
 .contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div,
 .contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div,
 .contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"] > div {
-  position: relative !important;
-  top: auto !important;
-  background: var(--color-background);
-  border-radius: var(--border-radius-full);
-  padding: var(--spacing-lg);
-  box-shadow: var(--box-shadow-overlay);
-  z-index: 1001;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: var(--spacing-btn) !important;
+  min-width: 12em !important;
+  background: var(--color-background) !important;
+  border: var(--border-width-sm) solid var(--color-primary) !important;
+  border-radius: var(--border-radius-base) !important;
+  box-shadow: var(--box-shadow-popup) !important;
+  grid-template-columns: auto auto !important;
+  gap: var(--spacing-xxs) !important;
+}
+
+.contactPane .detailsSectionContent .contact-toolbar > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]),
+.contactPane .detailsSectionContent .group-membership-item .group-membership-toolbar > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]),
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]) {
+  background-color: transparent !important;
 }
 
 /* Selected state for All contacts button */

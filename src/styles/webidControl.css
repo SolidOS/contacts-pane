@@ -10,8 +10,15 @@
   padding: var(--spacing-xs);
 }
 
-.contactPane .personaRow--webid {
-  background-color: var(--color-info-bg);
+.contactPane .personaRow--webid,
+.contactPane .personaRow--webid td,
+.contactPane .personaRow--webid button,
+.contactPane .personaRow--webid button:hover,
+.contactPane .personaRow--webid .hoverControl:has(> img:first-child),
+.contactPane .personaRow--webid .hoverControl:has(> img:first-child):hover,
+.contactPane .personaRow--webid .personaOpenButton:has(> img:first-child),
+.contactPane .personaRow--webid .personaOpenButton:has(> img:first-child):hover {
+  background-color: var(--color-info-bg) !important;
 }
 
 /* ── Full-width elements ─────────────────────────────────────── */
