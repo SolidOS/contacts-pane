@@ -39,10 +39,14 @@
 /* Toolbar with link icon and delete button below each group button */
 .contactPane .group-membership-item .group-membership-toolbar {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) 0 0 0;
+}
+
+.contactPane .group-membership-item .group-membership-toolbar a {
+  margin: 0.3em;
+  margin-left: 1em;
 }
 
 .contactPane .group-membership-item .group-membership-toolbar a img {
@@ -55,7 +59,6 @@
 .contactPane .group-membership-item .group-membership-toolbar > img.hoverControlHide,
 .contactPane .group-membership-item .group-membership-toolbar > [data-testid="deleteButtonWithCheck"] {
   float: none !important;
-  position: static !important;
   display: inline-flex !important;
   visibility: hidden !important;
   margin: 0 !important;

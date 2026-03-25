@@ -108,6 +108,16 @@ img[src$="go-to-this.png"] {
   display: none !important;
 }
 
+.contactPane .detailSection .detailsSectionContent button:has(> img[title="Continue"]),
+.contactPane .detailSection .detailsSectionContent img[title="Continue"] {
+  display: inline-flex !important;
+}
+
+.contactPane .detailSection .detailsSectionContent img[title="Continue"] {
+  width: 2em !important;
+  height: 2em !important;
+}
+
 /* Allow “Continue” buttons inside contactFormContainer to be visible. */
 .individualPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
 .contactPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
