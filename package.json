@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "3.1.0-newStyle",
+  "version": "3.0.2",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "dist/contactsPane.js",
   "files": [
@@ -46,9 +46,9 @@
   },
   "homepage": "https://github.com/SolidOS/contacts-pane",
   "peerDependencies": {
-    "rdflib": "^2.3.5",
-    "solid-logic": "^4.0.2",
-    "solid-ui": "3.0.4-e2611ae"
+    "rdflib": "^2.3.6",
+    "solid-logic": "^4.0.6",
+    "solid-ui": "^3.0.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
@@ -77,11 +77,9 @@
     "neostandard": "^0.12.2",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "pane-registry": "^3.0.1",
-    "rdflib": "^2.3.5",
-    "solid-logic": "^4.0.2",
-    "solid-ui": "3.0.4-e2611ae",
-    "style-loader": "^4.0.0",
-    "terser-webpack-plugin": "^5.3.16",
+    "rdflib": "^2.3.6",
+    "solid-logic": "^4.0.6",
+    "solid-ui": "^3.0.5",
     "typescript": "^5.9.3",
     "typescript-transpile-only": "^0.0.4",
     "webpack": "^5.0.0",
