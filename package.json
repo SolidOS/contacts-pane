@@ -48,7 +48,7 @@
   "peerDependencies": {
     "rdflib": "^2.3.6",
     "solid-logic": "^4.0.6",
-    "solid-ui": "^3.0.5"
+    "solid-ui": "file:../solid-ui"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
@@ -79,7 +79,8 @@
     "pane-registry": "^3.0.1",
     "rdflib": "^2.3.6",
     "solid-logic": "^4.0.6",
-    "solid-ui": "^3.0.5",
+    "solid-ui": "file:../solid-ui",
+    "style-loader": "^4.0.0",
     "typescript": "^5.9.3",
     "typescript-transpile-only": "^0.0.4",
     "webpack": "^5.0.0",

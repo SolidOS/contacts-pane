@@ -291,7 +291,6 @@ export function isAWebID (subject) {
   return !!t[ns.foaf('PersonalProfileDocument').uri]
 }
 
-
 // Make the layout stack vertically when the containing pane gets narrow
 export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
   function updateFromPane () {
@@ -342,8 +341,10 @@ export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
 
   // Initial state
   function ensureInitialUpdate () {
-    const paneNarrow = updateFromPane()
-    const viewportNarrow = updateFromViewport()
+    // Call both updaters for their side effects (setting dataset attributes).
+    // Return values are intentionally discarded — ESLint-safe.
+    updateFromPane()
+    updateFromViewport()
     // If we are not in the document yet, re-run until connected
     if (!paneDiv.isConnected) {
       requestAnimationFrame(ensureInitialUpdate)
