@@ -1,0 +1,90 @@
+/* ── Named pane (rendered sub-pane) ──────────────────────────── */
+.contactPane .namedPane {
+  border: var(--border-width-sm) solid var(--color-text-muted);
+  border-radius: var(--border-radius-base);
+}
+
+/* ── Persona row ─────────────────────────────────────────────── */
+
+.contactPane .personaRow {
+  padding: var(--spacing-xs);
+}
+
+.contactPane .personaRow--webid,
+.contactPane .personaRow--webid td,
+.contactPane .personaRow--webid button,
+.contactPane .personaRow--webid button:hover,
+.contactPane .personaRow--webid .hoverControl:has(> img:first-child),
+.contactPane .personaRow--webid .hoverControl:has(> img:first-child):hover,
+.contactPane .personaRow--webid .personaOpenButton:has(> img:first-child),
+.contactPane .personaRow--webid .personaOpenButton:has(> img:first-child):hover {
+  background-color: var(--color-info-bg) !important;
+}
+
+/* ── Full-width elements ─────────────────────────────────────── */
+
+.contactPane .fullWidth {
+  width: 100%;
+}
+
+/* ── Open/close profile button ───────────────────────────────── */
+
+.contactPane .personaOpenButton {
+  float: right;
+  background-color: transparent;
+  border: none;
+}
+
+/* hoverControl layout overrides are now enforced in contactsRDFFormsEnforced.css */
+
+/* ── Delete confirmation popup in webidControl ───────────────── */
+
+/* Remove intermediate positioned ancestor so popup anchors to .hoverControl */
+.contactPane .webidControl div[style*="position: relative"]:has(> div[style*="display: grid"]) {
+  position: static !important;
+}
+
+/* Position the popup absolutely so it never participates in the flex row */
+.contactPane .webidControl div[style*="position: relative"] > div[style*="display: grid"] {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: var(--spacing-btn) !important;
+  min-width: 12em !important;
+  background: var(--color-background) !important;
+  border: var(--border-width-sm) solid var(--color-primary) !important;
+  border-radius: var(--border-radius-base) !important;
+  box-shadow: var(--box-shadow-popup) !important;
+  grid-template-columns: auto auto !important;
+  gap: var(--spacing-xxs) !important;
+}
+
+/* ── Section heading ─────────────────────────────────────────── */
+
+.contactPane .contactPanedHeading {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-primary);
+  margin: var(--spacing-sm) 0;
+}
+
+/* ── Prompt text ─────────────────────────────────────────────── */
+
+.contactPane .webidPrompt {
+  padding: var(--spacing-sm);
+  border: none;
+  font-size: var(--font-size-base);
+  white-space: pre-wrap;
+}
+
+/* ── Visibility / display helpers ────────────────────────────── */
+
+.contactPane .collapsed {
+  visibility: collapse;
+}

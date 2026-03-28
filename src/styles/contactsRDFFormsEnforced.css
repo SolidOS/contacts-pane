@@ -1,0 +1,513 @@
+/* Solid-UI form */
+
+/* Vertically center autocomplete input in .formFieldValue */
+.individualPane .formFieldValue > div[style*="flex-direction: row"],
+.contactPane .formFieldValue > div[style*="flex-direction: row"] {
+  align-items: center;
+  display: flex;
+}
+
+.individualPane .formFieldValue input[data-testid="autocomplete-input"],
+.contactPane .formFieldValue input[data-testid="autocomplete-input"] {
+  vertical-align: middle;
+}
+
+.individualPane .hoverControl,
+.contactPane .hoverControl  {
+  position: relative;
+}
+
+/* In contactPane, hover controls in table cells may contain a link + delete icon.
+   Make the cell grow and keep the delete icon right-aligned (no overlap). */
+.contactPane td.hoverControl:has(> a) {
+  width: auto !important;
+  min-width: 4em !important;
+  justify-content: space-between !important;
+}
+
+.contactPane td.hoverControl:has(> a) > a {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.individualPane .hoverControl:has(> img:first-child),
+.contactPane .hoverControl:has(> img:first-child) {
+  background-color: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  padding: var(--spacing-btn) !important;
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.individualPane .hoverControl:has(> img:first-child) > span,
+.contactPane .hoverControl:has(> img:first-child) > span {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--spacing-xxs);
+}
+
+.individualPane div[style*="padding: 0.5em"]:has(> img),
+.contactPane div[style*="padding: 0.5em"]:has(> img) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.individualPane div[style*="padding: 0.5em"]:has(> img) > span,
+.contactPane div[style*="padding: 0.5em"]:has(> img) > span {
+  margin-left: var(--spacing-xxs);
+}
+
+.individualPane .hoverControl:has(> img:first-child):hover,
+.contactPane .hoverControl:has(> img:first-child):hover {
+  background-color: var(--color-section-bg) !important;
+}
+
+.individualPane button:has(> img[src$=".svg"]),
+.contactPane button:has(> img[src$=".svg"]) {
+  background-color: var(--color-section-bg) !important;
+  border: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Ensure certain icon images render at a consistent size and align nicely when adjacent. */
+img[src$="red.svg"],
+img[src$="go-to-this.png"] {
+  width: 1.2em !important;
+  height: 1.2em !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* If the SVG button is inside a statsLog wrapper, add pink background to the button only. */
+.individualPane .statsLog button:has(> img[src$=".svg"]),
+.contactPane .statsLog button:has(> img[src$=".svg"]) {
+  background-color: var(--color-info-bg) !important;
+  border: initial !important;
+  margin: initial !important;
+  border-radius: initial !important;
+}
+
+/* Hide the “Continue” icon button that Solid-UI sometimes renders below textareas. */
+.individualPane button:has(> img[title="Continue"]),
+.contactPane button:has(> img[title="Continue"]) {
+  display: none !important;
+}
+
+.contactPane .detailSection .detailsSectionContent button:has(> img[title="Continue"]),
+.contactPane .detailSection .detailsSectionContent img[title="Continue"] {
+  display: inline-flex !important;
+}
+
+.contactPane .detailSection .detailsSectionContent img[title="Continue"] {
+  width: 2em !important;
+  height: 2em !important;
+}
+
+/* Allow “Continue” buttons inside contactFormContainer to be visible. */
+.individualPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
+.contactPane .contactFormContainer button:has(> img[src$="noun_1180158.svg"]),
+.individualPane .contactFormContainer button:has(> img[title="Continue"]),
+.contactPane .contactFormContainer button:has(> img[title="Continue"]) {
+  display: inline-flex !important;
+}
+
+/* Exception: allow “Continue” buttons inside statsLog to remain visible. */
+.individualPane .statsLog button:has(> img[title="Continue"]),
+.contactPane .statsLog button:has(> img[title="Continue"]),
+.individualPane .webidControl button:has(> img[title="Continue"]),
+.contactPane .webidControl button:has(> img[title="Continue"]){
+  display: inline-flex !important;
+}
+
+.individualPane button,
+.contactPane button {
+  min-height: var(--min-touch-target);
+  min-width: var(--min-touch-target);
+}
+
+.individualPane input:not([type="color"]),
+.contactPane input:not([type="color"]) {
+  width: 99%;
+  max-width: 99%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card-bg) !important;
+  border: 1px solid var(--color-border-pale);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.individualPane textarea,
+.contactPane textarea,
+.individualPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: var(--border-radius-sm) !important;
+  border: var(--border-width-xthin) solid var(--color-border-accent) !important;
+  width: 99%;
+  max-width: 99%;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card-bg) !important;
+  margin: 0 !important;
+  margin-top: var(--spacing-xs);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: var(--spacing-xs) !important;
+}
+
+.individualPane select,
+.contactPane select {
+  max-width: 99%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card-bg) !important;
+  border: 1px solid var(--color-border-pale);
+}
+
+.individualPane input[type="date"],
+.contactPane input[type="date"],
+.individualPane input[type="month"],
+.contactPane input[type="month"],
+.individualPane input[type="week"],
+.contactPane input[type="week"],
+.individualPane input[type="time"],
+.contactPane input[type="time"],
+.individualPane input[type="datetime-local"],
+.contactPane input[type="datetime-local"] {
+  min-height: var(--min-touch-target);
+}
+
+.individualPane .hoverControl:has(> img:first-child):focus-visible,
+.contactPane .hoverControl:has(> img:first-child):focus-visible,
+.individualPane button:focus-visible,
+.contactPane button:focus-visible,
+.individualPane input:not([type="color"]):focus-visible,
+.contactPane input:not([type="color"]):focus-visible,
+.individualPane textarea:focus-visible,
+.contactPane textarea:focus-visible,
+.individualPane select:focus-visible,
+.contactPane select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--color-background);
+}
+
+.individualPane input[type="url"],
+.contactPane input[type="url"] {
+  width: 99%;
+}
+
+.individualPane .formFieldValue,
+.contactPane .formFieldValue {
+  min-width: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.individualPane .formFieldValue table,
+.contactPane .formFieldValue table {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.individualPane .formFieldValue td,
+.contactPane .formFieldValue td {
+  padding: 0 !important;
+  vertical-align: middle;
+}
+
+.individualPane .formFieldValue table[data-testid="autocomplete-table"],
+.contactPane .formFieldValue table[data-testid="autocomplete-table"] {
+  height: 100%;
+}
+
+.individualPane .formFieldValue input:not([type="color"]),
+.contactPane .formFieldValue input:not([type="color"]),
+.individualPane .formFieldValue textarea,
+.contactPane .formFieldValue textarea {
+  width: 99% !important;
+  max-width: 99%;
+}
+
+/* Email and phone value inputs: do not stretch full width */
+.individualPane .formFieldName:has(a[href="http://www.w3.org/2006/vcard/ns#value"]) + .formFieldValue input:not([type="color"]),
+.contactPane .formFieldName:has(a[href="http://www.w3.org/2006/vcard/ns#value"]) + .formFieldValue input:not([type="color"]) {
+  width: 98% !important;
+  max-width: 98%;
+}
+
+.individualPane .formFieldValue select,
+.contactPane .formFieldValue select {
+  width: 99%;
+  display: inline-block;
+  max-width: none !important;
+}
+
+.individualPane select#formSelect,
+.contactPane select#formSelect {
+  width: 99%;
+  max-width: 98%;
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.individualPane span select,
+.contactPane span select {
+  max-width: 96% !important;
+  box-sizing: border-box;
+  margin: 0 !important;
+}
+
+.individualPane .formFieldValue span select,
+.contactPane .formFieldValue span select {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Remove border/padding from the first wrapper div (and its first child wrapper). */
+.individualPane > div:first-of-type,
+.contactPane > div:first-of-type,
+.individualPane > div:first-of-type > div:first-of-type,
+.contactPane > div:first-of-type > div:first-of-type {
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* In contactPane, remove border/padding from all direct child divs. */
+.individualPane > div,
+.contactPane > div {
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Align schema.org, solid terms, FOAF, vCard, and org field labels with their input values. */
+.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue),
+.contactPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* for the Resume inside corporation choice */
+/* Add space between classifierBox label and select box */
+.individualPane .choiceBox .classifierBox-label,
+.contactPane .choiceBox .classifierBox-label {
+  margin-right: 0;
+  padding-left: var(--spacing-xxs);
+}
+
+.individualPane .choiceBox .choiceBox-selectBox select,
+.contactPane .choiceBox .choiceBox-selectBox select {
+  margin-left: 2.1em !important;
+}
+
+/* for the Resume orga details */
+/* Add space between classifierBox label and select box */
+.individualPane .classifierBox .classifierBox-label,
+.contactPane .classifierBox .classifierBox-label {
+  margin-right: 0;
+  padding-left: var(--spacing-xxs);
+  width: 8em;
+  padding: var(--spacing-xxs);
+  vertical-align: middle;
+}
+
+.individualPane .classifierBox .classifierBox-selectBox,
+.contactPane .classifierBox .classifierBox-selectBox {
+  margin-left: 0 !important;
+}
+
+.individualPane .classifierBox .classifierBox-selectBox select,
+.contactPane .classifierBox .classifierBox-selectBox select {
+  margin-left: 0 !important;
+}
+
+.individualPane .formFieldValue > span > select,
+.contactPane .formFieldValue > span > select {
+  margin-left: 0 !important;
+}
+
+.individualPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue,
+.contactPane :not(.choiceBox):has(> .formFieldName):has(> .formFieldValue) > .formFieldValue {
+  margin-bottom: 0;
+}
+
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]),
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]),
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]),
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]),
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]),
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://schema.org/"]) + .formFieldValue,
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/solid/terms#"]) + .formFieldValue,
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://xmlns.com/foaf/0.1/"]) + .formFieldValue,
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/2006/vcard/ns"]) + .formFieldValue,
+.individualPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) + .formFieldValue,
+.contactPane :not(.choiceBox) > .formFieldName:has(a[href*="http://www.w3.org/ns/org#"]) + .formFieldValue {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Center textarea label vertically in flex rows. */
+.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea),
+.contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) {
+  align-items: flex-start;
+}
+
+.individualPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a),
+.contactPane div[style*="display: flex"][style*="flex-direction: row"]:has(textarea) > div:has(> a) {
+  padding-left: var(--spacing-xs);
+  padding-top: var(--spacing-sm);
+}
+
+/* Keep autocomplete/table-based fields (e.g. Occupation) aligned to label text baseline. */
+.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]),
+.contactPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) {
+  align-items: flex-start;
+}
+
+.individualPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName,
+.contactPane :not(.choiceBox):has(> .formFieldValue input[data-testid="autocomplete-input"]) > .formFieldName {
+  padding-top: var(--spacing-xs) !important;
+}
+
+.individualPane .formFieldValue:has(input[data-testid="autocomplete-input"]),
+.contactPane .formFieldValue:has(input[data-testid="autocomplete-input"]) {
+  align-self: flex-start;
+}
+
+.individualPane .formFieldValue table[data-testid="autocomplete-table"],
+.contactPane .formFieldValue table[data-testid="autocomplete-table"],
+.individualPane .formFieldValue input[data-testid="autocomplete-input"],
+.contactPane .formFieldValue input[data-testid="autocomplete-input"] {
+  margin: 0 !important;
+}
+
+.individualPane .formFieldValue table[data-testid="autocomplete-table"],
+.contactPane .formFieldValue table[data-testid="autocomplete-table"] {
+  vertical-align: baseline;
+}
+
+.individualPane input:disabled,
+.contactPane input:disabled,
+.individualPane textarea:disabled,
+.contactPane textarea:disabled,
+.individualPane select:disabled,
+.contactPane select:disabled,
+.individualPane input[readonly],
+.contactPane input[readonly],
+.individualPane textarea[readonly],
+.contactPane textarea[readonly],
+.individualPane input:read-only,
+.contactPane input:read-only,
+.individualPane textarea:read-only,
+.contactPane textarea:read-only {
+  background-color: var(--color-background) !important;
+  cursor: not-allowed;
+  opacity: var(--opacity-input-disabled);
+  border: var(--border-width-xthin) solid var(--color-background) !important;
+}
+
+.contactPane .webidControl table td div.contactPane.namedPane {
+  border: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* inline popup used for small confirmation flows (like the new confirmDialog) */
+/* apply the class `rdf-inline-modal` on the outer wrapper and give the
+   inner box the class `popup` instead of using the old inline styles. */
+
+/* selectors that match the old inline-styled markup when no classes can be added */
+
+/* Delete pop up */
+/* Remove the intermediate positioned ancestor so the popup anchors to .hoverControl instead */
+.individualPane div[style*="position: relative"]:has(> div[style*="display: grid"]) {
+  position: static !important;
+}
+
+.individualPane div[style*="position: relative"] > div[style*="display: grid"] {
+  /* override inline values with theme variables */
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: var(--spacing-btn) !important;
+  background: var(--color-background) !important;
+  border: var(--border-width-sm) solid var(--color-primary) !important;
+  border-radius: var(--border-radius-base) !important;
+  box-shadow: var(--box-shadow-popup) !important;
+  grid-template-columns: auto auto !important;
+  gap: var(--spacing-xxs) !important;
+}
+
+.individualPane .hoverControl img.hoverControlHide,
+.individualPane .hoverControl [data-testid="deleteButtonWithCheck"] {
+  position: absolute !important;
+  right: var(--spacing-xxxs) !important;
+  width: 1.5em !important;
+  height: 1.5em !important;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  float: none !important;
+  z-index: 2 !important;
+}
+
+/* Show delete icon only on hover */
+.individualPane .hoverControl:hover img.hoverControlHide,
+.individualPane .hoverControl:hover [data-testid="deleteButtonWithCheck"] {
+  display: inline-flex !important;
+}
+
+/* If the hoverControl has exactly one div + the delete icon, keep the icon vertically centered but right-aligned */
+.individualPane .hoverControl:has(> div:nth-child(1):nth-last-child(2)):hover > img.hoverControlHide,
+.individualPane .hoverControl:has(> div:nth-child(1):nth-last-child(2)):hover > [data-testid="deleteButtonWithCheck"] {
+  top: 50% !important;
+  right: var(--spacing-xxxs) !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+}

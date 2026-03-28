@@ -18,6 +18,7 @@ export default {
   roots: ['<rootDir>/src', '<rootDir>/test'],
   moduleNameMapper: {
     '^SolidLogic$': 'solid-logic',
-    '^\\$rdf$': 'rdflib'
+    '^\\$rdf$': 'rdflib',
+    '\\.css$': '<rootDir>/test/__mocks__/styleMock.js'
   },
 }

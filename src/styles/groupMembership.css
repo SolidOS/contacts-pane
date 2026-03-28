@@ -1,0 +1,115 @@
+/* ── Group Membership Section ──────────────────────────────── */
+
+.contactPane .group-membership-container {
+  padding: var(--spacing-sm) 0;
+}
+
+/* Grid wrapper — matches detailsSectionContent groupButtonsList */
+.contactPane .group-pills-wrapper {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  gap: var(--spacing-sm) !important;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100% !important;
+}
+
+.contactPane .group-pills-wrapper span {
+  width: max-content !important;
+}
+
+/* Each group item: button on top, toolbar below */
+.contactPane .group-membership-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 256px;
+}
+
+.contactPane .group-membership-item > button {
+  width: 100%;
+  text-align: center;
+  border-radius: var(--border-radius-base);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-height: var(--min-touch-target);
+}
+
+/* Toolbar with link icon and delete button below each group button */
+.contactPane .group-membership-item .group-membership-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0 0 0;
+}
+
+.contactPane .group-membership-item .group-membership-toolbar a {
+  margin: 0.3em;
+  margin-left: 1em;
+}
+
+.contactPane .group-membership-item .group-membership-toolbar a img {
+  width: 1.3em;
+  height: 1em;
+  margin: 0;
+}
+
+/* Cancel float:right and any absolute positioning injected by solid-ui */
+.contactPane .group-membership-item .group-membership-toolbar > img.hoverControlHide,
+.contactPane .group-membership-item .group-membership-toolbar > [data-testid="deleteButtonWithCheck"] {
+  float: none !important;
+  display: inline-flex !important;
+  visibility: hidden !important;
+  margin: 0 !important;
+}
+
+.contactPane .group-membership-item .group-membership-toolbar:hover > img.hoverControlHide,
+.contactPane .group-membership-item .group-membership-toolbar:hover > [data-testid="deleteButtonWithCheck"] {
+  visibility: visible !important;
+}
+
+.contactPane .detailsSectionContent .group-membership-item .group-membership-toolbar > div[style*="position: relative"] {
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: min(90vw, 440px) !important;
+  min-width: 280px !important;
+  max-width: 90vw !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.contactPane .detailsSectionContent .group-membership-item .group-membership-toolbar > div[style*="position: relative"] > div {
+  position: relative !important;
+  top: auto !important;
+  min-width: 280px !important;
+  background: var(--color-background);
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-lg);
+  box-shadow: var(--box-shadow-overlay);
+  z-index: 1001;
+}
+
+@media (max-width: 599px) {
+  .contactPane .group-membership-item .group-pills-wrapper {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--spacing-xs) !important;
+    max-width: 100% !important;
+  }
+
+  .contactPane .group-membership-item .group-membership-item > button {
+    font-size: var(--font-size-sm) !important;
+    border-radius: var(--border-radius-base) !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .contactPane .group-membership-item .group-pills-wrapper {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: var(--spacing-sm) !important;
+  }
+}

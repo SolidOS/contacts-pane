@@ -14,8 +14,7 @@ export default {
     [
       'babel-plugin-inline-import', {
         extensions: [
-          '.ttl',
-          '.sparql'
+          '.ttl'
         ]
       }
     ]
