@@ -84,8 +84,8 @@
 /* Ensure certain icon images render at a consistent size and align nicely when adjacent. */
 .contactPane img[src$="red.svg"],
 .contactPane img[src$="go-to-this.png"],
-.individualPane img[src$="red.svg"], 
-.individualPane img[src$="go-to-this.png"]{
+.individualPane img[src$="red.svg"],
+.individualPane img[src$="go-to-this.png"] {
   width: 1.2em !important;
   height: 1.2em !important;
   max-width: none !important;
