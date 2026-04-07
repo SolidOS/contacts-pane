@@ -269,10 +269,10 @@
     box-sizing: border-box !important;
   }
 
-  /* Small-screen larger text and spacing */
+  /* Keep a normal mobile text scale while preserving comfortable touch targets */
   .contactPane,
   .contactPane * {
-    font-size: 2rem !important;
+    font-size: 1.5rem !important;
   }
 
   .contactPane .actionButton,
@@ -281,8 +281,8 @@
   .contactPane .buttonSection button,
   .contactPane .groupButtonsList button {
     min-height: calc(var(--min-touch-target) + 0.5em) !important;
-    font-size: 2rem !important;
-    padding: 1em 1em !important;
+    font-size: 1.5rem !important;
+    padding: 0.875em 1em !important;
   }
 
   .contactPane .group-membership-item .group-membership-toolbar > img.hoverControlHide, .contactPane .group-membership-item .group-membership-toolbar > [data-testid="deleteButtonWithCheck"],
