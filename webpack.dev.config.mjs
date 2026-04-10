@@ -11,6 +11,11 @@ export default [
         template: './dev/index.html',
         inject: 'head'
       }),
+      new HtmlWebpackPlugin({
+        template: './dev/index.html',
+        filename: 'browse-test.html',
+        inject: 'head'
+      }),
       new NodePolyfillPlugin(),
       new webpack.ProvidePlugin({
         $rdf: 'rdflib',

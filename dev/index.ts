@@ -10,8 +10,8 @@ const webId = document.getElementById('webId')
 
 loginBanner.appendChild(UI.login.loginStatusBox(document, null, {}))
 
-//const webIdToShow = 'https://solidos.solidcommunity.net/Contacts/index.ttl#this' //example to render an Address Book instead
-const webIdToShow = 'https://testingsolidos.solidcommunity.net/profile/card#me'
+const webIdToShow = 'https://solidos.solidcommunity.net/Contacts/index.ttl#this' //example to render an Address Book instead
+// const webIdToShow = 'https://testingsolidos.solidcommunity.net/profile/card#me'
 
 async function finishLogin() {
   await authSession.handleIncomingRedirect({ restorePreviousSession: true })
