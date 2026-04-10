@@ -392,9 +392,7 @@ export function toolsPane (
             }
             log(logSpace, '  Compact group members ' + stats.groupMembers2.length)
 
-            if (
-              $rdf.keepThisCodeForLaterButDisableFerossConstantConditionPolice
-            ) {
+            if (false) {
               // Don't inspect as seems groups membership is complete
               for (let i = 0; i < stats.groupMembers.length; i++) {
                 const card = stats.groupMembers[i]

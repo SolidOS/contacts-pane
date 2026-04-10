@@ -296,7 +296,7 @@
 
 
 /* Card Section Background */
-.contactPane .section-bg {
+.contactPane .addressBookSection.section-bg {
   background: var(--color-section-bg);
   padding: var(--spacing-md);
   box-sizing: border-box;

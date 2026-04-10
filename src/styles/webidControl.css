@@ -83,6 +83,168 @@
   white-space: pre-wrap;
 }
 
+.contactPane.contactPane--narrow .webidControl .namedPane,
+.contactPane.contactPane--narrow .webidControl table td div.contactPane.namedPane {
+  display: block;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  container-type: inline-size;
+  container-name: nested-profile-pane;
+  margin-top: var(--spacing-sm);
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profile-grid,
+.contactPane.contactPane--narrow .webidControl .namedPane #main-content.profile-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--spacing-sm) !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__main,
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__sidebar,
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__section {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__sidebar,
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__section,
+.contactPane.contactPane--narrow .webidControl .namedPane .profile__main {
+  padding: var(--spacing-sm) !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible[data-expanded="false"] .profileSectionCollapsible__content {
+  display: none !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__toggle {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: auto !important;
+  min-width: auto !important;
+  padding: var(--spacing-xxs) !important;
+  border: none !important;
+  background: none !important;
+  color: var(--color-text) !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible[data-expanded="true"] .profileSectionCollapsible__chevron {
+  transform: rotate(180deg);
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__editLabel {
+  display: none !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__editIcon {
+  display: inline !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .socialItem {
+  display: flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .socialItem a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: var(--min-touch-target) !important;
+  min-height: var(--min-touch-target) !important;
+  line-height: 0 !important;
+}
+
+.contactPane.contactPane--narrow .webidControl .namedPane .socialIcon {
+  display: block !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 1000px) {
+  .contactPane .webidControl,
+  .contactPane .webidControl table,
+  .contactPane .webidControl tbody,
+  .contactPane .webidControl tr,
+  .contactPane .webidControl td {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .contactPane .webidControl table {
+    table-layout: fixed;
+  }
+
+  .contactPane .webidControl .personaRow--webid td {
+    vertical-align: top;
+  }
+
+  .contactPane .webidControl .contactPane,
+  .contactPane .webidControl .contactPane .addressBook-grid,
+  .contactPane .webidControl .contactPane .detailSection,
+  .contactPane .webidControl .contactPane .detailsSectionContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .contactPane .webidControl .contactPane .addressBook-grid {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .contactPane .webidControl .contactPane .detailSection,
+  .contactPane .webidControl .contactPane .addressBookSection {
+    flex: none !important;
+  }
+
+  .contactPane .webidControl .contactPane .detailsSectionContent,
+  .contactPane .webidControl .contactPane .detailsSectionContent--wide {
+    padding: var(--spacing-sm) !important;
+    overflow-y: visible !important;
+  }
+
+}
+
+@container nested-profile-pane (max-width: 900px) {
+  .contactPane .webidControl .profile-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--spacing-sm) !important;
+  }
+
+  .contactPane .webidControl .profile-grid > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .contactPane .webidControl .profile__main,
+  .contactPane .webidControl .profile__sidebar,
+  .contactPane .webidControl .profile__section {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ── Visibility / display helpers ────────────────────────────── */
 
 .contactPane .collapsed {
