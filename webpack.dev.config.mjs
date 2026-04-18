@@ -44,6 +44,10 @@ export default [
           use: ['style-loader', 'css-loader'],
         },
         {
+          test: /\.(png|jpe?g|gif|svg)$/i,
+          type: 'asset/resource'
+        },
+        {
           test: /\.module\.css$/,
           use: [
             'style-loader',
