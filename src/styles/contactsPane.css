@@ -274,10 +274,11 @@
   }
 
   /* Keep a normal mobile text scale while preserving comfortable touch targets */
-  .contactPane,
-  .contactPane * {
+  /* The following rule made all text much larger on mobile; comment out to restore normal font size for non-buttons.
+   .contactPane,
+   .contactPane * {
     font-size: 1.5rem !important;
-  }
+  } */
 
   .contactPane .actionButton,
   .contactPane .searchInput,
