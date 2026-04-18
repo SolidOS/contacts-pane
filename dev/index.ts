@@ -1,6 +1,7 @@
 import { sym } from 'rdflib'
 import { default as pane } from '../src/contactsPane' 
 import './dev-global.css' // Import after src to override component styles
+import './dev-utilities.css' // Import after src to override component styles
 import { context, fetcher } from './context'
 import { authn, authSession } from 'solid-logic'
 import * as UI from 'solid-ui'
