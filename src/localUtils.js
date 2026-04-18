@@ -328,7 +328,9 @@ export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
 
   const resizeObserverAvailable = typeof ResizeObserver !== 'undefined'
   if (resizeObserverAvailable) {
-    const ro = new ResizeObserver(() => updateFromPane())
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(() => updateFromPane())
+    })
     ro.observe(paneDiv)
   }
 
