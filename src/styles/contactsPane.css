@@ -19,22 +19,22 @@
   flex-direction: column;
   align-items: stretch;
   flex: 1 1 0; /* allow it to grow but not force wrap */
-  min-width: 300px;
+  min-width: 18.75rem; /* 300px */
   box-sizing: border-box;
   background: var(--color-section-bg);
 }
 
 .contactPane .detailsSectionContent {
   flex: 1 1 auto;
-  min-height: 200px;
+  min-height: 12.5rem; /* 200px */
   padding: var(--spacing-lg);
-  max-width: 900px;
+  max-width: 56.25rem; /* 900px */
   width: 100%;
   box-sizing: border-box;
 }
 
 .contactPane .detailsSectionContent--wide {
-  max-width: 900px;
+  max-width: 56.25rem; /* 900px */
 }
 
 .contactPane .cardFooter {
@@ -56,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  max-width: 360px;
+  max-width: 22.5rem; /* 360px */
 }
 
 .contactPane .contactTypeChooser h3 {
@@ -66,7 +66,7 @@
 
 .contactPane .contactTypeSelect {
   height: var(--min-touch-target);
-  border: 1px solid var(--color-border-pale);
+  border: var(--border-width-sm, 1px) solid var(--color-border-pale);
   border-radius: var(--border-radius-base);
   padding: 0 var(--spacing-sm);
   font-size: var(--font-size-sm);
@@ -86,14 +86,14 @@
 
 .contactPane .searchInput {
   height: var(--min-touch-target);
-  border: 1px solid var(--color-border-pale);
+  border: var(--border-width-sm, 1px) solid var(--color-border-pale);
   background-color: var(--color-section-bg);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: 8px center;
-  background-size: 20px 20px;
+  background-position: 0.5rem center; /* 8px */
+  background-size: 1.25rem 1.25rem; /* 20px 20px */
   border-radius: var(--border-radius-base);
-  padding: 0 var(--spacing-sm) 0 34px;
+  padding: 0 var(--spacing-sm) 0 2.125rem; /* 34px */
   font-size: var(--font-size-base);
   width: 100%;
   box-sizing: border-box;
@@ -132,20 +132,20 @@
 }
 
 .contactPane .contact-toolbar a {
-  margin: 0.3em;
+  margin: 0.3rem;
 }
 
 .contactPane .contact-toolbar a img {
-  width: 1.3em;
-  height: 1em;
+  width: 1.3rem;
+  height: 1rem;
   margin: 0;
 }
 
 .contact-toolbar .deleteButton {
   margin-left: auto; /* keeps delete icon on the right */
-  margin-right: 0.2em;
-  width: 1em;
-  height: 1em;
+  margin-right: var(--spacing-xxxs, 0.2rem);
+  width: var(--icon-xxs, 1rem);
+  height: var(--icon-xxs, 1rem);
   float: none; /* important: prevents overlap behavior */
 }
 
@@ -526,7 +526,7 @@
 
 .contactPane .dottedHr {
   border: none;
-  border-top: 1px dotted var(--color-text-muted);
+  border-top: var(--border-width-sm, 0.1rem) dotted var(--color-text-muted);
   margin: 0;
 }
 
@@ -557,7 +557,7 @@
 }
 
 .contactPane .peopleSection li {
-  border-top: 1px solid var(--color-border-pale);
+  border-top: var(--border-width-sm, 0.1rem) solid var(--color-border-pale);
   padding: var(--spacing-xs);
 }
 
@@ -570,8 +570,8 @@
 }
 
 .contactPane .personLi-avatar {
-  width: 45px;
-  height: 45px;
+  width: 2.813rem /* 45px */;
+  height: 2.813rem /* 45px */;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -579,16 +579,16 @@
 }
 
 .contactPane .personLi-avatar .avatar-placeholder {
-  width: 36px;
-  height: 36px;
+  width: 2.25rem /* 36px */;
+  height: 2.25rem /* 36px */;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .contactPane .personLi-avatar img {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem /* 40px */;
+  height: 2.5rem /* 40px */;
   border-radius: 50%;
   object-fit: cover;
 }
