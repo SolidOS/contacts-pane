@@ -4,7 +4,7 @@
 /* ── Mugshot image ───────────────────────────────────────────── */
 
 .contactPane .mugshotImage {
-  max-height: 10em;
+  max-height: 10rem;
   border-radius: var(--border-radius-full);
   margin: var(--spacing-sm);
 }

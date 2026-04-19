@@ -326,17 +326,31 @@ export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
     return isNarrow
   }
 
+
+  // Debounce utility
+  function debounce(fn, delay) {
+    let timer = null
+    return function(...args) {
+      clearTimeout(timer)
+      timer = setTimeout(() => fn.apply(this, args), delay)
+    }
+  }
+
+  const debouncedUpdate = debounce(() => {
+    updateFromPane()
+    updateFromViewport()
+  }, 100)
+
   const resizeObserverAvailable = typeof ResizeObserver !== 'undefined'
   if (resizeObserverAvailable) {
-    const ro = new ResizeObserver(() => updateFromPane())
+    const ro = new ResizeObserver(() => {
+      debouncedUpdate()
+    })
     ro.observe(paneDiv)
   }
 
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-    window.addEventListener('resize', () => {
-      updateFromPane()
-      updateFromViewport()
-    })
+    window.addEventListener('resize', debouncedUpdate)
   }
 
   // Initial state

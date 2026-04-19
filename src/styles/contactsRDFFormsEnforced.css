@@ -21,7 +21,7 @@
    Make the cell grow and keep the delete icon right-aligned (no overlap). */
 .contactPane td.hoverControl:has(> a) {
   width: auto !important;
-  min-width: 4em !important;
+  min-width: 4rem !important;
   justify-content: space-between !important;
 }
 
@@ -86,8 +86,8 @@
 .contactPane img[src$="go-to-this.png"],
 .individualPane img[src$="red.svg"],
 .individualPane img[src$="go-to-this.png"] {
-  width: 1.2em !important;
-  height: 1.2em !important;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
   max-width: none !important;
   max-height: none !important;
   object-fit: contain;
@@ -116,8 +116,8 @@
 }
 
 .contactPane .detailSection .detailsSectionContent img[title="Continue"] {
-  width: 2em !important;
-  height: 2em !important;
+  width: var(--icon-base, 2rem) !important;
+  height: var(--icon-base, 2rem) !important;
 }
 
 /* Allow “Continue” buttons inside contactFormContainer to be visible. */
@@ -151,7 +151,7 @@
   font: inherit;
   color: var(--color-text);
   background-color: var(--color-card-bg) !important;
-  border: 1px solid var(--color-border-pale);
+  border: var(--border-width-sm) solid var(--color-border-pale);
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
@@ -185,7 +185,7 @@
   font: inherit;
   color: var(--color-text);
   background-color: var(--color-card-bg) !important;
-  border: 1px solid var(--color-border-pale);
+  border: var(--border-width-sm) solid var(--color-border-pale);
 }
 
 .individualPane input[type="date"],
@@ -322,7 +322,7 @@
 
 .individualPane .choiceBox .choiceBox-selectBox select,
 .contactPane .choiceBox .choiceBox-selectBox select {
-  margin-left: 2.1em !important;
+  margin-left: 2.1rem !important;
 }
 
 /* for the Resume orga details */
@@ -331,7 +331,7 @@
 .contactPane .classifierBox .classifierBox-label {
   margin-right: 0;
   padding-left: var(--spacing-xxs);
-  width: 8em;
+  width: 8rem;
   padding: var(--spacing-xxs);
   vertical-align: middle;
 }
@@ -489,8 +489,8 @@
 .individualPane .hoverControl [data-testid="deleteButtonWithCheck"] {
   position: absolute !important;
   right: var(--spacing-xxxs) !important;
-  width: 1.5em !important;
-  height: 1.5em !important;
+  width: var(--icon-xs, 1.5rem) !important;
+  height: var(--icon-xs, 1.5rem) !important;
   display: none !important;
   align-items: center;
   justify-content: center;
