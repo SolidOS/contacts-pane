@@ -36,6 +36,8 @@ export default {
 
   name: 'contact',
 
+  global: true, // We do not display it in the OutlineView nav bar
+
   // Does the subject deserve a contact pane?
   label: function (subject, context) {
     const t = context.session.store.findTypeURIs(subject)
