@@ -287,7 +287,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
   options = options || {}
   options.editable = kb.updater.editable(person.doc().uri, kb)
   const div = dom.createElement('div')
-  div.classList.add('webidControl')
+  div.classList.add('webidControl', 'webidControl--mobile')
 
   if (getPersonas(kb, person).length === 0 && !options.editable) {
     div.classList.add('hidden')
