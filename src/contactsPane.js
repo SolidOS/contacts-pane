@@ -42,10 +42,10 @@ export default {
   label: function (subject, context) {
     const t = context.session.store.findTypeURIs(subject)
     // with the new design we only display Address Books
-    // individuals are rendered through the profile-pane
+    // individuals are rendered through the profile-pane but not Organizations
+    if (t[ns.vcard('Organization').uri]) return 'Contact'
     /*
     if (t[ns.vcard('Individual').uri]) return 'Contact'
-    if (t[ns.vcard('Organization').uri]) return 'Contact'
     if (t[ns.foaf('Person').uri]) return 'Person'
     if (t[ns.schema('Person').uri]) return 'Person'
     if (t[ns.vcard('Group').uri]) return 'Group'
