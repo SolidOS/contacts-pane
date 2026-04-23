@@ -12,6 +12,8 @@
     "clean": "rm -rf dist",
     "build": "npm run clean && npm run build-dist",
     "build-dist": "webpack --progress",
+    "watch-dist": "webpack --watch",
+    "watch": "npm run watch-dist",
     "lint": "eslint",
     "lint-fix": "eslint --fix",
     "typecheck-test": "tsc --noEmit -p tsconfig.test.json",
