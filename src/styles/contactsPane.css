@@ -19,7 +19,7 @@
   flex-direction: column;
   align-items: stretch;
   flex: 1 1 0; /* allow it to grow but not force wrap */
-  min-width: 18.75rem; /* 300px */
+  min-width: 0; /* allow sections to collapse when stacked */
   box-sizing: border-box;
   background: var(--color-section-bg);
 }
@@ -178,18 +178,18 @@
 .contactPane {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 0;
 }
 
 .contactPane .addressBook-grid {
   display: flex;
   flex-wrap: nowrap; /* keep sections side-by-side */
   flex: 1;
-  min-width: 50%;
+  min-width: 0; /* allow it to shrink */
   align-items: stretch;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: auto; /* allow horizontal scroll if needed */
+  overflow-x: hidden;
 }
 
 @media ((min-width: 500px) and (max-width: 900px)) {
@@ -201,13 +201,15 @@
   }
 }
 
-.contactPane .contactPane--narrow .addressBook-grid {
+.contactPane.contactPane--narrow .addressBook-grid {
   flex-direction: column !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
 }
 
-.contactPane .contactPane--narrow .addressBookSection,
-.contactPane .contactPane--narrow .detailSection {
+.contactPane.contactPane--narrow .addressBookSection,
+.contactPane.contactPane--narrow .detailSection {
   flex: 1 1 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
