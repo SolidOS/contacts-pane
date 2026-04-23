@@ -36,16 +36,20 @@ export default {
 
   name: 'contact',
 
-  global: false, 
+  global: false,
 
   // Does the subject deserve a contact pane?
   label: function (subject, context) {
     const t = context.session.store.findTypeURIs(subject)
+    // with the new design we only display Address Books
+    // individuals are rendered through the profile-pane
+    /*
     if (t[ns.vcard('Individual').uri]) return 'Contact'
     if (t[ns.vcard('Organization').uri]) return 'Contact'
     if (t[ns.foaf('Person').uri]) return 'Person'
     if (t[ns.schema('Person').uri]) return 'Person'
     if (t[ns.vcard('Group').uri]) return 'Group'
+    */
     if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     return null // No, under other circumstances
   },
