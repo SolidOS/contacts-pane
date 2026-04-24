@@ -316,11 +316,10 @@ export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
     return isNarrow
   }
 
-
   // Debounce utility
-  function debounce(fn, delay) {
+  function debounce (fn, delay) {
     let timer = null
-    return function(...args) {
+    return function (...args) {
       clearTimeout(timer)
       timer = setTimeout(() => fn.apply(this, args), delay)
     }
