@@ -83,8 +83,8 @@
   white-space: pre-wrap;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane,
-.contactPane.contactPane--narrow .webidControl table td div.contactPane.namedPane {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) table td div.contactPane.namedPane {
   display: block;
   width: 100% !important;
   max-width: none !important;
@@ -95,16 +95,16 @@
   margin-top: var(--spacing-sm);
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profile-grid,
-.contactPane.contactPane--narrow .webidControl .namedPane #main-content.profile-grid {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile-grid,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane #main-content.profile-grid {
   display: flex !important;
   flex-direction: column !important;
   gap: var(--spacing-sm) !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__main,
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__sidebar,
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__section {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__main,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__sidebar,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__section {
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -112,17 +112,17 @@
   overflow-wrap: anywhere;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__sidebar,
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__section,
-.contactPane.contactPane--narrow .webidControl .namedPane .profile__main {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__sidebar,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__section,
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profile__main {
   padding: var(--spacing-sm) !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible[data-expanded="false"] .profileSectionCollapsible__content {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profileSectionCollapsible[data-expanded="false"] .profileSectionCollapsible__content {
   display: none !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__toggle {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profileSectionCollapsible__toggle {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -134,25 +134,25 @@
   color: var(--color-text) !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible[data-expanded="true"] .profileSectionCollapsible__chevron {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profileSectionCollapsible[data-expanded="true"] .profileSectionCollapsible__chevron {
   transform: rotate(180deg);
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__editLabel {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profileSectionCollapsible__editLabel {
   display: none !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .profileSectionCollapsible__editIcon {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .profileSectionCollapsible__editIcon {
   display: inline !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .socialItem {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .socialItem {
   display: flex !important;
   align-items: center !important;
   flex: 0 0 auto !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .socialItem a {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .socialItem a {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -163,7 +163,7 @@
   line-height: 0 !important;
 }
 
-.contactPane.contactPane--narrow .webidControl .namedPane .socialIcon {
+.contactPane :is(.contactPane--narrow .webidControl, .webidControl.webidControl--mobile) .namedPane .socialIcon {
   display: block !important;
   width: 40px !important;
   height: 40px !important;
