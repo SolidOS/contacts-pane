@@ -392,9 +392,9 @@ export function toolsPane (
             }
             log(logSpace, '  Compact group members ' + stats.groupMembers2.length)
 
-            if (
-              $rdf.keepThisCodeForLaterButDisableFerossConstantConditionPolice
-            ) {
+            // LINT NOTE: Block below disabled to fix 'no-constant-condition' ESLint error. Restore or refactor if needed.
+            /*
+            if (false) {
               // Don't inspect as seems groups membership is complete
               for (let i = 0; i < stats.groupMembers.length; i++) {
                 const card = stats.groupMembers[i]
@@ -411,7 +411,8 @@ export function toolsPane (
                 }
               }
               log(logSpace, 'Problem contacts: ' + stats.groupProblems.length)
-            } // if
+            }
+            */
             resolve(true)
           })
         } //  checkGroupMembers

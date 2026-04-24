@@ -11,6 +11,11 @@ export default [
         template: './dev/index.html',
         inject: 'head'
       }),
+      new HtmlWebpackPlugin({
+        template: './dev/index.html',
+        filename: 'browse-test.html',
+        inject: 'head'
+      }),
       new NodePolyfillPlugin(),
       new webpack.ProvidePlugin({
         $rdf: 'rdflib',
@@ -37,6 +42,10 @@ export default [
           test: /\.css$/,
           exclude: /\.module\.css$/,
           use: ['style-loader', 'css-loader'],
+        },
+        {
+          test: /\.(png|jpe?g|gif|svg)$/i,
+          type: 'asset/resource'
         },
         {
           test: /\.module\.css$/,

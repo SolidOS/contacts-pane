@@ -293,58 +293,59 @@ export function isAWebID (subject) {
 
 // Make the layout stack vertically when the containing pane gets narrow
 export function setupResponsiveStacking (paneDiv, breakpoint = 900) {
-  function updateFromPane () {
+  function updateResponsiveState () {
     const width = paneDiv.getBoundingClientRect().width
-    const isNarrow = width <= breakpoint
-    // Always track viewport fallback even if pane is not in DOM yet
+    const paneNarrow = width > 0 ? width <= breakpoint : false
     const viewportNarrow = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
       ? window.matchMedia('(max-width: ' + breakpoint + 'px)').matches
       : false
+    const isNarrow = width > 0 ? paneNarrow : viewportNarrow
 
     if (width > 0) {
-      paneDiv.classList.toggle('contactPane--narrow', isNarrow)
       paneDiv.dataset.paneWidth = Math.round(width).toString()
-      paneDiv.dataset.paneNarrow = isNarrow ? 'true' : 'false'
+      paneDiv.dataset.paneNarrow = paneNarrow ? 'true' : 'false'
     } else {
       // If not inserted yet, apply viewport mode until placed.
-      paneDiv.classList.toggle('contactPane--narrow', viewportNarrow)
       paneDiv.dataset.paneWidth = '0'
       paneDiv.dataset.paneNarrow = viewportNarrow ? 'true' : 'false'
     }
 
+    paneDiv.classList.toggle('contactPane--narrow', isNarrow)
     paneDiv.dataset.viewportNarrow = viewportNarrow ? 'true' : 'false'
 
     return isNarrow
   }
 
-  function updateFromViewport () {
-    const isNarrow = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
-      ? window.matchMedia('(max-width: ' + breakpoint + 'px)').matches
-      : false
-    paneDiv.classList.toggle('contactPane--narrow', isNarrow)
-    paneDiv.dataset.viewportNarrow = isNarrow ? 'true' : 'false'
-    return isNarrow
+  // Debounce utility
+  function debounce (fn, delay) {
+    let timer = null
+    return function (...args) {
+      clearTimeout(timer)
+      timer = setTimeout(() => fn.apply(this, args), delay)
+    }
   }
+
+  const debouncedUpdate = debounce(() => {
+    updateResponsiveState()
+  }, 100)
 
   const resizeObserverAvailable = typeof ResizeObserver !== 'undefined'
   if (resizeObserverAvailable) {
-    const ro = new ResizeObserver(() => updateFromPane())
+    const ro = new ResizeObserver(() => {
+      debouncedUpdate()
+    })
     ro.observe(paneDiv)
   }
 
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-    window.addEventListener('resize', () => {
-      updateFromPane()
-      updateFromViewport()
-    })
+    window.addEventListener('resize', debouncedUpdate)
   }
 
   // Initial state
   function ensureInitialUpdate () {
     // Call both updaters for their side effects (setting dataset attributes).
     // Return values are intentionally discarded — ESLint-safe.
-    updateFromPane()
-    updateFromViewport()
+    updateResponsiveState()
     // If we are not in the document yet, re-run until connected
     if (!paneDiv.isConnected) {
       requestAnimationFrame(ensureInitialUpdate)
