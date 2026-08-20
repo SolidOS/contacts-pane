@@ -13,6 +13,7 @@ export default {
   // files in node_modules which causes syntax errors like "import ..." here.
   // Allow transforming mime-types and mime-db so Babel can compile them for tests.
   transformIgnorePatterns: ['/node_modules/(?!(mime-types|mime-db)/)'],
+  setupFiles: ['./test/helpers/globals.js'],
   setupFilesAfterEnv: ['./test/jest.setup.ts'],
   testMatch: ['**/test/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   roots: ['<rootDir>/src', '<rootDir>/test'],

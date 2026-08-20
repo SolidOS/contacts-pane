@@ -1,6 +1,6 @@
 {
   "name": "contacts-pane",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Contacts Pane: Contacts manager for Address Book, Groups, and Individuals.",
   "main": "dist/contactsPane.js",
   "files": [
@@ -48,13 +48,13 @@
   },
   "homepage": "https://github.com/SolidOS/contacts-pane",
   "peerDependencies": {
-    "rdflib": "^2.3.6",
-    "solid-logic": "^4.0.6",
-    "solid-ui": "^3.0.5"
+    "rdflib": "^2.4.0",
+    "solid-logic": "^5.0.0",
+    "solid-ui": "^4.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.28.6",
+    "@babel/core": "^7.29.7",
     "@babel/preset-env": "^7.28.6",
     "@babel/preset-typescript": "^7.28.5",
     "@testing-library/jest-dom": "^6.9.1",
@@ -79,11 +79,12 @@
     "jest-fetch-mock": "^3.0.3",
     "neostandard": "^0.13.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
-    "pane-registry": "^3.0.1",
-    "rdflib": "^2.3.6",
-    "solid-logic": "^4.0.6",
-    "solid-ui": "^3.0.6",
+    "pane-registry": "^4.0.0",
+    "rdflib": "^2.4.0",
+    "solid-logic": "^5.0.0",
+    "solid-ui": "^4.0.0",
     "style-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.6.1",
     "typescript": "^6.0.2",
     "typescript-transpile-only": "^0.0.4",
     "webpack": "^5.0.0",
