@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["test/**/*"],
+  // src/types carries the ambient declarations for `.css` imports, and
+  // declarations.d.ts the ones for `.ttl` -- the tests reach both through
+  // the sources they exercise.
+  "include": ["test/**/*", "src/types/**/*", "declarations.d.ts"],
   "compilerOptions": {
     "types": ["node"],
     "rootDir": ".",

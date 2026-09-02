@@ -27,8 +27,10 @@ export default defineConfig({
             entryFileNames: "[name].cjs.js",
           },
         ],
+        // Icons are compiled in by unplugin-icons, so they must be bundled
+        // rather than left for consumers to resolve.
         external: (id: string) => {
-          return !id.startsWith(".") && !isAbsolute(id);
+          return !id.startsWith("~icons/") && !id.startsWith(".") && !isAbsolute(id);
         },
       },
     },

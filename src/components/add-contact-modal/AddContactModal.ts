@@ -1,3 +1,4 @@
+import type { NamedNode } from 'rdflib'
 import { html, nothing } from 'lit'
 import { state, property } from 'lit/decorators.js'
 import { consume } from '@lit/context'
@@ -24,17 +25,17 @@ const CONTACT_TYPES = [
 
 type ContactType = (typeof CONTACT_TYPES)[number]['value']
 
-type Person = any
+type Person = NamedNode
 
-@customElement('solid-contacts-pane-add-contact-modal')
+@customElement('contacts-pane-add-contact-modal')
 export default class AddContactModal extends WebComponent {
   static styles = styles
 
   @property()
-  accessor book: unknown | null = null;
+  accessor book: NamedNode | null = null;
 
   @property()
-  accessor selectedGroups: unknown | null = null;
+  accessor selectedGroups: Record<string, boolean> | null = null;
 
   @state()
   private accessor contactType: ContactType = 'organization';
@@ -63,7 +64,7 @@ export default class AddContactModal extends WebComponent {
 
   protected render () {
     if (!this.book || !this.selectedGroups) {
-      throw new Error('Book and selectedGroups are required for <solid-contacts-pane-add-contact-modal>')
+      throw new Error('Book and selectedGroups are required for <contacts-pane-add-contact-modal>')
     }
 
     return html`
@@ -120,6 +121,9 @@ export default class AddContactModal extends WebComponent {
     this.loading = true
 
     try {
+      if (!this.book || !this.selectedGroups) {
+        throw new Error('Book and selectedGroups are required for <contacts-pane-add-contact-modal>')
+      }
       const person = await saveNewContact(
         this.book,
         this.name,

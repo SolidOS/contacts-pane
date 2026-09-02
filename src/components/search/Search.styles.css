@@ -1,0 +1,35 @@
+/* The section padding the pane's .searchSection rule used to give the light
+   DOM element, so the column layout is unchanged. */
+:host {
+    display: block;
+    padding: var(--spacing-sm);
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+/* Positions the clear button over the trailing edge of the input. */
+.searchDiv {
+    position: relative;
+}
+
+solid-ui-input {
+    width: 100%;
+}
+
+button {
+    position: absolute;
+    right: var(--spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    font-size: var(--font-size-base);
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    color: var(--color-text-muted);
+}
+
+button:hover {
+    color: var(--color-text);
+}

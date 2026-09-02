@@ -1,0 +1,107 @@
+/* The rows used to be built by the presenter and styled from contactsPane.css
+   (.personLi and friends); those rules live here now. The host carries the
+   column's flex/scroll behaviour that .peopleSection > ul used to have. */
+:host {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-xs);
+    cursor: pointer;
+}
+
+li.selected {
+    background-color: var(--color-info-bg);
+}
+
+li:focus-visible {
+    outline: var(--focus-indicator-width) solid var(--solid-ui-color-primary);
+    outline-offset: calc(-1 * var(--focus-indicator-width));
+}
+
+li.personLi--error {
+    opacity: 0.5;
+}
+
+.avatar {
+    width: 2.813rem /* 45px */;
+    height: 2.813rem /* 45px */;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar img {
+    width: 2.5rem /* 40px */;
+    height: 2.5rem /* 40px */;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Placeholder for contacts without a picture: the same box an image fills. */
+.avatar .avatarFallback {
+    width: 2.5rem /* 40px */;
+    height: 2.5rem /* 40px */;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: var(--solid-ui-color-gray-200, #e0e0e0);
+    color: var(--solid-ui-color-gray-600, #595959);
+}
+
+.identity {
+    flex: 1;
+    min-width: 0;
+    margin-left: var(--spacing-sm);
+}
+
+.nameRow {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+    min-width: 0;
+}
+
+.name {
+    overflow: hidden;
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.role {
+    overflow: hidden;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-subtle, #595959);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.email {
+    overflow: hidden;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-subtle, #595959);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.rowMenu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}

@@ -63,6 +63,7 @@
     "solid-ui": "5.0.0-0"
   },
   "devDependencies": {
+    "@iconify/json": "2.2.494",
     "@types/node": "^22.20.0",
     "@typescript-eslint/parser": "^8.53.1",
     "@vitest/coverage-v8": "^4.0.18",
@@ -78,6 +79,7 @@
     "solid-ui": "^5.0.0-0",
     "solidos-toolkit": "dev",
     "typescript": "^6.0.2",
+    "unplugin-icons": "^23.0.1",
     "vite": "^8.0.16",
     "vite-plugin-css-injected-by-js": "^5.0.1",
     "vitest": "^4.0.18",
