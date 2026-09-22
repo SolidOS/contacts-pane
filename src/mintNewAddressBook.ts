@@ -22,8 +22,6 @@ export function mintNewAddressBook (dataBrowserContext: any, context: any) {
         debug.log('Logged in as ' + context.me)
         const me = context.me
 
-        const dom = context.dom
-        const div = context.div
         const kb = dataBrowserContext.session.store
         const ns = UI.ns
         const newBase = context.newBase || context.newInstance.dir().uri
@@ -94,19 +92,6 @@ export function mintNewAddressBook (dataBrowserContext: any, context: any) {
         function claimSuccess (newAppInstance: any, appInstanceNoun: string) {
           // @@ delete or grey other stuff
           debug.log(`New ${appInstanceNoun} created at ${newAppInstance}`)
-          const p = div.appendChild(dom.createElement('p'))
-          p.classList.add('claimSuccess')
-          p.innerHTML =
-            'Your <a href=\'' +
-            newAppInstance.uri +
-            '\'><b>new ' +
-            appInstanceNoun +
-            '</b></a> is ready. ' +
-            '<br/><br/><a href=\'' +
-            newAppInstance.uri +
-            '\'>Go to new ' +
-            appInstanceNoun +
-            '</a>'
           const newContext = Object.assign(
             { newInstance: newAppInstance },
             context

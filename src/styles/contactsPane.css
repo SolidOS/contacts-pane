@@ -103,6 +103,15 @@
   overflow-x: hidden;
 }
 
+.contactPane #main-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media ((min-width: 500px) and (max-width: 900px)) {
   .contactPane .addressBookSection {
     max-width: 900px;
@@ -372,6 +381,11 @@ contacts-pane-search.hidden {
   .contactPane:not(.contactPane--narrow) {
     height: var(--pane-max-height, auto);
     max-height: var(--pane-max-height, none);
+  }
+
+  .contactPane:not(.contactPane--narrow) #main-content {
+    height: 100%;
+    max-height: 100%;
   }
 
   .contactPane:not(.contactPane--narrow) .addressBook-grid {
