@@ -223,7 +223,7 @@ export async function getDataModelIssues (groups: NamedNode[]): Promise<{ del: S
   const ins: Statement[] = []
   groups.forEach(group => {
     const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
-    members.forEach((member) => {
+    members.forEach((member: NamedNode) => {
       const others = getSameAs(kb, member as NamedNode, group.doc())
       if (others.length && isLocal(group, member as NamedNode)) { // Problem: local ID used instead of webID
         for (const other of others) {
