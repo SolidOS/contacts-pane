@@ -51,14 +51,13 @@ export function groupMemberCount (group: NamedNode): number | null {
 
 export async function handleURIsDroppedOnGroup (uris: string[], group: NamedNode) {
   for (const u of uris) {
-    let thing: NamedNode | undefined = kb.sym(u)
     try {
-      thing = await addPersonToGroup(thing, group)
+      const thing = await addPersonToGroup(kb.sym(u), group)
+      if (thing) refreshNames(ulPeople)
     } catch (_e) {
       const msg = 'Error adding to group. Make sure you are adding a contact URI.'
       alertDialog(msg)
     }
-    if (thing) refreshNames(ulPeople)
   }
 }
 

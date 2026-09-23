@@ -235,7 +235,7 @@ function checkGroupMembers (s: ScanState, log: Log) {
   }
   s.groupMembers = []
   kb.each(null, ns.vcard('hasMember'))
-    .forEach(group => { s.groupMembers = s.groupMembers.concat(groupMembers(kb, group as NamedNode)) })
+    .forEach((group: NamedNode) => { s.groupMembers = s.groupMembers.concat(groupMembers(kb, group)) })
   log('  Naive group members ' + s.groupMembers.length)
   const memberSet: Record<string, NamedNode> = {}
   for (const member of s.groupMembers) {
@@ -286,7 +286,7 @@ async function checkOneNameless (s: ScanState, card: NamedNode, log: Log) {
   exclude[ns.dc('modified').uri] = true
   const desc = kb
     .statementsMatching(null, null, null, card.doc())
-    .filter(st => !exclude[st.predicate.uri])
+    .filter((st: Statement) => !exclude[st.predicate.uri])
 
   if (!desc.length) {
     log('  Zero length ' + card)
@@ -304,7 +304,7 @@ async function checkOneNameless (s: ScanState, card: NamedNode, log: Log) {
     const cardGroups = kb.each(null, ns.vcard('hasMember'), card)
     const otherGroups = kb.each(null, ns.vcard('hasMember'), other)
     for (const cardGroup of cardGroups) {
-      if (!otherGroups.some(otherGroup => otherGroup.sameTerm(cardGroup))) {
+      if (!otherGroups.some((otherGroup: NamedNode) => otherGroup.sameTerm(cardGroup))) {
         log('This one groups: ' + cardGroups)
         log('Other one groups: ' + otherGroups)
         log('Cant skip this one because it has a group, ' + cardGroup +
