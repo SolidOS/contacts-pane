@@ -234,8 +234,8 @@ function checkGroupMembers (s: ScanState, log: Log) {
     s.uniquesSet[unique.uri] = true
   }
   s.groupMembers = []
-  kb.each(null, ns.vcard('hasMember'))
-    .forEach((group: NamedNode) => { s.groupMembers = s.groupMembers.concat(groupMembers(kb, group)) })
+  const groups = kb.each(null, ns.vcard('hasMember')) as NamedNode[]
+  groups.forEach(group => { s.groupMembers = s.groupMembers.concat(groupMembers(kb, group)) })
   log('  Naive group members ' + s.groupMembers.length)
   const memberSet: Record<string, NamedNode> = {}
   for (const member of s.groupMembers) {
@@ -301,8 +301,8 @@ async function checkOneNameless (s: ScanState, card: NamedNode, log: Log) {
   const other = s.nameLessIndex[cardText]
   if (other) {
     log('  Matches with ' + other)
-    const cardGroups = kb.each(null, ns.vcard('hasMember'), card)
-    const otherGroups = kb.each(null, ns.vcard('hasMember'), other)
+    const cardGroups = kb.each(null, ns.vcard('hasMember'), card) as NamedNode[]
+    const otherGroups = kb.each(null, ns.vcard('hasMember'), other) as NamedNode[]
     for (const cardGroup of cardGroups) {
       if (!otherGroups.some((otherGroup: NamedNode) => otherGroup.sameTerm(cardGroup))) {
         log('This one groups: ' + cardGroups)

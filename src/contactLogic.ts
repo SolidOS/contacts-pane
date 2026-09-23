@@ -222,10 +222,10 @@ export async function getDataModelIssues (groups: NamedNode[]): Promise<{ del: S
   const del: Statement[] = []
   const ins: Statement[] = []
   groups.forEach(group => {
-    const members = kb.each(group, ns.vcard('hasMember'), null, group.doc())
-    members.forEach((member: NamedNode) => {
-      const others = getSameAs(kb, member as NamedNode, group.doc())
-      if (others.length && isLocal(group, member as NamedNode)) { // Problem: local ID used instead of webID
+    const members = kb.each(group, ns.vcard('hasMember'), null, group.doc()) as NamedNode[]
+    members.forEach(member => {
+      const others = getSameAs(kb, member, group.doc())
+      if (others.length && isLocal(group, member)) { // Problem: local ID used instead of webID
         for (const other of others) {
           if (!isLocal(group, other)) { // Let's use this one as the immediate member for CSS ACLs'
             // console.warn(`getDataModelIssues:  Need to swap ${member} to ${other}`)
