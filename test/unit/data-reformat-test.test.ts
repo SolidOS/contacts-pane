@@ -1,10 +1,10 @@
+import { beforeAll, describe, expect, it } from 'vitest'
 import { getDataModelIssues } from '../../src/contactLogic'
-import fetchMock from 'jest-fetch-mock'
 import { ns } from 'solid-ui'
 import { store } from 'solid-logic'
 import pane from '../../src/contactsPane'
 import { parse, sym } from 'rdflib'
-import { context, doc, mockFetchFunction, mockUpdate, prefixes, web } from './setup'
+import { context, doc, mockUpdate, prefixes, web } from './setup'
 
 // This was at testingsolidos.solidcommunity.net
 
@@ -184,7 +184,6 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
     beforeAll(async () => {
       store.removeDocument(doc)
       parse(exampleData, store, doc.uri)
-      fetchMock.mockIf(/^https?.*$/, mockFetchFunction)
     })
 
     it('converts a bad format into a good one', async () => {

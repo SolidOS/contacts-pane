@@ -11,7 +11,7 @@ to change its state according to an ontology, comment on it, etc.
 */
 
 import { authn } from 'solid-logic'
-import { saveNewContact, saveNewGroup } from './contactLogic'
+import { saveNewGroup } from './contactLogic'
 import * as UI from 'solid-ui'
 import { mintNewAddressBook } from './mintNewAddressBook'
 import { renderIndividual } from './individual'
@@ -19,7 +19,7 @@ import { toolsPane } from './toolsPane'
 import './styles/utilities.css'
 import './styles/contactsPane.css'
 import {
-  checkDataModel, ensureBookLoaded, renderGroupButtons,
+  checkDataModel, renderGroupButtons,
   refreshThingsSelected, refreshNames, selectAllGroups, loadAllGroups,
   syncGroupUl, setActiveGroupButton, createGroupLi, refreshFilteredPeople,
   deselectAllPeople, handleURIsDroppedOnGroup
@@ -27,6 +27,8 @@ import {
 import { alertDialog, complain, deleteThingAndDoc, setDom, setupResponsiveStacking } from './localUtils'
 import * as debug from './debug'
 import './styles/contactsRDFFormsEnforced.css'
+
+import AddContactModal from './components/add-contact-modal'
 
 const ns = UI.ns
 const utils = UI.utils
@@ -244,7 +246,7 @@ export default {
         const detailsSectionContent = dom.createElement('div')
         detailsSectionContent.classList.add('detailsSectionContent')
         detailsSectionContent.setAttribute('role', 'region')
-        detailsSectionContent.setAttribute('aria-labelledby', 'detailsSectionContent')
+        detailsSectionContent.setAttribute('aria-label', 'Details content')
         detailsSectionContent.setAttribute('aria-live', 'polite')
         ctx.detailsSectionContent = detailsSectionContent
 
@@ -352,42 +354,6 @@ async function handleNewGroupClick (ctx) {
     }))
 }
 
-// ── Helper: render askName form for person or organization ───────────
-function createNewPersonOrOrganization (ctx, formContainer, klass) {
-  const { dom, kb, book, selectedGroups, dataBrowserContext } = ctx
-  formContainer.innerHTML = ''
-  UI.widgets
-    .askName(dom, kb, formContainer, UI.ns.foaf('name'), klass)
-    .then(async (name) => {
-      if (!name) return // cancelled by user
-      ctx.detailsSectionContent.innerHTML = 'Indexing...'
-      let person
-      try {
-        person = await saveNewContact(book, name, selectedGroups, klass)
-      } catch (err) {
-        const msg = 'Error saving contact. If it persists, contact your admin.'
-        alertDialog(msg)
-        return
-      }
-      // It’s possible `saveNewContact` returned `undefined` when no group was
-      // selected.  In that case we already alerted the user and nothing more
-      // should happen.
-      if (!person) {
-        ctx.detailsSectionContent.innerHTML = ''
-        return
-      }
-      ctx.selectedPeople = {}
-      ctx.selectedPeople[person.uri] = true
-      refreshNames(ctx.ulPeople, null) // Add name to list of group
-      ctx.detailsSectionContent.innerHTML = '' // Clear 'indexing'
-      ctx.detailsSectionContent.classList.add('detailsSectionContent--wide')
-      const contactPane = dataBrowserContext.session.paneRegistry.byName('contact')
-      const paneDiv = contactPane.render(person, dataBrowserContext)
-      paneDiv.classList.add('renderPane')
-      ctx.detailsSectionContent.appendChild(paneDiv)
-    })
-}
-
 // ── Builder: main layout skeleton ────────────────────────────────────
 function buildMainLayout (ctx) {
   const { dom } = ctx
@@ -399,7 +365,8 @@ function buildMainLayout (ctx) {
   main.setAttribute('tabindex', '-1')
 
   const addressBookSection = dom.createElement('section')
-  addressBookSection.setAttribute('aria-labelledby', 'addressBook-section')
+  // Reference the real heading id so this region landmark has an accessible name.
+  addressBookSection.setAttribute('aria-labelledby', 'addressBook-heading')
   addressBookSection.classList.add('addressBookSection', 'section-bg')
   addressBookSection.setAttribute('role', 'region')
   addressBookSection.setAttribute('tabindex', '-1')
@@ -417,7 +384,7 @@ function buildMainLayout (ctx) {
 
 // ── Builder: header with title and New Contact button ────────────────
 function buildHeaderSection (ctx) {
-  const { dom, ns, title, me, setMe, setActiveActionButton } = ctx
+  const { dom, title, me, setMe } = ctx
 
   const headerSection = dom.createElement('section')
   headerSection.classList.add('headerSection')
@@ -443,64 +410,30 @@ function buildHeaderSection (ctx) {
   container.appendChild(newContactButton)
   newContactButton.innerHTML = '+ New contact'
   newContactButton.classList.add('actionButton', 'btn-primary', 'action-button-focus')
-  let newContactClickGeneration = 0
   newContactButton.addEventListener('click', async function (_event) {
-    setActiveActionButton(null)
-    deselectAllPeople(ctx.ulPeople)
-    const thisGeneration = ++newContactClickGeneration
-    ctx.showDetailsSection()
-    ctx.detailsSectionContent.innerHTML = ''
-    ctx.detailsSectionContent.classList.remove('detailsSectionContent--wide')
-    await ensureBookLoaded()
-    // Bail out if a newer click has taken over
-    if (thisGeneration !== newContactClickGeneration) return
-    ctx.detailsSectionContent.innerHTML = ''
+    const { book, selectedGroups } = ctx
 
-    const chooserDiv = dom.createElement('div')
-    chooserDiv.classList.add('contactTypeChooser')
+    UI.showDialog(AddContactModal, {
+      props: {
+        book,
+        selectedGroups
+      },
+      onClose (person) {
+        if (!person) {
+          return
+        }
 
-    const selectLabel = dom.createElement('label')
-    selectLabel.textContent = 'Contact type: '
-    selectLabel.setAttribute('for', 'contactTypeSelect')
-    chooserDiv.appendChild(selectLabel)
-
-    const select = dom.createElement('select')
-    select.id = 'contactTypeSelect'
-    select.classList.add('contactTypeSelect')
-    const optIndividual = dom.createElement('option')
-    optIndividual.value = 'Individual'
-    optIndividual.textContent = 'New person'
-    select.appendChild(optIndividual)
-    const optOrganization = dom.createElement('option')
-    optOrganization.value = 'Organization'
-    optOrganization.textContent = 'New organization'
-    select.appendChild(optOrganization)
-    chooserDiv.appendChild(select)
-
-    ctx.detailsSectionContent.appendChild(chooserDiv)
-
-    const remark = dom.createElement('p')
-    remark.classList.add('contactCreationRemark')
-    remark.textContent = 'The new contact is added to the already selected group.'
-    ctx.detailsSectionContent.appendChild(remark)
-
-    // Container for the askName form, placed below the select
-    const formContainer = dom.createElement('div')
-    formContainer.classList.add('contactFormContainer')
-    ctx.detailsSectionContent.appendChild(formContainer)
-
-    function currentKlass () {
-      return select.value === 'Organization'
-        ? ns.vcard('Organization')
-        : ns.vcard('Individual')
-    }
-
-    // Render person form immediately as default
-    createNewPersonOrOrganization(ctx, formContainer, currentKlass())
-
-    // Switch form when dropdown changes
-    select.addEventListener('change', function () {
-      createNewPersonOrOrganization(ctx, formContainer, currentKlass())
+        const { dataBrowserContext } = ctx
+        ctx.selectedPeople = {}
+        ctx.selectedPeople[person.uri] = true
+        refreshNames(ctx.ulPeople, null) // Add name to list of group
+        ctx.detailsSectionContent.innerHTML = '' // Clear 'indexing'
+        ctx.detailsSectionContent.classList.add('detailsSectionContent--wide')
+        const contactPane = dataBrowserContext.session.paneRegistry.byName('contact')
+        const paneDiv = contactPane.render(person, dataBrowserContext)
+        paneDiv.classList.add('renderPane')
+        ctx.detailsSectionContent.appendChild(paneDiv)
+      }
     })
   }, false)
 

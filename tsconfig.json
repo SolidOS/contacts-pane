@@ -2,8 +2,8 @@
   "compilerOptions": {
     /* Basic Options */
     "target": "ES2019", /* Allow top-level await and modern JS features. */
-    "module": "ESNext", /* Use ESNext modules for Webpack/Babel compatibility. */
-    "moduleResolution": "node", /* Use Node.js-style module resolution for Webpack compatibility. */
+    "module": "ESNext" /* Let bundlers handle module transformation for better tree-shaking */,
+    "moduleResolution": "bundler", /* Use bundler module resolution for Vite compatibility. */
     "skipLibCheck": true, // if true, Type errors in library .d.ts files will be ignored, so you might miss some issues.
     "lib": [
       "DOM",
