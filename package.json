@@ -56,11 +56,7 @@
   "homepage": "https://github.com/SolidOS/contacts-pane",
   "dependencies": {
     "@lit/context": "^1.1.6",
-    "lit": "^3.3.3",
-    "pane-registry": "5.0.0-0",
-    "rdflib": "2.4.0",
-    "solid-logic": "6.0.0-0",
-    "solid-ui": "5.0.0-0"
+    "lit": "^3.3.3"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
@@ -72,10 +68,10 @@
     "globals": "^17.1.0",
     "jsdom": "^28.1.0",
     "neostandard": "^0.13.0",
-    "pane-registry": "^5.0.0-0",
-    "rdflib": "^2.4.0",
-    "solid-logic": "^6.0.0-0",
-    "solid-ui": "^5.0.0-0",
+    "pane-registry": "^5.0.1",
+    "rdflib": "^2.4.1",
+    "solid-logic": "^6.0.0",
+    "solid-ui": "^5.0.1",
     "solidos-toolkit": "dev",
     "typescript": "^6.0.2",
     "vite": "^8.0.16",
