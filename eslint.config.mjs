@@ -67,6 +67,10 @@ export default [
       // Disable ESLint rules that TypeScript handles better
       'no-unused-vars': 'off', // TypeScript handles this via noUnusedLocals
       'no-undef': 'off', // TypeScript handles undefined variables
+      // Explicit here rather than inherited: the src/**/*.js block above no
+      // longer matches anything since the TypeScript conversion.
+      'no-var': 'error',
+      'prefer-const': 'error',
     },
   },
   {

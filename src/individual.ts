@@ -17,7 +17,7 @@ const kb = store
 const formsName = 'individualAndOrganizationForm.ttl' // The name of the form file
 const vcardName = 'vcard.ttl' // The name of the vcard file
 
-export async function renderIndividual (dom, div, subject, dataBrowserContext) {
+export async function renderIndividual (dom: any, div: any, subject: any, dataBrowserContext: any) {
   const t = kb.findTypeURIs(subject)
   const isOrganization = !!(t[ns.vcard('Organization').uri] || t[ns.schema('Organization').uri])
   const editable = kb.updater.editable(subject.doc().uri, kb)

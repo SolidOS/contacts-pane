@@ -1,0 +1,11 @@
+:host {
+    /* The ACL editor is a table that needs room: without a floor it collapses
+       to a few hundred pixels and every label wraps. Cap it against the
+       viewport so it still fits on small screens, and scroll rather than
+       pushing the dialog off screen. */
+    solid-ui-dialog-content {
+        min-width: min(38rem, 80vw);
+        max-height: 70vh;
+        overflow: auto;
+    }
+}
