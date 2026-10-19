@@ -61,14 +61,20 @@ export function showStats (book: NamedNode, selectedGroups: Record<string, boole
   log('' + totalContacts + ' contacts loaded. ')
   const groups = dedupedGroups(book)
   log('' + groups.length + ' total groups. ')
-  log('' + Object.keys(selectedGroups).length + ' selected groups. ')
+  log('' + selectedGroupUris(selectedGroups).length + ' selected groups. ')
+}
+
+/** GroupBar keeps a deselected group as a `false` entry, so only the true
+ * ones are selected. */
+function selectedGroupUris (selectedGroups: Record<string, boolean>): string[] {
+  return Object.keys(selectedGroups).filter(uri => selectedGroups[uri])
 }
 
 /** Repair the ACL of every card in the selected groups. Settles once every
  * repair has finished, and throws when any of them failed. */
 export async function checkAccess (selectedGroups: Record<string, boolean>, log: Log) {
   const repairs: Promise<boolean>[] = []
-  for (const groupUri in selectedGroups) {
+  for (const groupUri of selectedGroupUris(selectedGroups)) {
     const group = kb.sym(groupUri)
     const members = groupMembers(kb, group)
     log(UI.utils.label(group) + ': ' + members.length + ' members')
