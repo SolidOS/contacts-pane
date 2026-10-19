@@ -99,12 +99,11 @@ export default class Tools extends WebComponent {
 
   protected render () {
     return html`
-      <h3>Tools</h3>
-      <div class="statsLog">
-        <pre aria-live="polite">${this.logLines.join('\n')}</pre>
-      </div>
       <div class="buttons">
         ${ACTIONS.map(action => this.renderAction(action))}
+      </div>
+      <div class="statsLog" ?hidden=${this.logLines.length === 0}>
+        <pre aria-live="polite">${this.logLines.join('\n')}</pre>
       </div>
     `
   }
