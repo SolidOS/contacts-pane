@@ -17,9 +17,9 @@ import styles from './Search.styles.css'
 export default class Search extends WebComponent {
   static styles = styles
 
-  /** Names what the filter actually matches -- currently names only. */
+  /** Names what the filter actually matches. */
   @property()
-  accessor placeholder = 'Search by name in selected group';
+  accessor placeholder = 'Search by name, email, WebID, or profile URL';
 
   @state()
   private accessor text = '';
