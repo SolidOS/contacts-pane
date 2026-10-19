@@ -64,28 +64,44 @@ export function showStats (book: NamedNode, selectedGroups: Record<string, boole
   log('' + Object.keys(selectedGroups).length + ' selected groups. ')
 }
 
-/** Repair the ACL of every card in the selected groups. */
-export function checkAccess (selectedGroups: Record<string, boolean>, log: Log) {
-  function doCard (card: NamedNode) {
-    UI.acl.fixIndividualCardACL(card, (message: string) => log(message), (ok: boolean, message: any) => {
-      if (ok) {
-        log('Success for ' + UI.utils.label(card))
-      } else {
-        debug.error('Failure for ' + card + ': ' + message)
-        log('Failure for ' + card + ': ' + message)
-      }
-    })
-  }
-
+/** Repair the ACL of every card in the selected groups. Settles once every
+ * repair has finished, and throws when any of them failed. */
+export async function checkAccess (selectedGroups: Record<string, boolean>, log: Log) {
+  const repairs: Promise<boolean>[] = []
   for (const groupUri in selectedGroups) {
     const group = kb.sym(groupUri)
     const members = groupMembers(kb, group)
     log(UI.utils.label(group) + ': ' + members.length + ' members')
     for (const card of members) {
       log(UI.utils.label(card))
-      doCard(card)
+      repairs.push(fixCardAccess(card, log))
     }
   }
+
+  const failures = (await Promise.all(repairs)).filter(ok => !ok).length
+  if (failures) {
+    throw new Error(failures + ' of ' + repairs.length + ' contacts could not be fixed')
+  }
+}
+
+/** One card's ACL repair as a promise of whether it worked. */
+function fixCardAccess (card: NamedNode, log: Log): Promise<boolean> {
+  return new Promise(resolve => {
+    UI.acl.fixIndividualCardACL(card, (message: string) => {
+      log(message)
+      // solid-ui never calls back when the ACL is already right; this log
+      // line is its only sign that the card is done.
+      if (message.startsWith('Nice - same ACL')) resolve(true)
+    }, (ok: boolean, message: any) => {
+      if (ok) {
+        log('Success for ' + UI.utils.label(card))
+      } else {
+        debug.error('Failure for ' + card + ': ' + message)
+        log('Failure for ' + card + ': ' + message)
+      }
+      resolve(ok)
+    })
+  })
 }
 
 /** The book's groups with normalized URIs, duplicates removed. */
@@ -106,6 +122,7 @@ export async function findGroupless (book: NamedNode, log: Log) {
   } catch (e) {
     debug.error('Error loading groups. Stack: ' + e)
     log('Error loading groups or name index. If it persists, contact your admin.')
+    throw e // a partial store would report grouped contacts as groupless
   }
 
   const reverseIndex: any = {}
@@ -144,22 +161,15 @@ export async function fixGroupless (book: NamedNode, log: Log, confirm: Confirm)
     return false
   }
 
-  let groupOfUngrouped: any = null
-  try {
-    groupOfUngrouped = await saveNewGroup(book, 'No group')
-  } catch (_e) {
-    // The group may exist already; adding below still works then.
-  }
-
   if (!(await confirm(`Add the ${groupless.length} contacts without groups to a 'No group' group?`))) {
     return false
   }
 
+  // Returns the group when it exists already, so only real failures throw.
+  const groupOfUngrouped = await saveNewGroup(book, 'No group')
   for (const person of groupless) {
-    if (groupOfUngrouped) {
-      log('   adding ' + UI.utils.label(person))
-      await addPersonToGroup(person, groupOfUngrouped)
-    }
+    log('   adding ' + UI.utils.label(person))
+    await addPersonToGroup(person, groupOfUngrouped)
   }
   log('People moved to group.')
   return true
@@ -362,6 +372,7 @@ async function saveCleanPeople (s: ScanState, log: Log) {
     log('Done uniques log ' + cleanPeople)
   } catch (e) {
     log('Error saving uniques: ' + e)
+    throw e
   }
 }
 
@@ -382,7 +393,8 @@ async function saveCleanGroup (s: ScanState, log: Log, group: NamedNode) {
     })
     log('     Done uniques group ' + cleanGroup)
   } catch (e) {
-    log('Error saving : ' + e)
+    log('Error saving ' + cleanGroup + ': ' + e)
+    throw e
   }
 }
 
