@@ -377,6 +377,7 @@ export default class AddressBook extends WebComponent {
 
   /** Reveal a freshly created contact. */
   private showNewContact (person: Node) {
+    this.groupBar.refresh() // the new member changes the group counts
     refreshNames(this.peopleList, null, false) // Add name to list of group
     this.peopleList.markSelected(person)
     const contactPane = this.context.session.paneRegistry.byName('contact')
