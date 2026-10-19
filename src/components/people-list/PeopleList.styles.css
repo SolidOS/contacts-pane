@@ -24,7 +24,7 @@ li {
 }
 
 li.selected {
-    background-color: var(--color-info-bg);
+    background-color: var(--solid-ui-color-gray-100);
 }
 
 li:focus-visible {
@@ -84,6 +84,15 @@ li.personLi--error {
     text-overflow: ellipsis;
 }
 
+/* Separates the name from the role; the row's gap spaces it on both sides. */
+.roleDivider {
+    align-self: center;
+    flex-shrink: 0;
+    width: 1px;
+    height: 15px;
+    background-color: var(--solid-ui-color-slate-200);
+}
+
 .role {
     overflow: hidden;
     font-size: var(--font-size-sm);
@@ -93,9 +102,23 @@ li.personLi--error {
 }
 
 .email {
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+    min-width: 0;
     font-size: var(--font-size-sm);
     color: var(--color-text-subtle, #595959);
+}
+
+/* Sized to the address beside it; the address truncates, the icon never shrinks. */
+.email icon-lucide-mail {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+
+.email span {
+    overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }

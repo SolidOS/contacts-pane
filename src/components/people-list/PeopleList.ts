@@ -14,6 +14,7 @@ import * as debug from '../../debug'
 import 'solid-ui/components/button'
 import '~icons/lucide/ellipsis-vertical'
 import '~icons/lucide/external-link'
+import '~icons/lucide/mail'
 import '~icons/lucide/trash-2'
 import '~icons/lucide/user'
 import 'solid-ui/components/menu'
@@ -233,9 +234,16 @@ export default class PeopleList extends WebComponent {
         <div class="identity">
           <div class="nameRow">
             <div class="name">${row.name}</div>
-            ${role ? html`<div class="role">${role}</div>` : nothing}
+            ${role
+              ? html`<span class="roleDivider" aria-hidden="true"></span><div class="role">${role}</div>`
+              : nothing}
           </div>
-          ${email ? html`<div class="email">${email}</div>` : nothing}
+          ${email
+            ? html`<div class="email">
+                <icon-lucide-mail aria-hidden="true"></icon-lucide-mail>
+                <span>${email}</span>
+              </div>`
+            : nothing}
         </div>
         ${this.renderRowMenu(row)}
       </li>
