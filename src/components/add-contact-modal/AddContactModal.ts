@@ -3,7 +3,7 @@ import { html, nothing } from 'lit'
 import { state, property } from 'lit/decorators.js'
 import { consume } from '@lit/context'
 import { customElement, WebComponent, ns, DialogTrait, dialogContext, DEFAULT_DIALOG_CONTEXT } from 'solid-ui'
-import type { Select } from 'solid-ui/components/select'
+import type { Combobox } from 'solid-ui/components/combobox'
 import type { Input } from 'solid-ui/components/input'
 import type { DialogContext } from 'solid-ui'
 
@@ -13,8 +13,8 @@ import 'solid-ui/components/dialog-content'
 import 'solid-ui/components/dialog-footer'
 import 'solid-ui/components/dialog'
 import 'solid-ui/components/input'
-import 'solid-ui/components/select-option'
-import 'solid-ui/components/select'
+import 'solid-ui/components/combobox-option'
+import 'solid-ui/components/combobox'
 
 import styles from './AddContactModal.styles.css'
 
@@ -72,19 +72,20 @@ export default class AddContactModal extends WebComponent {
         <form @submit=${this.onSubmit}>
           <solid-ui-dialog-content>
             <p>The new contact is added to the already selected group.</p>
-            <solid-ui-select
+            <solid-ui-combobox
+              select-only
               name="type"
               label="Contact type"
               .value=${this.contactType}
-              @input=${this.onContactTypeChanged}
+              @change=${this.onContactTypeChanged}
             >
               ${CONTACT_TYPES.map(
                 (type) =>
-                  html`<solid-ui-select-option .value=${type.value}
-                    >${type.label}</solid-ui-select-option
+                  html`<solid-ui-combobox-option value=${type.value}
+                    >${type.label}</solid-ui-combobox-option
                   >`
               )}
-            </solid-ui-select>
+            </solid-ui-combobox>
             <solid-ui-input
               required
               name="name"
@@ -105,7 +106,7 @@ export default class AddContactModal extends WebComponent {
   }
 
   private onContactTypeChanged (e: Event) {
-    this.contactType = (e.target as Select).value as ContactType
+    this.contactType = (e.target as Combobox).value as ContactType
   }
 
   private onNameChanged (e: Event) {
