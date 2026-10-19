@@ -3,15 +3,15 @@
 //  `log` callback and asks questions through a `confirm` callback, so the
 //  <contacts-pane-tools> component (or a test) decides how those look.
 import * as UI from 'solid-ui'
-import { store } from 'solid-logic'
+import { SolidNamespace, store } from 'solid-logic'
 import * as $rdf from 'rdflib'
-import { NamedNode, Statement } from 'rdflib'
+import { NamedNode, Statement, isNamedNode as rdfIsNamedNode } from 'rdflib'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import { normalizeGroupUri } from './localUtils'
 import * as debug from './debug'
 
 const kb = store
-const ns = UI.ns
+const ns = UI.ns as SolidNamespace
 const VCARD = ns.vcard
 
 type Log = (message: string) => void
@@ -30,9 +30,27 @@ interface ScanState {
   [key: string]: any
 }
 
+/** rdflib's guard narrows only to the RDF/JS NamedNode interface; every term in
+ * the store is rdflib's NamedNode class, so narrow to that instead. */
+function isNamedNode (obj: Parameters<typeof rdfIsNamedNode>[0]): obj is NamedNode {
+  return rdfIsNamedNode(obj)
+}
+
+/** The document the book points to through `predicate`, e.g. its name index.
+ * Takes the first value that is a URL, so a stray literal next to the real
+ * index does not hide it. Throws when there is none, so callers never load or
+ * scan without it. */
+function bookIndex (book: NamedNode, predicate: string): NamedNode {
+  const index = kb.each(book, ns.vcard(predicate)).find(isNamedNode)
+  if (!index) {
+    throw new Error('Address book has no ' + predicate)
+  }
+  return index
+}
+
 /** Load the book's main name/email index. Throws when the load fails. */
 export async function loadMainIndex (book: NamedNode, log: Log) {
-  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex')) as NamedNode
+  const nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   await kb.fetcher.load(nameEmailIndex)
   log('People index has been loaded')
 }
@@ -72,18 +90,18 @@ export function checkAccess (selectedGroups: Record<string, boolean>, log: Log) 
 
 /** The book's groups with normalized URIs, duplicates removed. */
 function dedupedGroups (book: NamedNode): NamedNode[] {
-  const groups = kb.each(book, VCARD('includesGroup')) as NamedNode[]
+  const groups = kb.each(book, VCARD('includesGroup')).filter(isNamedNode)
   const strings = new Set(groups.map(group => normalizeGroupUri(group.uri)))
   return [...strings].map(uri => kb.sym(uri))
 }
 
 /** Contacts that belong to no group at all. Loads the indexes it needs. */
 export async function findGroupless (book: NamedNode, log: Log) {
-  const groupIndex = kb.any(book, ns.vcard('groupIndex')) as NamedNode
-  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex')) as NamedNode
+  const groupIndex = bookIndex(book, 'groupIndex')
+  const nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   try {
     await kb.fetcher.load([nameEmailIndex, groupIndex])
-    const groups = kb.each(book, ns.vcard('includesGroup')) as NamedNode[]
+    const groups = kb.each(book, ns.vcard('includesGroup')).filter(isNamedNode)
     await kb.fetcher.load(groups)
   } catch (e) {
     debug.error('Error loading groups. Stack: ' + e)
@@ -105,7 +123,7 @@ export async function findGroupless (book: NamedNode, log: Log) {
     }
   }
 
-  const cards = kb.each(undefined, VCARD('inAddressBook'), book) as NamedNode[]
+  const cards = kb.each(undefined, VCARD('inAddressBook'), book).filter(isNamedNode)
   log('' + cards.length + ' total contacts')
   for (const card of cards) {
     if (!reverseIndex[card.uri]) {
@@ -161,7 +179,7 @@ export async function findDuplicates (book: NamedNode, log: Log, confirm: Confir
     uniquesSet: {}
   }
 
-  s.nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+  s.nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   log('Loading name index...')
   await kb.fetcher.load(s.nameEmailIndex)
   log('Loaded name index.')
@@ -181,15 +199,15 @@ export async function findDuplicates (book: NamedNode, log: Log, confirm: Confir
 /** The book's groups sorted by name, as plain group nodes. */
 function groupsSorted (book: NamedNode): NamedNode[] {
   if (!book) return []
-  const gs = kb.each(book, ns.vcard('includesGroup')) as NamedNode[]
+  const gs = kb.each(book, ns.vcard('includesGroup')).filter(isNamedNode)
   const sortMe = gs.map(g => [book, kb.any(g, ns.vcard('fn')), g])
   sortMe.sort()
-  return sortMe.map(tuple => tuple[2] as NamedNode)
+  return sortMe.map(tuple => tuple[2]).filter(isNamedNode)
 }
 
 /** Partition the cards into definitive, name-duplicates, and nameless. */
 function scanForDuplicates (s: ScanState, log: Log) {
-  s.cards = kb.each(undefined, VCARD('inAddressBook'), s.book) as NamedNode[]
+  s.cards = kb.each(undefined, VCARD('inAddressBook'), s.book).filter(isNamedNode)
   log('' + s.cards.length + ' total contacts')
 
   for (const card of s.cards) {
