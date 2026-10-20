@@ -9,10 +9,28 @@
 
 /* ── Layout: Three-column browser ────────────────────────────── */
 
-.contactPane .peopleSection .selected {
-  background-color: var(--color-info-bg) !important;
+.contactPane {
+  background-color: var(--solid-ui-color-white);
+}
+/* Right of the address book: one shared title bar over a row of two columns. */
+.contactPane .contentArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
+.contactPane .contentColumns {
+  display: flex;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.contactPane .peopleSection,
 .contactPane .detailSection,
 .contactPane .addressBookSection {
   display: flex;
@@ -37,148 +55,41 @@
   max-width: 56.25rem; /* 900px */
 }
 
-.contactPane .cardFooter {
-  display: flex;
-  flex-wrap: nowrap; /* keep buttons inline */
-  align-items: center; /* vertical centering if varied heights */
-  gap: var(--spacing-xs);
-  padding-top: var(--spacing-md);
-  margin-top: var(--spacing-md);
-}
-
+/* The content box is capped at 900px; auto margins keep it centered when the
+   details column is wider than that. */
 .contactPane .detailsSectionContent {
-  margin: 0;
+  margin: 0 auto;
 }
-
-/* ── Contact type chooser ───────────────────────────────────── */
-
-.contactPane .contactTypeChooser {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  max-width: 22.5rem; /* 360px */
-}
-
-.contactPane .contactTypeChooser h3 {
-  margin: 0 0 var(--spacing-xs) 0;
-  font-size: var(--font-size-lg);
-}
-
-.contactPane .contactTypeSelect {
-  height: var(--min-touch-target);
-  border: var(--border-width-sm, 1px) solid var(--color-border-pale);
-  border-radius: var(--border-radius-base);
-  padding: 0 var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  background: var(--color-section-bg);
-}
-
-/* ── Search ──────────────────────────────────────────────────── */
 
 .contactPane .allGroupsButton {
   border-radius: var(--border-radius-full) !important;
   /* existing styles */
 }
-/* wrapper to position clear icon/button */
-.contactPane .searchDiv {
-  position: relative;
-}
 
-.contactPane .searchInput {
-  height: var(--min-touch-target);
-  border: var(--border-width-sm, 1px) solid var(--color-border-pale);
-  background-color: var(--color-section-bg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99c.41.41 1.09.41 1.5 0s.41-1.09 0-1.5l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 0.5rem center; /* 8px */
-  background-size: 1.25rem 1.25rem; /* 20px 20px */
-  border-radius: var(--border-radius-base);
-  padding: 0 var(--spacing-sm) 0 2.125rem; /* 34px */
-  font-size: var(--font-size-base);
-  width: 100%;
-  box-sizing: border-box;
-}
+/* The search box lives in components/search, and is styled there --
+   shadow DOM keeps these rules from reaching it. */
 
-/* clear button inside search input */
-.contactPane .searchClearButton {
-  position: absolute;
-  right: var(--spacing-sm);
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  font-size: var(--font-size-base);
-  line-height: 1;
-  padding: 0;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  /* visibility is controlled via the generic `.hidden` utility class */
-  display: block;
-}
-.contactPane .searchClearButton.hidden {
-  display: none;
-}
-.contactPane .searchClearButton:hover {
-  color: var(--color-text);
-}
-
-/* ── Contact toolbar (top-right link + delete) ──────────────── */
-
-.contactPane .contact-toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) 0;
-}
-
-.contactPane .contact-toolbar a {
-  margin: 0.3rem;
-}
-
-.contactPane .contact-toolbar a img {
-  width: 1.3rem;
-  height: 1rem;
-  margin: 0;
-}
-
-.contact-toolbar .deleteButton {
-  margin-left: auto; /* keeps delete icon on the right */
-  margin-right: var(--spacing-xxxs, 0.2rem);
-  width: var(--icon-xxs, 1rem);
-  height: var(--icon-xxs, 1rem);
-  float: none; /* important: prevents overlap behavior */
-}
-
-/* ── "All" groups button ─────────────────────────────────────── */
-
-.contactPane .allGroupsButton {
-  margin-left: var(--spacing-md);
-  font-size: var(--font-size-base);
-}
-
-.contactPane .allGroupsButton--loading {
-  background-color: var(--color-primary);
-}
-
-.contactPane .allGroupsButton--active {
-  background-color: var(--color-primary);
-  color: var(--color-background);
-}
-
-.contactPane .allGroupsButton--loaded {
-  background-color: var(--color-primary);
-}
-
-/* ── Mint new address book ───────────────────────────────────── */
 
 .contactPane .claimSuccess {
   font-size: var(--font-size-xl);
 }
 
+/* .contentHeader moved into components/address-book-header, which renders it. */
+
 .contactPane {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* The address-book view is a light-DOM component now; its host has to carry
+   the flex chain from .contactPane down to the grid it renders. */
+.contactPane contacts-pane-address-book {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .contactPane .addressBook-grid {
@@ -208,6 +119,12 @@
   overflow-x: hidden !important;
 }
 
+.contactPane.contactPane--narrow .contentColumns {
+  flex-direction: column !important;
+}
+
+.contactPane.contactPane--narrow .contentArea,
+.contactPane.contactPane--narrow .peopleSection,
 .contactPane.contactPane--narrow .addressBookSection,
 .contactPane.contactPane--narrow .detailSection {
   flex: 1 1 100% !important;
@@ -229,6 +146,12 @@
     height: auto !important;
   }
 
+  .contactPane .contentColumns {
+    flex-direction: column !important;
+  }
+
+  .contactPane .contentArea,
+  .contactPane .peopleSection,
   .contactPane .addressBookSection,
   .contactPane .detailSection {
     order: initial !important;
@@ -249,9 +172,8 @@
     height: auto !important;
   }
 
-  .contactPane .peopleSection ul {
+  .contactPane .peopleSection contacts-pane-people-list {
     max-height: 50vh;
-    overflow-y: auto;
   }
 
   .contactPane .detailSection {
@@ -283,10 +205,7 @@
   } */
 
   .contactPane .actionButton,
-  .contactPane .searchInput,
-  .contactPane .flatButton,
-  .contactPane .buttonSection button,
-  .contactPane .groupButtonsList button {
+  .contactPane .flatButton {
     min-height: calc(var(--min-touch-target) + 0.5em) !important;
     font-size: 1.5rem !important;
     padding: 0.875em 1em !important;
@@ -301,13 +220,16 @@
   }
 }
 
+.contactPane .addressBookSection {
+  max-width: 232px;
+}
 
 /* Card Section Background */
 .contactPane .addressBookSection.section-bg {
-  background: var(--color-section-bg);
-  padding: var(--spacing-md);
+  background: var(--solid-ui-color-white);
+  padding: 0;
   box-sizing: border-box;
-  border: none !important;
+  border-right: 1px solid var(--solid-ui-color-gray-200);
   border-radius: 0 !important;
 }
 
@@ -317,6 +239,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+  border-left: 1px solid var(--solid-ui-color-gray-200);
 }
 
 .contactPane .detailsSectionContent {
@@ -332,9 +255,8 @@
 .contactPane .buttonSection {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
-  padding: var(--spacing-sm);
-  padding-bottom: 0;
+  flex-direction: column;
+  padding: 0 var(--spacing-sm) 0 var(--spacing-sm);
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -365,90 +287,6 @@
   background: transparent;
 }
 
-.contactPane .buttonSection .selected {
-  background: none !important;
-}
-
-.contactPane .groupButtonsList {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--spacing-xs);
-  list-style: none;
-}
-
-.contactPane .buttonSection .groupButtonsList {
-  margin-left: var(--spacing-xs);
-  margin-right: var(--spacing-xs);
-  padding-left: 0;
-}
-
-.contactPane .groupButtonsList li {
-  flex-shrink: 0;
-}
-
-.contactPane .groupButtonsList button {
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: max-content;
-  margin-left: 0;
-}
-
-/* Groups list in details section — flexible 2-column grid */
-.contactPane .detailsSectionContent .groupButtonsList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-sm);
-  list-style: none;
-  padding: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.contactPane .detailsSectionContent .groupButtonsList li {
-  width: 100%;
-  aspect-ratio: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--spacing-xs);
-}
-
-.contactPane .detailsSectionContent .groupButtonsList button {
-  width: 100%;
-  height: auto;
-  text-align: center;
-  border-radius: var(--border-radius-base);
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.contactPane .detailsSectionContent .groupButtonsList li > img.hoverControlHide,
-.contactPane .detailsSectionContent .groupButtonsList li > img[data-testid="deleteButtonWithCheck"] {
-  display: block;
-  align-self: flex-end;
-  float: none !important;
-  margin: 0 !important;
-}
-
-@media (max-width: 599px) {
-  .contactPane .detailsSectionContent .groupButtonsList {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-xs);
-  }
-
-  .contactPane .detailsSectionContent .groupButtonsList button {
-    font-size: var(--font-size-sm);
-    border-radius: var(--border-radius-base);
-  }
-}
-
-@media (min-width: 900px) {
-  .contactPane .detailsSectionContent .groupButtonsList {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 .contactPane .detailsSectionContent .newGroupBtn {
   width: 100%;
   box-sizing: border-box;
@@ -471,9 +309,7 @@
 }
 
 
-.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div,
-.contactPane .detailsSectionContent .groupButtonsList li > div[style*="position: relative"] > div,
-.contactPane .detailsSectionContent .contact-toolbar  > div[style*="position: relative"] > div {
+.contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div {
   position: absolute !important;
   left: auto !important;
   z-index: 9999 !important;
@@ -491,130 +327,142 @@
   gap: var(--spacing-xxs) !important;
 }
 
-.contactPane .detailsSectionContent .contact-toolbar > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]),
 .contactPane .detailsSectionContent .group-membership-item .group-membership-toolbar > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]),
 .contactPane .webidControl .personaRow--webid td > div[style*="position: relative"] > div > button:has(> img[src$=".svg"]) {
   background-color: transparent !important;
 }
 
-/* Selected state for All contacts button */
-.contactPane .allGroupsButton--selected {
-  background-color: var(--color-primary);
-  color: var(--color-background);
-}
+/* The header section lives in components/address-book-header, and is styled
+   there -- shadow DOM keeps these rules from reaching it. */
 
-/* ── Header section ──────────────────────────────────────────── */
-
-.contactPane .headerSection {
-  background: var(--color-background);
-  padding: var(--spacing-sm);
-  border-top-left-radius: var(--border-radius-full);
-  border-top-right-radius: var(--border-radius-full);
-  margin-bottom: 0;
-}
-
-.contactPane .headerSection header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0;
-}
-
-.contactPane .headerSection h2 {
-  margin-bottom: 0;
-}
-
-/* ── Dotted horizontal rule ─────────────────────────────────── */
-
-.contactPane .dottedHr {
-  border: none;
-  border-top: var(--border-width-sm, 0.1rem) dotted var(--color-text-muted);
-  margin: 0;
-}
-
-/* ── Search section ─────────────────────────────────────────── */
-
-.contactPane .searchSection {
-  padding: var(--spacing-sm);
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
 
 /* ── People list section ────────────────────────────────────── */
 
+/* The people column: header, search box, then the list itself. */
 .contactPane .peopleSection {
-  display: flex;
-  background: var(--color-background);
-  border-top: 1px dotted var(--color-text-muted);
+  background: var(--solid-ui-color-white);
   margin-bottom: 0;
 }
 
-.contactPane .peopleSection ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  max-height: 70vh;
-  overflow-y: auto;
+/* The list and its rows live in components/people-list, and are styled
+   there -- shadow DOM keeps these rules from reaching them. */
+/* ── Details section ───────────────────────────────────────── */
+
+/* The search box, until the header's Search button reveals it. Document-level
+   rules on the host beat its shadow :host display. */
+contacts-pane-search.hidden {
+  display: none;
 }
 
-.contactPane .peopleSection li {
-  border-top: var(--border-width-sm, 0.1rem) solid var(--color-border-pale);
-  padding: var(--spacing-xs);
+/* Inline error shown by the details section, matching the old
+   UI.widgets.errorMessageBlock look. */
+.contactPane .detailsError {
+  background-color: pink;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-base);
 }
 
-/* ── Person list item (addressBookPresenter) ─────────────────── */
+/* ── Viewport-bound desktop layout ──────────────────────────── */
 
-.contactPane .personLi-row {
+/* The pane fills the viewport below the data browser's header (the JS in
+   setupResponsiveStacking keeps --pane-max-height up to date) and never
+   exceeds it; each column scrolls its own overflow. Narrow layouts stack
+   and scroll the page instead, so none of this applies there. */
+@media (min-width: 1001px) {
+  .contactPane:not(.contactPane--narrow) {
+    height: var(--pane-max-height, auto);
+    max-height: var(--pane-max-height, none);
+  }
+
+  .contactPane:not(.contactPane--narrow) .addressBook-grid {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .contactPane:not(.contactPane--narrow) .contentArea,
+  .contactPane:not(.contactPane--narrow) .contentColumns,
+  .contactPane:not(.contactPane--narrow) .peopleSection,
+  .contactPane:not(.contactPane--narrow) .addressBookSection {
+    min-height: 0;
+  }
+
+  /* Group bar: its old horizontal-row overflow rules would clip a tall
+     vertical list, so it scrolls vertically here. */
+  .contactPane:not(.contactPane--narrow) .buttonSection {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* People list: let the column's height bound it instead of the 70vh cap
+     the component carries for unconstrained pages. */
+  .contactPane:not(.contactPane--narrow) .peopleSection contacts-pane-people-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .contactPane:not(.contactPane--narrow) .detailSection {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* The rendered contact card is a flex child of the content box; without
+     this the bounded column squashes it to fit instead of scrolling. */
+  .contactPane:not(.contactPane--narrow) .detailsSectionContent > .renderPane {
+    flex-shrink: 0;
+  }
+}
+
+/* The "No contact selected" state: centered in the space a contact fills.
+   The column is <contacts-pane-details>, rendering into the light DOM (it
+   hosts legacy pane content), so these rules reach it. */
+.contactPane .detailsEmpty {
+  flex: 1 1 auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  text-align: center;
+  padding: var(--spacing-lg);
+  min-height: 12.5rem; /* 200px, same floor as the content box */
 }
 
-.contactPane .personLi-avatar {
-  width: 2.813rem /* 45px */;
-  height: 2.813rem /* 45px */;
-  flex-shrink: 0;
+/* The circled address-book mark above the empty state's title. */
+.contactPane .detailsEmptyIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.contactPane .personLi-avatar .avatar-placeholder {
-  width: 2.25rem /* 36px */;
-  height: 2.25rem /* 36px */;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.contactPane .personLi-avatar img {
-  width: 2.5rem /* 40px */;
-  height: 2.5rem /* 40px */;
+  width: 5rem; /* 80px */
+  height: 5rem;
   border-radius: 50%;
-  object-fit: cover;
+  box-sizing: border-box;
+  background: var(--solid-ui-color-slate-50, #f8fafc);
+  border: 1px solid var(--solid-ui-color-slate-200, #e2e8f0);
+  color: var(--solid-ui-color-slate-400, #90a1b9);
 }
 
-.contactPane .personLi-info {
-  flex: 1;
-  margin-left: var(--spacing-sm);
-  overflow: hidden;
+.contactPane .detailsEmptyIcon icon-lucide-book-user {
+  width: 1.75rem; /* 28px */
+  height: 1.75rem;
 }
 
-.contactPane .personLi-name {
-  font-weight: bold;
+/* Explicit margins rather than a flex gap: 20px between the icon and the
+   title, 10px between the title and its explanation. Scoped under the content
+   box to outrank its generic h3 margin rule. */
+.contactPane .detailsSectionContent .detailsEmptyTitle {
+  margin: 1.25rem 0 0.625rem 0; /* 20px / 10px */
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--solid-ui-color-gray-900, #101828);
+  padding-left: 0; /* the generic h3 rule above indents headings */
+}
+
+.contactPane .detailsEmptyText {
+  margin: 0;
+  max-width: 24rem;
   font-size: var(--font-size-base);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.contactPane .personLi-arrow {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-}
-
-.contactPane .personLi--error {
-  opacity: 0.5;
+  line-height: var(--line-height-loose, 1.6);
+  color: var(--solid-ui-color-gray-500, #6a7282);
 }

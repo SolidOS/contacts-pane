@@ -1,0 +1,16 @@
+:host {
+    solid-ui-dialog-content p {
+        color: var(--solid-ui-color-gray-600);
+        font-size: var(--solid-ui-font-size-xs);
+        font-weight: 400;
+        text-align: center;
+
+        &.error {
+            color: var(--solid-ui-color-red-500);
+        }
+    }
+
+    solid-ui-dialog-footer solid-ui-button {
+        width: 100%;
+    }
+}

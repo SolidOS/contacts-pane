@@ -1,0 +1,29 @@
+/* The panes decide whether the control is visible -- they hide it until its
+   container is hovered -- so the host only carries the sizing the old
+   UI.widgets.deleteButtonWithCheck img had, and stays out of `display`. */
+:host {
+    float: right;
+    margin: 0.2em;
+    width: 1em;
+    height: 1em;
+    align-items: center;
+    justify-content: center;
+}
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}

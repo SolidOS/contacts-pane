@@ -57,12 +57,13 @@
   "dependencies": {
     "@lit/context": "^1.1.6",
     "lit": "^3.3.3",
-    "pane-registry": "5.0.1",
+    "pane-registry": "5.0.2-0",
     "rdflib": "2.4.1",
-    "solid-logic": "6.0.0",
-    "solid-ui": "5.0.1"
+    "solid-logic": "6.0.1-0",
+    "solid-ui": "5.0.1-0"
   },
   "devDependencies": {
+    "@iconify/json": "2.2.494",
     "@types/node": "^22.20.0",
     "@typescript-eslint/parser": "^8.53.1",
     "@vitest/coverage-v8": "^4.0.18",
@@ -72,12 +73,13 @@
     "globals": "^17.1.0",
     "jsdom": "^28.1.0",
     "neostandard": "^0.13.0",
-    "pane-registry": "^5.0.1",
+    "pane-registry": "^5.0.2-0",
     "rdflib": "^2.4.1",
-    "solid-logic": "^6.0.0",
-    "solid-ui": "^5.0.1",
+    "solid-logic": "^6.0.1-1",
+    "solid-ui": "^5.0.1-0",
     "solidos-toolkit": "dev",
     "typescript": "^6.0.2",
+    "unplugin-icons": "^23.0.1",
     "vite": "^8.0.16",
     "vite-plugin-css-injected-by-js": "^5.0.1",
     "vitest": "^4.0.18",

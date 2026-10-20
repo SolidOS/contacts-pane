@@ -4,6 +4,7 @@ import { store, authn } from 'solid-logic'
 import './styles/groupMembership.css'
 import * as debug from './debug'
 import { normalizeGroupUri, confirmDialog, alertDialog } from './localUtils'
+import { renderDeleteButton } from './components/delete-button'
 import { refreshNames } from './addressBookPresenter'
 import { vcardWebIDs } from './webidControl'
 
@@ -11,10 +12,10 @@ const ns = UI.ns
 const kb = store
 
 // Groups the person is a member of
-export function groupMembership (person, store = kb) {
-  let groups = store.statementsMatching(null, ns.owl('sameAs'), person).map(st => st.why)
+export function groupMembership (person: any, store: any = kb) {
+  let groups = store.statementsMatching(null, ns.owl('sameAs'), person).map((st: any) => st.why)
     .concat(store.each(null, ns.vcard('hasMember'), person))
-  const strings = new Set(groups.map(group => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
+  const strings = new Set<string>(groups.map((group: any) => normalizeGroupUri(group.uri))) // remove dups with normalized URIs
   groups = [...strings].map(uri => store.sym(uri))
   return groups
 }
@@ -30,7 +31,7 @@ export function groupMembership (person, store = kb) {
  *   that the list on the left reflects the change.  If `null` this behaviour
  *   is skipped.
  */
-export async function renderGroupMemberships (person, context, ulPeople) {
+export async function renderGroupMemberships (person: any, context: any, ulPeople?: any) {
   // keep a reference to the people list (if any) so callers can ask us to
   // refresh it when group membership changes.  The callers that render an
   // address-book view pass their `ulPeople` element; other consumers may not
@@ -38,17 +39,17 @@ export async function renderGroupMemberships (person, context, ulPeople) {
   const peopleUl = ulPeople || null
 
   // Remove a person from a group
-  async function removeFromGroup (person, group) {
+  async function removeFromGroup (person: any, group: any) {
     const pname = kb.any(person, ns.vcard('fn'))
     const gname = kb.any(group, ns.vcard('fn'))
     // find all WebIDs of thing
     const thingwebids = kb.each(null, ns.owl('sameAs'), person, group.doc())
     // WebID can be deleted only if not used in another thing
-    let webids = []
-    thingwebids.forEach(webid => {
+    let webids: any[] = []
+    thingwebids.forEach((webid: any) => {
       if (kb.statementsMatching(webid, ns.owl('sameAs'), person, group.doc())) webids = webids.concat(webid)
     })
-    webids = vcardWebIDs(kb, person).map(webid => webid.value)
+    webids = vcardWebIDs(kb, person).map((webid: any) => webid.value)
     // When checking how many groups this entity belongs to we should look
     // at the person **and** any of their webID nodes.  Build an array of
     // named nodes so we can query all of them.
@@ -91,7 +92,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     }
   }
 
-  function createGroupItem (group) {
+  function createGroupItem (group: any) {
     const gname = kb.any(group, ns.vcard('fn'))
     const label = gname ? gname.value : group.uri
 
@@ -117,15 +118,18 @@ export async function renderGroupMemberships (person, context, ulPeople) {
 
     if (authn.currentUser()) {
       // Delete button
-      UI.widgets.deleteButtonWithCheck(
+      renderDeleteButton(
         dom,
         toolbar,
         'membership in ' + label,
-        async function () {
+        async () => {
           // async operation handles its own refresh once the group doc has
           // been reloaded
           await removeFromGroup(person, group)
-        }
+        },
+        // removeFromGroup checks the contact would still belong to a group and
+        // asks for confirmation itself, naming both the contact and the group.
+        { confirm: false }
       )
     }
 
@@ -133,7 +137,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
     return li
   }
 
-  function syncGroupPills (groups = null) {
+  function syncGroupPills (groups: any = null) {
     // Clear previous render so we don't keep appending duplicate headers / lists
     container.innerHTML = ''
 
@@ -154,7 +158,7 @@ export async function renderGroupMemberships (person, context, ulPeople) {
       pillsWrapper.innerHTML = ''
     }
 
-    groups.forEach(group => {
+    groups.forEach((group: any) => {
       pillsWrapper.appendChild(createGroupItem(group))
     })
   }

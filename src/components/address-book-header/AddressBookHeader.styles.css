@@ -1,0 +1,92 @@
+:host {
+    display: block;
+    background: var(--solid-ui-color-white);
+    padding: var(--spacing-2xs) var(--spacing-sm);
+    border-top-left-radius: var(--border-radius-full);
+    border-top-right-radius: var(--border-radius-full);
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--solid-ui-color-gray-200);
+
+    header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-sm);
+        margin-bottom: 0;
+    }
+
+    /* Heading and its subtitle stack, so the subtitle sits under the title
+       rather than becoming a third item in the header's row. */
+    .titles {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-3xs, 0.125rem);
+        min-width: 0;
+    }
+
+    .titles p {
+        margin: 0;
+        color: var(--solid-ui-color-gray-500);
+        font-size: var(--solid-ui-font-size-sm);
+    }
+
+    /* Title and its visibility badge share a line. */
+    .titleRow {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        min-width: 0;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        height: 1.25rem; /* 20px */
+        padding: 0 0.5rem;
+        border-radius: 5px;
+        font-size: var(--solid-ui-font-size-sm, 0.75rem);
+        font-weight: var(--font-weight-medium, 500);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Globe and lock marks, sized to the badge's text. */
+    .badge icon-lucide-globe,
+    .badge icon-lucide-lock {
+        width: 0.75rem;
+        height: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .badge--public {
+        background: #eff6ff;
+        color: #51a2ff;
+    }
+
+    .badge--private {
+        background: var(--solid-ui-color-gray-100, #f1f5f9);
+        color: var(--solid-ui-color-gray-500, #62748e);
+    }
+
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    solid-ui-button {
+        white-space: nowrap;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        font-weight: var(--font-weight-bold, 600);
+        color: var(--solid-ui-color-gray-700);
+        line-height: var(--line-height-tight);
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+}

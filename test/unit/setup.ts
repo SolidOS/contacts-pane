@@ -30,10 +30,10 @@ export const context = {
 const prefs = Object.keys(ns).filter(x => x !== 'default') // default is bogus value
 export const prefixes = prefs.map(prefix => `@prefix ${prefix}: ${ns[prefix]('')}.\n`).join('') // In turtle
 
-export const web = {}
+export const web: Record<string, string> = {}
 export const requests: any[] = []
 
-export async function mockFetchFunction (req) {
+export async function mockFetchFunction (req: any) {
   if (req.method !== 'GET') {
     requests.push(req)
     if (req.method === 'PUT') {

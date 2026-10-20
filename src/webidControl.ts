@@ -4,6 +4,8 @@ import * as UI from 'solid-ui'
 import { store } from 'solid-logic'
 import { updateMany } from './contactLogic'
 import * as $rdf from 'rdflib'
+import { NamedNode, Statement } from 'rdflib'
+import type { DataBrowserContext } from 'pane-registry'
 import './styles/webidControl.css'
 import * as debug from './debug'
 
@@ -22,7 +24,7 @@ const UP_ARROW = UI.icons.iconBase + 'noun_1369237.svg'
 
 /// ///////////////////////// Logic
 
-export async function addWebIDToContacts (person, webid, urlType, kb) {
+export async function addWebIDToContacts (person: NamedNode, webid: string, urlType: NamedNode, kb: any) {
   /*
   if (!webid.startsWith('https:')) { /// @@ well we will have other protcols like DID
     if (webid.startsWith('http://') {
@@ -35,8 +37,7 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
 
   // check this is a url
   try {
-    // eslint-disable-next-line no-unused-vars
-    const _url = new URL(webid)
+    new URL(webid) // eslint-disable-line no-new -- throws when invalid
   } catch (error) {
     throw new Error(`${WEBID_NOUN}: ${webid} is not a valid url.`)
   }
@@ -47,14 +48,14 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   const insertables = [
     $rdf.st(person, ns.vcard('url'), vcardURLThing, person.doc()),
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
-    $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
+    $rdf.st(vcardURLThing, ns.vcard('value'), webid as any, person.doc())
   ]
   // insert WebID in groups
   // replace person with WebID in vcard:hasMember (WebID may already exist)
   // insert owl:sameAs
-  const groups = kb.each(null, ns.vcard('hasMember'), person)
-  let deletables = []
-  groups.forEach(group => {
+  const groups = kb.each(null, ns.vcard('hasMember'), person) as NamedNode[]
+  let deletables: Statement[] = []
+  groups.forEach((group: NamedNode) => {
     deletables = deletables.concat(kb.statementsMatching(group, ns.vcard('hasMember'), person, group.doc()))
     insertables.push($rdf.st(group, ns.vcard('hasMember'), kb.sym(webid), group.doc())) // May exist; do we need to check?
     insertables.push($rdf.st(kb.sym(webid), ns.owl('sameAs'), person, group.doc()))
@@ -64,13 +65,13 @@ export async function addWebIDToContacts (person, webid, urlType, kb) {
   } catch (err) { throw new Error(`Could not create webId ${WEBID_NOUN}: ${webid}.`) }
 }
 
-export async function removeWebIDFromContacts (person, webid, urlType, kb) {
+export async function removeWebIDFromContacts (person: NamedNode, webid: string | $rdf.Literal, urlType: NamedNode, kb: any) {
   debug.log(`Removing from ${person} their ${WEBID_NOUN}: ${webid}.`)
 
   // remove webID from card
   const existing = kb.each(person, ns.vcard('url'), null, person.doc())
-    .filter(urlObject => kb.holds(urlObject, ns.rdf('type'), urlType, person.doc()))
-    .filter(urlObject => kb.holds(urlObject, ns.vcard('value'), webid, person.doc()))
+    .filter((urlObject: NamedNode) => kb.holds(urlObject, ns.rdf('type'), urlType, person.doc()))
+    .filter((urlObject: NamedNode) => kb.holds(urlObject, ns.vcard('value'), webid, person.doc()))
   if (!existing.length) {
     throw new Error(`Person ${person} does not have ${WEBID_NOUN} ${webid}.`)
   }
@@ -78,29 +79,29 @@ export async function removeWebIDFromContacts (person, webid, urlType, kb) {
   const deletables = [
     $rdf.st(person, ns.vcard('url'), vcardURLThing, person.doc()),
     $rdf.st(vcardURLThing, ns.rdf('type'), urlType, person.doc()),
-    $rdf.st(vcardURLThing, ns.vcard('value'), webid, person.doc())
+    $rdf.st(vcardURLThing, ns.vcard('value'), webid as any, person.doc())
   ]
   await kb.updater.update(deletables, [])
 
   // remove webIDs from groups
   const groups = kb.each(null, ns.vcard('hasMember'), kb.sym(webid))
-  let removeFromGroups = []
-  const insertInGroups = []
-  groups.forEach(async group => {
+  let removeFromGroups: Statement[] = []
+  const insertInGroups: Statement[] = []
+  for (const group of groups) {
     removeFromGroups = removeFromGroups.concat(kb.statementsMatching(kb.sym(webid), ns.owl('sameAs'), person, group.doc()))
     insertInGroups.push($rdf.st(group, ns.vcard('hasMember'), person, group.doc()))
     if (kb.statementsMatching(kb.sym(webid), ns.owl('sameAs'), null, group.doc()).length < 2) {
       removeFromGroups = removeFromGroups.concat(kb.statementsMatching(group, ns.vcard('hasMember'), kb.sym(webid), group.doc()))
     }
-  })
+  }
   await updateMany(removeFromGroups, insertInGroups)
 }
 
 // Trace things the same as this - other IDs for same thing
 // returns as array of node
-function getSameAs (kb, thing, doc) { // Should this recurse?
-  const found = new Set()
-  const agenda = new Set([thing.uri])
+function getSameAs (kb: any, thing: NamedNode, doc: NamedNode): NamedNode[] { // Should this recurse?
+  const found = new Set<string>()
+  const agenda = new Set<string>([thing.uri])
 
   while (agenda.size) {
     const uri = Array.from(agenda)[0] // clumsy
@@ -110,13 +111,13 @@ function getSameAs (kb, thing, doc) { // Should this recurse?
     const node = kb.sym(uri)
     kb.each(node, ns.owl('sameAs'), null, doc)
       .concat(kb.each(null, ns.owl('sameAs'), node, doc))
-      .forEach(next => {
+      .forEach((next: NamedNode) => {
         debug.log('        OWL sameAs found ' + next)
         agenda.add(next.uri)
       })
     kb.each(node, ns.schema('sameAs'), null, doc)
       .concat(kb.each(null, ns.schema('sameAs'), node, doc))
-      .forEach(next => {
+      .forEach((next: NamedNode) => {
         debug.log('        Schema sameAs found ' + next)
         agenda.add(next.uri)
       })
@@ -126,23 +127,23 @@ function getSameAs (kb, thing, doc) { // Should this recurse?
 }
 
 // find person webIDs
-export function getPersonas (kb, person) {
+export function getPersonas (kb: any, person: NamedNode): NamedNode[] {
   const lits = vcardWebIDs(kb, person).concat(getSameAs(kb, person, person.doc()))
-  const strings = new Set(lits.map(lit => lit.value)) // remove dups
-  const personas = [...strings].map(uri => kb.sym(uri)) // The UI tables do better with Named Nodes than Literals
+  const strings = new Set<string>(lits.map((lit: any) => lit.value)) // remove dups
+  const personas = [...strings].map(uri => kb.sym(uri) as NamedNode) // The UI tables do better with Named Nodes than Literals
   personas.sort() // for repeatability
   personas.filter(x => !x.sameTerm(person))
   return personas
 }
 
-export function vcardWebIDs (kb, person, urlType) {
+export function vcardWebIDs (kb: any, person: NamedNode, urlType?: NamedNode) {
   return kb.each(person, ns.vcard('url'), null, person.doc())
-    .filter(urlObject => kb.holds(urlObject, ns.rdf('type'), urlType, person.doc()))
-    .map(urlObject => kb.any(urlObject, ns.vcard('value'), null, person.doc()))
-    .filter(x => !!x) // remove nulls
+    .filter((urlObject: NamedNode) => kb.holds(urlObject, ns.rdf('type'), urlType, person.doc()))
+    .map((urlObject: NamedNode) => kb.any(urlObject, ns.vcard('value'), null, person.doc()))
+    .filter((x: any) => !!x) // remove nulls
 }
 
-export function isOrganization (agent) {
+export function isOrganization (agent: NamedNode): boolean {
   const doc = agent.doc()
   return kb.holds(agent, ns.rdf('type'), ns.vcard('Organization'), doc) ||
     kb.holds(agent, ns.rdf('type'), ns.schema('Organization'), doc)
@@ -151,14 +152,14 @@ export function isOrganization (agent) {
 
 // Utility function to render another different pane
 
-export function renderNamedPane (dom, subject, paneName, dataBrowserContext) {
+export function renderNamedPane (dom: Document, subject: NamedNode, paneName: string, dataBrowserContext: DataBrowserContext) {
   const p = dataBrowserContext.session.paneRegistry.byName(paneName)
-  const d = p.render(subject, dataBrowserContext) // @@@ change some bits of context!
+  const d = p!.render(subject, dataBrowserContext) // @@@ change some bits of context!
   d.classList.add('namedPane')
   return d
 }
 
-export async function renderWebIdControl (person, dataBrowserContext) {
+export async function renderWebIdControl (person: NamedNode, dataBrowserContext: DataBrowserContext) {
   const options = {
     longPrompt: `Link to a ${WEBID_NOUN}?`,
     idNoun: WEBID_NOUN,
@@ -167,7 +168,7 @@ export async function renderWebIdControl (person, dataBrowserContext) {
   return renderIdControl(person, dataBrowserContext, options)
 }
 
-export async function renderPublicIdControl (person, dataBrowserContext) {
+export async function renderPublicIdControl (person: NamedNode, dataBrowserContext: DataBrowserContext) {
   let orgClass = kb.sym('http://www.wikidata.org/wiki/Q43229')
   for (const classId in wikidataClasses) {
     if (kb.holds(person, ns.rdf('type'), ns.schema(classId), person.doc())) {
@@ -187,22 +188,22 @@ export async function renderPublicIdControl (person, dataBrowserContext) {
 }
 
 // The main control rendered by this module
-export async function renderIdControl (person, dataBrowserContext, options) {
+export async function renderIdControl (person: NamedNode, dataBrowserContext: DataBrowserContext, options: any) {
   // IDs which are as WebId in VCARD data
   // like  :me vcard:hasURL [ a vcard:WebId; vcard:value <https://...foo> ]
   //
   // Display the data about x specifically stored at x.doc()
   // in a fold-away thing
   //
-  function renderPersona (dom, persona, kb) {
-    function profileOpenHandler (_event) {
+  function renderPersona (dom: any, persona: NamedNode, kb: any) {
+    function profileOpenHandler (_event: Event) {
       profileIsVisible = !profileIsVisible
       main.classList.toggle('collapsed', !profileIsVisible)
       openButton.children[0].src = profileIsVisible ? UP_ARROW : DOWN_ARROW // @@ fragile
       openButton.setAttribute('aria-expanded', profileIsVisible ? 'true' : 'false')
       openButton.setAttribute('aria-label', profileIsVisible ? 'Collapse profile' : 'Expand profile')
     }
-    function renderNewRow (webidObject) {
+    function renderNewRow (webidObject: NamedNode) {
       const webid = new $rdf.Literal(webidObject.uri)
       async function deleteFunction () {
         try {
@@ -215,7 +216,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
       }
       const isWebId = options.urlType.sameTerm(ns.vcard('WebID'))
       const delFunParam = options.editable ? deleteFunction : null
-      const opts = { deleteFunction: delFunParam, draggable: true }
+      const opts: any = { deleteFunction: delFunParam, draggable: true }
       if (isWebId) {
         opts.title = webidObject.uri.split('/')[2]
         opts.image = widgets.faviconOrDefault(dom, webidObject.site()) // just for domain
@@ -238,7 +239,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     const mainRow = personaTable.appendChild(dom.createElement('tr'))
     const mainCell = mainRow.appendChild(dom.createElement('td'))
     mainCell.setAttribute('colspan', 3)
-    let main
+    let main: HTMLElement
 
     let profileIsVisible = true
 
@@ -249,7 +250,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
     openButton.setAttribute('aria-label', 'Collapse profile')
     const paneName = isOrganization(person) || isOrganization(persona) ? 'profile' : 'profile' // was default for org
 
-    widgets.publicData.loadPublicDataThing(kb, person, persona).then(_resp => {
+    widgets.publicData.loadPublicDataThing(kb, person, persona).then((_resp: unknown) => {
     // loadPublicDataThing(kb, person, persona).then(_resp => {
       try {
         main = renderNamedPane(dom, persona, paneName, dataBrowserContext)
@@ -261,7 +262,7 @@ export async function renderIdControl (person, dataBrowserContext, options) {
         main = widgets.errorMessageBlock(dom, 'Error displaying profile. If it persists, contact admin.')
         mainCell.appendChild(main)
       }
-    }, err => {
+    }, (err: unknown) => {
       debug.error('Error loading persona ' + persona + '. Stack: ' + err)
       main = widgets.errorMessageBlock(dom, 'Error loading profile. If it persists, contact admin.')
       mainCell.appendChild(main)
@@ -271,9 +272,9 @@ export async function renderIdControl (person, dataBrowserContext, options) {
 
   async function refreshWebIDTable () {
     const personas = getPersonas(kb, person)
-    utils.syncTableToArrayReOrdered(profileArea, personas, persona => renderPersona(dom, persona, kb))
+    utils.syncTableToArrayReOrdered(profileArea, personas, (persona: NamedNode) => renderPersona(dom, persona, kb))
   }
-  async function addOneIdAndRefresh (person, webid) {
+  async function addOneIdAndRefresh (person: NamedNode, webid: string) {
     try {
       await addWebIDToContacts(person, webid, options.urlType, kb)
     } catch (err) {

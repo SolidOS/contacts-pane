@@ -1,0 +1,30 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.statsLog[hidden] {
+  display: none;
+}
+
+.statsLog {
+  margin-top: var(--spacing-md);
+  background-color: var(--color-background);
+}
+
+.statsLog pre {
+  font-size: var(--solid-ui-font-size-sm);
+  padding: var(--spacing-md);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
