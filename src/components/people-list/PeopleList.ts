@@ -14,6 +14,7 @@ import * as debug from '../../debug'
 import 'solid-ui/components/button'
 import '~icons/lucide/ellipsis-vertical'
 import '~icons/lucide/external-link'
+import '~icons/lucide/mail'
 import '~icons/lucide/trash-2'
 import '~icons/lucide/user'
 import 'solid-ui/components/menu'
@@ -135,15 +136,19 @@ export default class PeopleList extends WebComponent {
   }
 
   private get visibleRows () {
-    return this.rows.filter(row => this.matchesFilter(row.name))
+    return this.rows.filter(row => this.matchesFilter(row))
   }
 
-  /** Every space-separated word of the filter must appear in the name. */
-  private matchesFilter (name: string) {
+  /** Every space-separated word of the filter must appear somewhere in the
+   * contact's name, email addresses, WebIDs or profile URLs. */
+  private matchesFilter (row: PersonRow) {
     const filter = this.filter.trim().toLowerCase()
     if (filter.length === 0) return true
 
-    return filter.split(' ').every(word => name.toLowerCase().includes(word))
+    const searchable = [row.name, ...this.emailsFor(row.person), ...this.urlsFor(row.person)]
+      .join(' ')
+      .toLowerCase()
+    return filter.split(/\s+/).every(word => searchable.includes(word))
   }
 
   /** When exactly one contact is in view, showing it is what the user meant. */
@@ -179,18 +184,31 @@ export default class PeopleList extends WebComponent {
     `
   }
 
-  /** The person's first email address, once their card has loaded. Read at
-   * render time like the avatar, so it appears when the background load
+  /** The person's email addresses, once their card has loaded. Read at
+   * render time like the avatar, so they appear when the background load
    * finishes. */
-  private emailFor (person: Person): string | null {
-    for (const emailNode of kb.each(person, ns.vcard('hasEmail'))) {
+  private emailsFor (person: Person): string[] {
+    return kb.each(person, ns.vcard('hasEmail'))
       // vcard nests the address under vcard:value; older data may put the
       // mailto: on hasEmail directly.
-      const value = kb.any(emailNode as any, ns.vcard('value')) ?? emailNode
-      const address = String(value.value ?? '').replace(/^mailto:/, '')
-      if (address.includes('@')) return address
-    }
-    return null
+      .map(emailNode => kb.any(emailNode as any, ns.vcard('value')) ?? emailNode)
+      .map(value => String(value.value ?? '').replace(/^mailto:/, ''))
+      .filter(address => address.includes('@'))
+  }
+
+  private emailFor (person: Person): string | null {
+    return this.emailsFor(person)[0] ?? null
+  }
+
+  /** The person's WebIDs and profile URLs: every vcard:url, whatever its
+   * type, and any owl:sameAs. Like vcard:hasEmail, vcard:url usually nests
+   * the address under vcard:value. */
+  private urlsFor (person: Person): string[] {
+    const urls = kb.each(person, ns.vcard('url'))
+      .map(urlNode => kb.any(urlNode as any, ns.vcard('value')) ?? urlNode)
+    return [...urls, ...kb.each(person, ns.owl('sameAs'))]
+      .filter(node => node.termType !== 'BlankNode')
+      .map(node => node.value)
   }
 
   private renderRow (row: PersonRow) {
@@ -216,9 +234,16 @@ export default class PeopleList extends WebComponent {
         <div class="identity">
           <div class="nameRow">
             <div class="name">${row.name}</div>
-            ${role ? html`<div class="role">${role}</div>` : nothing}
+            ${role
+              ? html`<span class="roleDivider" aria-hidden="true"></span><div class="role">${role}</div>`
+              : nothing}
           </div>
-          ${email ? html`<div class="email">${email}</div>` : nothing}
+          ${email
+            ? html`<div class="email">
+                <icon-lucide-mail aria-hidden="true"></icon-lucide-mail>
+                <span>${email}</span>
+              </div>`
+            : nothing}
         </div>
         ${this.renderRowMenu(row)}
       </li>

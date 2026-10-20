@@ -4,18 +4,17 @@
   gap: var(--spacing-xs);
 }
 
-h3 {
-  font-size: var(--font-size-xl);
-  margin: 0 0 var(--spacing-sm) 0;
+.statsLog[hidden] {
+  display: none;
 }
 
 .statsLog {
-  font-size: var(--font-size-lg);
-  margin: var(--spacing-md);
+  margin-top: var(--spacing-md);
   background-color: var(--color-background);
 }
 
 .statsLog pre {
+  font-size: var(--solid-ui-font-size-sm);
   padding: var(--spacing-md);
   white-space: pre-wrap;
   word-wrap: break-word;

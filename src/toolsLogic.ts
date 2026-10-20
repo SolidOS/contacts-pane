@@ -3,15 +3,15 @@
 //  `log` callback and asks questions through a `confirm` callback, so the
 //  <contacts-pane-tools> component (or a test) decides how those look.
 import * as UI from 'solid-ui'
-import { store } from 'solid-logic'
+import { SolidNamespace, store } from 'solid-logic'
 import * as $rdf from 'rdflib'
-import { NamedNode, Statement } from 'rdflib'
+import { NamedNode, Statement, isNamedNode as rdfIsNamedNode } from 'rdflib'
 import { saveNewGroup, addPersonToGroup, groupMembers } from './contactLogic'
 import { normalizeGroupUri } from './localUtils'
 import * as debug from './debug'
 
 const kb = store
-const ns = UI.ns
+const ns = UI.ns as SolidNamespace
 const VCARD = ns.vcard
 
 type Log = (message: string) => void
@@ -30,9 +30,27 @@ interface ScanState {
   [key: string]: any
 }
 
+/** rdflib's guard narrows only to the RDF/JS NamedNode interface; every term in
+ * the store is rdflib's NamedNode class, so narrow to that instead. */
+function isNamedNode (obj: Parameters<typeof rdfIsNamedNode>[0]): obj is NamedNode {
+  return rdfIsNamedNode(obj)
+}
+
+/** The document the book points to through `predicate`, e.g. its name index.
+ * Takes the first value that is a URL, so a stray literal next to the real
+ * index does not hide it. Throws when there is none, so callers never load or
+ * scan without it. */
+function bookIndex (book: NamedNode, predicate: string): NamedNode {
+  const index = kb.each(book, ns.vcard(predicate)).find(isNamedNode)
+  if (!index) {
+    throw new Error('Address book has no ' + predicate)
+  }
+  return index
+}
+
 /** Load the book's main name/email index. Throws when the load fails. */
 export async function loadMainIndex (book: NamedNode, log: Log) {
-  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex')) as NamedNode
+  const nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   await kb.fetcher.load(nameEmailIndex)
   log('People index has been loaded')
 }
@@ -43,51 +61,74 @@ export function showStats (book: NamedNode, selectedGroups: Record<string, boole
   log('' + totalContacts + ' contacts loaded. ')
   const groups = dedupedGroups(book)
   log('' + groups.length + ' total groups. ')
-  log('' + Object.keys(selectedGroups).length + ' selected groups. ')
+  log('' + selectedGroupUris(selectedGroups).length + ' selected groups. ')
 }
 
-/** Repair the ACL of every card in the selected groups. */
-export function checkAccess (selectedGroups: Record<string, boolean>, log: Log) {
-  function doCard (card: NamedNode) {
-    UI.acl.fixIndividualCardACL(card, (message: string) => log(message), (ok: boolean, message: any) => {
+/** GroupBar keeps a deselected group as a `false` entry, so only the true
+ * ones are selected. */
+function selectedGroupUris (selectedGroups: Record<string, boolean>): string[] {
+  return Object.keys(selectedGroups).filter(uri => selectedGroups[uri])
+}
+
+/** Repair the ACL of every card in the selected groups. Settles once every
+ * repair has finished, and throws when any of them failed. */
+export async function checkAccess (selectedGroups: Record<string, boolean>, log: Log) {
+  const repairs: Promise<boolean>[] = []
+  for (const groupUri of selectedGroupUris(selectedGroups)) {
+    const group = kb.sym(groupUri)
+    const members = groupMembers(kb, group)
+    log(UI.utils.label(group) + ': ' + members.length + ' members')
+    for (const card of members) {
+      log(UI.utils.label(card))
+      repairs.push(fixCardAccess(card, log))
+    }
+  }
+
+  const failures = (await Promise.all(repairs)).filter(ok => !ok).length
+  if (failures) {
+    throw new Error(failures + ' of ' + repairs.length + ' contacts could not be fixed')
+  }
+}
+
+/** One card's ACL repair as a promise of whether it worked. */
+function fixCardAccess (card: NamedNode, log: Log): Promise<boolean> {
+  return new Promise(resolve => {
+    UI.acl.fixIndividualCardACL(card, (message: string) => {
+      log(message)
+      // solid-ui never calls back when the ACL is already right; this log
+      // line is its only sign that the card is done.
+      if (message.startsWith('Nice - same ACL')) resolve(true)
+    }, (ok: boolean, message: any) => {
       if (ok) {
         log('Success for ' + UI.utils.label(card))
       } else {
         debug.error('Failure for ' + card + ': ' + message)
         log('Failure for ' + card + ': ' + message)
       }
+      resolve(ok)
     })
-  }
-
-  for (const groupUri in selectedGroups) {
-    const group = kb.sym(groupUri)
-    const members = groupMembers(kb, group)
-    log(UI.utils.label(group) + ': ' + members.length + ' members')
-    for (const card of members) {
-      log(UI.utils.label(card))
-      doCard(card)
-    }
-  }
+  })
 }
 
 /** The book's groups with normalized URIs, duplicates removed. */
 function dedupedGroups (book: NamedNode): NamedNode[] {
-  const groups = kb.each(book, VCARD('includesGroup')) as NamedNode[]
+  const groups = kb.each(book, VCARD('includesGroup')).filter(isNamedNode)
   const strings = new Set(groups.map(group => normalizeGroupUri(group.uri)))
   return [...strings].map(uri => kb.sym(uri))
 }
 
 /** Contacts that belong to no group at all. Loads the indexes it needs. */
 export async function findGroupless (book: NamedNode, log: Log) {
-  const groupIndex = kb.any(book, ns.vcard('groupIndex')) as NamedNode
-  const nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex')) as NamedNode
+  const groupIndex = bookIndex(book, 'groupIndex')
+  const nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   try {
     await kb.fetcher.load([nameEmailIndex, groupIndex])
-    const groups = kb.each(book, ns.vcard('includesGroup')) as NamedNode[]
+    const groups = kb.each(book, ns.vcard('includesGroup')).filter(isNamedNode)
     await kb.fetcher.load(groups)
   } catch (e) {
     debug.error('Error loading groups. Stack: ' + e)
     log('Error loading groups or name index. If it persists, contact your admin.')
+    throw e // a partial store would report grouped contacts as groupless
   }
 
   const reverseIndex: any = {}
@@ -105,7 +146,7 @@ export async function findGroupless (book: NamedNode, log: Log) {
     }
   }
 
-  const cards = kb.each(undefined, VCARD('inAddressBook'), book) as NamedNode[]
+  const cards = kb.each(undefined, VCARD('inAddressBook'), book).filter(isNamedNode)
   log('' + cards.length + ' total contacts')
   for (const card of cards) {
     if (!reverseIndex[card.uri]) {
@@ -126,22 +167,15 @@ export async function fixGroupless (book: NamedNode, log: Log, confirm: Confirm)
     return false
   }
 
-  let groupOfUngrouped: any = null
-  try {
-    groupOfUngrouped = await saveNewGroup(book, 'No group')
-  } catch (_e) {
-    // The group may exist already; adding below still works then.
-  }
-
   if (!(await confirm(`Add the ${groupless.length} contacts without groups to a 'No group' group?`))) {
     return false
   }
 
+  // Returns the group when it exists already, so only real failures throw.
+  const groupOfUngrouped = await saveNewGroup(book, 'No group')
   for (const person of groupless) {
-    if (groupOfUngrouped) {
-      log('   adding ' + UI.utils.label(person))
-      await addPersonToGroup(person, groupOfUngrouped)
-    }
+    log('   adding ' + UI.utils.label(person))
+    await addPersonToGroup(person, groupOfUngrouped)
   }
   log('People moved to group.')
   return true
@@ -161,7 +195,7 @@ export async function findDuplicates (book: NamedNode, log: Log, confirm: Confir
     uniquesSet: {}
   }
 
-  s.nameEmailIndex = kb.any(book, ns.vcard('nameEmailIndex'))
+  s.nameEmailIndex = bookIndex(book, 'nameEmailIndex')
   log('Loading name index...')
   await kb.fetcher.load(s.nameEmailIndex)
   log('Loaded name index.')
@@ -181,15 +215,15 @@ export async function findDuplicates (book: NamedNode, log: Log, confirm: Confir
 /** The book's groups sorted by name, as plain group nodes. */
 function groupsSorted (book: NamedNode): NamedNode[] {
   if (!book) return []
-  const gs = kb.each(book, ns.vcard('includesGroup')) as NamedNode[]
+  const gs = kb.each(book, ns.vcard('includesGroup')).filter(isNamedNode)
   const sortMe = gs.map(g => [book, kb.any(g, ns.vcard('fn')), g])
   sortMe.sort()
-  return sortMe.map(tuple => tuple[2] as NamedNode)
+  return sortMe.map(tuple => tuple[2]).filter(isNamedNode)
 }
 
 /** Partition the cards into definitive, name-duplicates, and nameless. */
 function scanForDuplicates (s: ScanState, log: Log) {
-  s.cards = kb.each(undefined, VCARD('inAddressBook'), s.book) as NamedNode[]
+  s.cards = kb.each(undefined, VCARD('inAddressBook'), s.book).filter(isNamedNode)
   log('' + s.cards.length + ' total contacts')
 
   for (const card of s.cards) {
@@ -344,6 +378,7 @@ async function saveCleanPeople (s: ScanState, log: Log) {
     log('Done uniques log ' + cleanPeople)
   } catch (e) {
     log('Error saving uniques: ' + e)
+    throw e
   }
 }
 
@@ -364,7 +399,8 @@ async function saveCleanGroup (s: ScanState, log: Log, group: NamedNode) {
     })
     log('     Done uniques group ' + cleanGroup)
   } catch (e) {
-    log('Error saving : ' + e)
+    log('Error saving ' + cleanGroup + ': ' + e)
+    throw e
   }
 }
 

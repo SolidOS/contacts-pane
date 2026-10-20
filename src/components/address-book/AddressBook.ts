@@ -18,12 +18,12 @@ import * as debug from '../../debug'
 
 import NewGroupModal from '../new-group-modal'
 import SharingModal from '../sharing-modal'
+import ToolsModal from '../tools-modal'
 import '../address-book-header'
 import '../details-section'
 import '../group-bar'
 import '../people-list'
 import '../search'
-import '../tools'
 
 import type AddressBookHeader from '../address-book-header'
 import type DetailsSection from '../details-section'
@@ -377,6 +377,7 @@ export default class AddressBook extends WebComponent {
 
   /** Reveal a freshly created contact. */
   private showNewContact (person: Node) {
+    this.groupBar.refresh() // the new member changes the group counts
     refreshNames(this.peopleList, null, false) // Add name to list of group
     this.peopleList.markSelected(person)
     const contactPane = this.context.session.paneRegistry.byName('contact')
@@ -415,13 +416,12 @@ export default class AddressBook extends WebComponent {
   }
 
   private showTools () {
-    deselectAllPeople(this.peopleList)
-
-    const tools = this.ownerDocument.createElement('contacts-pane-tools') as any
-    tools.book = this.book
-    tools.selectedGroups = this.selectedGroups
-    tools.addEventListener('groups-changed', () => this.groupBar.refresh())
-
-    this.details.showContent(tools, { wide: true })
+    showDialog(ToolsModal, {
+      props: {
+        book: this.book,
+        selectedGroups: this.selectedGroups,
+        onGroupsChanged: () => this.groupBar.refresh()
+      }
+    })
   }
 }
