@@ -5,7 +5,8 @@
 .individualPane {
   padding: var(--spacing-xs) var(--spacing-lg) var(--spacing-md) var(--spacing-lg);
   background: var(--color-section-bg);
-  border-radius: var(--border-radius-full);
+  border: 1px solid var(--solid-ui-color-gray-200);
+  border-radius: var(--border-radius-base);
   box-shadow: var(--box-shadow);
   box-sizing: border-box;
   max-width: 100%;

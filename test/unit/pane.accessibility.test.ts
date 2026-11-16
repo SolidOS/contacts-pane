@@ -4,6 +4,10 @@ import { axe } from 'vitest-axe'
 import * as UI from 'solid-ui'
 import { authn, store } from 'solid-logic'
 import pane from '../../src/contactsPane'
+import type Search from '../../src/components/search'
+import type AddressBookHeader from '../../src/components/address-book-header'
+import type PeopleList from '../../src/components/people-list'
+import type DetailsSection from '../../src/components/details-section'
 import { sym, parse } from 'rdflib'
 import { context, doc, prefixes, web } from './setup'
 
@@ -13,7 +17,6 @@ const base = doc.dir()?.uri || ''
 const book = sym(base + 'book.ttl#this')
 const group = sym(base + 'group.ttl#this')
 const person = sym(base + 'group.ttl#person')
-const webMap = web as Record<string, string>
 const originalByName = context.session.paneRegistry.byName
 const contactPaneRenderMock = vi.fn(() => {
   const paneDiv = document.createElement('div')
@@ -21,11 +24,11 @@ const contactPaneRenderMock = vi.fn(() => {
   return paneDiv
 })
 
-webMap[base + 'book.ttl'] = `
+web[base + 'book.ttl'] = `
 <#this> a vcard:AddressBook;
     vcard:fn "Test address book".
 `
-webMap[base + 'group.ttl'] = `
+web[base + 'group.ttl'] = `
 <#this> a vcard:Group;
     vcard:fn "Selected group";
     vcard:hasMember <#person>.
@@ -33,8 +36,18 @@ webMap[base + 'group.ttl'] = `
 <#person> a vcard:Individual;
     vcard:fn "Selected person".
 `
-for (const uri in webMap) {
-  parse(prefixes + webMap[uri], store, uri)
+for (const uri in web) {
+  parse(prefixes + web[uri], store, uri)
+}
+
+/** Lit components only render once connected, so the pane must be in the
+ * document -- unlike the old imperative markup, which existed detached. */
+async function renderConnected () {
+  const div = pane.render(book, context)
+  document.body.appendChild(div)
+  // let asyncRender finish (it runs in a microtask)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  return div
 }
 
 beforeEach(() => {
@@ -64,8 +77,8 @@ describe('contacts-pane accessibility', () => {
 
   it('opens the add-contact dialog and updates the pane when it closes with a person', async () => {
     const webId = 'https://janedoe.example/profile/card#me'
-    vi.spyOn(authn, 'currentUser').mockReturnValue(webId as any)
-    vi.spyOn(authn, 'checkUser').mockResolvedValue(webId as any)
+    vi.spyOn(authn, 'currentUser').mockReturnValue(sym(webId))
+    vi.spyOn(authn, 'checkUser').mockResolvedValue(sym(webId))
 
     let dialogConfig: any
     const showDialogSpy = vi.spyOn(UI, 'showDialog').mockImplementation((DialogComponent, config) => {
@@ -74,11 +87,14 @@ describe('contacts-pane accessibility', () => {
       return document.createElement('div') as any
     })
 
-    const div = pane.render(book, context)
-    await new Promise(resolve => setTimeout(resolve, 0))
+    const div = await renderConnected()
 
-    const newContactButton = (Array.from(div.querySelectorAll('button')) as HTMLButtonElement[])
-      .find((button) => button.textContent?.includes('New contact'))
+    const header = div.querySelector('contacts-pane-address-book-header') as AddressBookHeader
+    expect(header).toBeTruthy()
+    await header.updateComplete
+
+    const newContactButton = Array.from(header.shadowRoot!.querySelectorAll('solid-ui-button'))
+      .find((button) => button.textContent?.includes('New Contact')) as HTMLElement | undefined
     expect(newContactButton).toBeTruthy()
 
     newContactButton?.click()
@@ -93,31 +109,45 @@ describe('contacts-pane accessibility', () => {
     dialogConfig.onClose(person)
 
     expect(contactPaneRenderMock).toHaveBeenCalledWith(person, context)
+    const details = div.querySelector('contacts-pane-details') as DetailsSection
+    await details.updateComplete
     expect(div.querySelector('.detailsSectionContent--wide')).toBeTruthy()
     expect(div.querySelector('.detailsSectionContent')?.textContent).toContain('mock contact pane')
-    expect(div.querySelector('.personLi.selected')?.textContent).toContain('Selected person')
+
+    const peopleList = div.querySelector('contacts-pane-people-list') as PeopleList
+    await peopleList.updateComplete
+    expect(peopleList.shadowRoot!.querySelector('.personLi.selected')?.textContent).toContain('Selected person')
+    div.remove()
   })
 
-  it('includes a clear button in the search input and it works', async () => {
-    const div = pane.render(book, context)
-    // let asyncRender finish (it runs in a microtask)
-    await new Promise(resolve => setTimeout(resolve, 0))
-    const input = div.querySelector('.searchInput') as HTMLInputElement
+  it('includes a clear button in the search component and it works', async () => {
+    const div = await renderConnected()
+    const search = div.querySelector('contacts-pane-search') as Search
+    expect(search).toBeTruthy()
+    await search.updateComplete
+    const solidInput = search.shadowRoot!.querySelector('solid-ui-input') as HTMLElement & { updateComplete: Promise<boolean> }
+    expect(solidInput).toBeTruthy()
+    await solidInput.updateComplete
+    const input = solidInput.shadowRoot!.querySelector('input') as HTMLInputElement
     expect(input).toBeTruthy()
-    const clear = div.querySelector('.searchClearButton') as HTMLElement
-    expect(clear).toBeTruthy()
-    // initially hidden via utility class
-    expect(clear.classList.contains('hidden')).toBe(true)
+    // no clear button until there is text
+    expect(search.shadowRoot!.querySelector('button')).toBeNull()
     // simulate typing
     input.value = 'hello'
     input.dispatchEvent(new Event('input'))
-    expect(clear.classList.contains('hidden')).toBe(false)
-    // clicking clear should reset input and hide button again
+    await solidInput.updateComplete
+    await search.updateComplete
+    expect(search.value).toBe('hello')
+    const clear = search.shadowRoot!.querySelector('button') as HTMLElement
+    expect(clear).toBeTruthy()
+    // clicking clear should reset the text and remove the button again
     clear.click()
-    expect(input.value).toBe('')
-    expect(clear.classList.contains('hidden')).toBe(true)
+    await search.updateComplete
+    expect(search.value).toBe('')
+    expect(search.shadowRoot!.querySelector('button')).toBeNull()
     // run axe check on the full pane container after interactivity
     const axeResults = await axe(div, { rules: { 'aria-allowed-role': { enabled: false } } })
     expect(axeResults.violations).toHaveLength(0)
+    div.remove()
   })
 })

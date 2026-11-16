@@ -1,0 +1,132 @@
+/* The host keeps the .buttonSection class, so contactsPane.css still lays out
+   the column. The group list now renders in here too, so the rules that used
+   to live in contactsPane.css for .groupButtonsList and the group buttons have
+   come along with it. */
+/* The host (.buttonSection) is padded by contactsPane.css; the negative
+   margins pull the border out to the component's real edges, and the extra
+   padding puts the content back where it was. The title and the group filter
+   share the header, so its border underlines both. */
+.header {
+    margin: 0 calc(-1 * var(--spacing-sm));
+    padding: 9px calc(var(--spacing-sm));
+    border-bottom: 1px solid var(--solid-ui-color-gray-200);
+}
+
+.heading {
+    margin: 0;
+    color: var(--solid-ui-color-gray-700);
+    /* Mirrors the h2 in the address book header, so the two column titles read
+       as one row. */
+    font-size: 1.25em;
+    font-weight: var(--font-weight-bold, 600);
+    line-height: var(--line-height-tight);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.groupFilter {
+    display: block;
+    margin-top: var(--spacing-xs);
+}
+
+.groupButtonsList {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--spacing-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* Take whatever height the column has spare, so New Group and its
+       separator sit at the bottom -- but never shrink below the groups,
+       which would paint them over that footer; the column scrolls instead. */
+    flex: 1 0 auto;
+}
+
+.groupButtonsList li {
+    flex-shrink: 0;
+}
+
+.allGroupsButton,
+.groupButton {
+    min-height: var(--min-touch-target);
+    padding: 9px var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-full);
+    background: transparent;
+    color: var(--solid-ui-color-gray-500);
+    font-weight: 500;
+    font-size: var(--solid-ui-font-size-md);
+    cursor: pointer;
+    transition: all var(--animation-duration) ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+
+    &:hover {
+        background-color: var(--solid-ui-color-primary-hover);
+    }
+
+    &:focus-visible {
+        outline: var(--focus-indicator-width) solid var(--solid-ui-color-primary);
+        outline-offset: var(--outline-offset-sm);
+        z-index: 1;
+    }
+}
+
+/* Stacked items are full width, so push the count to the trailing edge. */
+.groupButton {
+    justify-content: space-between;
+}
+
+/* Selected, whether that is "everything" or one particular group. */
+.allGroupsButton--active,
+.groupButton[aria-pressed="true"] {
+    background-color: var(--solid-ui-color-primary-selected);
+    color: var(--solid-ui-color-primary);
+
+    .groupCount {
+        background-color: var(--solid-ui-color-white);
+    }
+}
+
+/* Contact count badge. Absent entirely until the group's document has loaded,
+   so it never shows a misleading 0. */
+.groupCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5em;
+    padding: 0 0.4em;
+    border-radius: var(--border-radius-full);
+    background: var(--solid-ui-color-gray-200);
+    font-size: 0.85em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+}
+
+solid-ui-button {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Separates New Group from the group list above it. Negative margins take the
+   border to the component's real edges, mirroring the header's. */
+.newGroup {
+    margin: var(--spacing-xs) calc(-1 * var(--spacing-sm)) 0;
+    padding: var(--spacing-xs) var(--spacing-sm) 0;
+    border-top: 1px solid var(--solid-ui-color-gray-200);
+}
+
+.error {
+    margin: 0;
+    padding: 0 var(--spacing-md);
+    color: var(--solid-ui-color-red-500);
+    font-size: var(--solid-ui-font-size-sm);
+}

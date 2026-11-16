@@ -4,14 +4,14 @@ import { widgets } from 'solid-ui'
 const baseUri = 'https://solidos.github.io/contacts-pane/src/ontology/'
 
 export function renderForm (
-  div,
-  subject, // Represents the RDF that fills the form
-  formSource, // The imported form Turtle source
-  formName,   // The name of the form file (e.g., 'socialMedia.ttl')
-  store,
-  dom,
-  editableProfile,
-  whichForm) {
+  div: any,
+  subject: any, // Represents the RDF that fills the form
+  formSource: string, // The imported form Turtle source
+  formName: string,   // The name of the form file (e.g., 'socialMedia.ttl')
+  store: any,
+  dom: any,
+  editableProfile: any,
+  whichForm?: string) {
   // --- Form resource setup ---
   const formUri = baseUri + formName                   // Full URI to the form file
   const exactForm = whichForm || 'this'                // If there are more 'a ui:Form' elements in a form file
@@ -26,7 +26,7 @@ export function renderForm (
     subject,
     formThis,
     editableProfile,
-    (ok, mes) => {
+    (ok: boolean, mes: string) => {
       if (!ok) widgets.errorMessageBlock(dom, mes)
     }
   )
@@ -34,10 +34,10 @@ export function renderForm (
 
 // we need to load into the store some additional information about Social Media accounts
 export function loadDocument (
-  store,
-  documentSource,
-  documentName,
-  documentURI
+  store: any,
+  documentSource: string,
+  documentName: string,
+  documentURI?: string
 ) {
   const finalDocumentUri = documentURI || baseUri + documentName   // Full URI to the file
   const document = sym(finalDocumentUri)      // rdflib NamedNode for the document

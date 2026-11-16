@@ -3,6 +3,7 @@ import { getDataModelIssues } from '../../src/contactLogic'
 import { ns } from 'solid-ui'
 import { store } from 'solid-logic'
 import pane from '../../src/contactsPane'
+import type Search from '../../src/components/search'
 import { parse, sym } from 'rdflib'
 import { context, doc, mockUpdate, prefixes, web } from './setup'
 
@@ -158,25 +159,37 @@ if (t[ns.vcard('AddressBook').uri]) return 'Address book'
       expect(div.dataset.viewportNarrow).toBeDefined()
     })
 
-    it('includes a clear button in the search input and it works', async () => {
+    it('includes a clear button in the search component and it works', async () => {
       const div = pane.render(book, context)
+      // Lit components only render once connected, so the pane must be in the
+      // document -- unlike the old imperative markup, which existed detached.
+      document.body.appendChild(div)
       // let asyncRender finish (it runs in a microtask)
       await new Promise(resolve => setTimeout(resolve, 0))
-      const input = div.querySelector('.searchInput') as HTMLInputElement
+      const search = div.querySelector('contacts-pane-search') as Search
+      expect(search).toBeTruthy()
+      await search.updateComplete
+      const solidInput = search.shadowRoot!.querySelector('solid-ui-input') as HTMLElement & { updateComplete: Promise<boolean> }
+      expect(solidInput).toBeTruthy()
+      await solidInput.updateComplete
+      const input = solidInput.shadowRoot!.querySelector('input') as HTMLInputElement
       expect(input).toBeTruthy()
-      const clear = div.querySelector('.searchClearButton') as HTMLElement
-      expect(clear).toBeTruthy()
-      // initially hidden via utility class
-      expect(clear.classList.contains('hidden')).toBe(true)
+      // no clear button until there is text
+      expect(search.shadowRoot!.querySelector('button')).toBeNull()
       // simulate typing
       input.value = 'hello'
       input.dispatchEvent(new Event('input'))
-      expect(clear.classList.contains('hidden')).toBe(false)
-      // clicking clear should reset input and hide button again
+      await solidInput.updateComplete
+      await search.updateComplete
+      expect(search.value).toBe('hello')
+      const clear = search.shadowRoot!.querySelector('button') as HTMLElement
+      expect(clear).toBeTruthy()
+      // clicking clear should reset the text and remove the button again
       clear.click()
-      expect(input.value).toBe('')
-      expect(clear.classList.contains('hidden')).toBe(true)
-      // run axe check on the full pane container after interactivity
+      await search.updateComplete
+      expect(search.value).toBe('')
+      expect(search.shadowRoot!.querySelector('button')).toBeNull()
+      div.remove()
     })
   }) // render tests
 

@@ -1,0 +1,10 @@
+:host {
+    /* solid-ui's dialog only has a min-width, and the wrapping buttons and log
+       would stretch it across the viewport. Fix the width so the dialog keeps
+       its size as the log grows, and scroll rather than push it off screen. */
+    solid-ui-dialog-content {
+        width: min(40rem, 80vw);
+        max-height: 70vh;
+        overflow: auto;
+    }
+}
